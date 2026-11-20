@@ -42,9 +42,10 @@ import { toolOn } from './choice.js'
  * @property {string} [storyId] - Current story ID
  * @property {string} [documentId] - The document the editor is showing
  * @property {string} [chatId] - Current chat ID
- * @property {string} [postsAs] - The name the comments a call makes are said
- *   under, where the caller isn't the chat's own model: a connected app's
- *   (apps/tools.js). Absent in a chat, whose model's posts carry no name.
+ * @property {string} [postsAs] - The name the comments and suggestions a call
+ *   makes are under, where the caller isn't the chat's own model: a
+ *   connected app's (apps/tools.js). Absent in a chat, whose model's carry
+ *   no name.
  * @property {boolean} [propose] - Whether a tool that would change a document
  *   proposes the change to the writer instead of making it. The chat's
  *   setting, read by whoever runs the turn.

@@ -199,7 +199,8 @@ export function changedLines(before, after) {
 /**
  * Run a write, and say in its answer how the text reads now where that is
  * not how it was sent: the lines that changed, or, where they are many, that
- * the document is to be read again.
+ * the document is to be read again. A write that was suggested says so too,
+ * of the text as the app reads it, its suggestions made.
  *
  * @param {string} name - The tool: one that writes a document's text
  * @param {Record<string, any>} args
@@ -211,7 +212,9 @@ export async function answeringStored(name, args, context, write) {
   const path = typeof args.path === 'string' ? args.path : ''
   const before = name === 'create_document' ? null : await textAt(context, path)
   const result = await write()
-  if (!result || typeof result !== 'object' || 'error' in result || !result.success) return result
+  // Made, or suggested: either way the app reads the text with it in.
+  if (!result || typeof result !== 'object' || 'error' in result) return result
+  if (!result.success && !result.suggested) return result
 
   const after = await textAt(context, result.document?.path ?? path)
   if (after === null) return result

@@ -644,7 +644,9 @@
  * @typedef {Object} CommentSuggestion
  * @property {string} text - What it puts in, as it last read
  * @property {number} created - When it was suggested
- * @property {string} [chat] - The chat whose model suggested it
+ * @property {string} [chat] - The chat whose model suggested it, or a
+ *   connected app's connection, as `app:<its id>` (see `apps/tools.js`),
+ *   which then has its `name` beside it
  * @property {'writer'|'person'} [author] - Who suggested it, when it came
  *   from a linked Google Doc: the writer, or someone else, by `name` and
  *   `user` as a post's are

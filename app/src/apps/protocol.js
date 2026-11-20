@@ -33,7 +33,7 @@ const INVALID_PARAMS = -32602
  * @returns {string}
  */
 export function instructionsFor(app) {
-  const edits = app.edit === 'editing'
+  const edits = app.edit !== 'off'
   return [
     `inksprite is a writing app. This server gives you the projects its user has opened to you, to ${edits ? 'read and write' : 'list, search and read'} their documents. The tools call the user the writer.`,
     '- A project is a tree of documents and folders. list_projects names the projects, and every other tool takes one as `project`.',
@@ -42,7 +42,9 @@ export function instructionsFor(app) {
     '- The user may be writing while you work. Read a document again before relying on what an earlier read said.',
     ...(edits
       ? [
-          '- What you write is in the document at once, where the user sees it, and inksprite keeps a version of the text from before. edit_document changes passages and leaves the rest; append_document adds to the end; update_document rewrites the whole.',
+          app.edit === 'suggesting'
+            ? "- A change you make to a document's text is suggested to the user in the document, who accepts or rejects each one there: until they do, you read the document with your suggestions made and everyone else reads it without. A new document, a move and a delete are made at once. edit_document changes passages and leaves the rest; append_document adds to the end; update_document rewrites the whole."
+            : '- What you write is in the document at once, where the user sees it, and inksprite keeps a version of the text from before. edit_document changes passages and leaves the rest; append_document adds to the end; update_document rewrites the whole.',
         ]
       : []),
     ...(app.comment

@@ -264,17 +264,19 @@ const projectsLine = one => {
     .filter(project => one.projects.includes(project.id))
     .map(project => project.name)
   const line = names.length > 0 ? names.join(', ') : 'No projects'
-  return one.edit === 'editing' ? `${line} · Editing` : line
+  const mode = OFF_SUGGEST_EDIT.find(option => option.value === one.edit)
+  return one.edit === 'off' || !mode ? line : `${line} · ${mode.label}`
 }
 
 /**
- * How a connection may change text. Suggesting waits on its changes being
- * laid out in the text for the writer to settle; until then a connection
- * kept as suggesting edits nothing, and reads as Off.
+ * How a connection may change a document's text: not at all, as suggestions
+ * the writer settles in the text, or at once. The words a chat's tools have
+ * for the same.
  * @type {import('@/composables/useToolSettings.js').Option[]}
  */
-const OFF_EDITING = [
+const OFF_SUGGEST_EDIT = [
   { label: 'Off', value: 'off' },
+  { label: 'Suggesting', value: 'suggesting' },
   { label: 'Editing', value: 'editing' },
 ]
 
@@ -301,9 +303,9 @@ const mayOf = one => [
   {
     id: 'edit',
     label: 'Edit',
-    options: OFF_EDITING,
-    value: one.edit === 'editing' ? 'editing' : 'off',
-    set: (/** @type {'off'|'editing'} */ edit) => allowing(() => setEdit(one.id, edit)),
+    options: OFF_SUGGEST_EDIT,
+    value: one.edit,
+    set: (/** @type {AppConnection['edit']} */ edit) => allowing(() => setEdit(one.id, edit)),
   },
   {
     id: 'comment',

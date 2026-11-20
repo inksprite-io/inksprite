@@ -66,8 +66,11 @@ describe('answerRequest', () => {
     expect(comments).toContain("carries this connection's name")
     expect(comments).not.toContain('edit_document')
 
-    // Suggesting is not there yet: such a connection is told of reading.
-    expect(instructionsFor({ ...APP, edit: 'suggesting' })).toBe(reads)
+    const suggests = instructionsFor({ ...APP, edit: 'suggesting' })
+    expect(suggests).toContain('to read and write their documents')
+    expect(suggests).toContain('is suggested to the user in the document')
+    expect(suggests).not.toContain('is in the document at once')
+    expect(edits).not.toContain('is suggested to the user')
   })
 
   it('speaks the app’s version of the protocol when it has it, and its newest otherwise', async () => {

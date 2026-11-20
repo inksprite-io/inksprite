@@ -28,15 +28,19 @@
  *   under the connection's name, which the Comments tab and other readers
  *   show.
  *
- * Nothing waits on the writer in a chat here, there being none: a call is
- * never handed `propose`, so what the connection may do, it does. The trash
- * and a document's versions take it back.
+ * - **Suggesting is of text.** A connection that suggests has its changes
+ *   to a document's text laid out in the text, each for the writer to accept
+ *   or reject, as a chat that asks first has its. What such a chat proposes
+ *   in the chat, an app has no chat for: a new document, a delete, a move, a
+ *   rename, a change to a plain document and a comment all go ahead in
+ *   either mode. The trash and a document's versions take them back.
  *
  * Hidden documents are not in an app's project, as they are not in a
  * chat's: hiding keeps a document from models.
  */
 
 import { toolRegistry } from '@/ai/tools/index.js'
+import { SUGGESTED_NOTE, documentForChat } from '@/ai/tools/documents.js'
 import { findProject, inProject, projectsOf } from './projects.js'
 import { answeringStored, editMany } from './writes.js'
 
@@ -101,6 +105,18 @@ const WRITES_TEXT = new Set([
   'edit_document',
   'append_document',
 ])
+
+/** Those that change the text of a document that is there: what a connection that suggests suggests. */
+const CHANGES_TEXT = new Set(['update_document', 'edit_document', 'append_document'])
+
+/**
+ * What a suggestion's answer says to a connection that doesn't comment, and
+ * so has no way to say why on it.
+ */
+const SUGGESTED_NOTE_NO_COMMENT = SUGGESTED_NOTE.replace(
+  ' To say why, reply_comment on its id.',
+  ''
+)
 
 /**
  * A text with a sentence taken out of it.
@@ -221,9 +237,27 @@ const LIST_PROJECTS_TOOL = {
  */
 const offered = app => [
   ...READING,
-  ...(app.edit === 'editing' ? EDITING : []),
+  ...(app.edit === 'off' ? [] : EDITING),
   ...(app.comment ? COMMENTING : []),
 ]
+
+/**
+ * Whether a call's change is suggested in the text, not made: a change to
+ * the text of a document that can hold the marks, by a connection that
+ * suggests. A plain document holds none, and a chat would be asked about
+ * it in the chat, which an app hasn't: there the change is made.
+ *
+ * @param {AskingApp} app
+ * @param {string} name
+ * @param {Record<string, any>} args
+ * @param {{storyId: string, chatId: string}} context
+ * @returns {Promise<boolean>}
+ */
+async function suggests(app, name, args, context) {
+  if (app.edit !== 'suggesting' || !CHANGES_TEXT.has(name)) return false
+  const found = await documentForChat(context.storyId, context.chatId, String(args.path ?? ''))
+  return found?.document.type === 'text' && !found.document.plain
+}
 
 /**
  * The tools an app is offered.
@@ -324,15 +358,21 @@ export async function callTool(app, name, args, signal) {
   // The connection's own id where a chat's goes: no chat is found by it, so
   // only what is hidden outright is left out. Its name is who its comments
   // are by.
-  const context = { storyId: project.id, chatId: `app:${app.id}`, postsAs: app.name, signal }
-  const run = () =>
-    name === 'edit_document' && (Array.isArray(rest.edits) || rest.all === true)
-      ? editMany(rest, context)
-      : tool.execute(rest, context)
+  const asking = { storyId: project.id, chatId: `app:${app.id}`, postsAs: app.name, signal }
 
   const ran = await inProject(project.id, async () => {
     try {
-      return WRITES_TEXT.has(name) ? await answeringStored(name, rest, context, run) : await run()
+      const context = { ...asking, propose: await suggests(app, name, rest, asking) }
+      const run = () =>
+        name === 'edit_document' && (Array.isArray(rest.edits) || rest.all === true)
+          ? editMany(rest, context)
+          : tool.execute(rest, context)
+      const answer = WRITES_TEXT.has(name)
+        ? await answeringStored(name, rest, context, run)
+        : await run()
+      return answer?.note === SUGGESTED_NOTE && !app.comment
+        ? { ...answer, note: SUGGESTED_NOTE_NO_COMMENT }
+        : answer
     } catch (error) {
       console.error(`${name} failed for a connected app:`, error)
       return { error: `${name} couldn't be run.` }

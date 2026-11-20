@@ -590,13 +590,15 @@ export function authorOf(post, people = null) {
 
 /**
  * Who suggested a change, as the writer reads it: You, or the person by name,
- * from a linked Google Doc. Nothing for the model's, whose chat says it.
+ * from a linked Google Doc, or a connected app by its connection's name.
+ * Nothing for the chat's own model's, whose chat says it.
  *
  * @param {import('@/types/models.js').CommentSuggestion|undefined} suggestion
  * @returns {string}
  */
 export function suggesterOf(suggestion) {
-  return suggestion?.author ? authorOf({ author: suggestion.author, name: suggestion.name }) : ''
+  if (suggestion?.author) return authorOf({ author: suggestion.author, name: suggestion.name })
+  return suggestion?.name || ''
 }
 
 /**

@@ -27,7 +27,7 @@ const projects = vi.hoisted(() => ({
 vi.mock('@/apps/projects.js', () => projects)
 
 import { LIST_PROJECTS, callTool, toResult, toolsFor } from '@/apps/tools.js'
-import { projectOverview } from '@/ai/tools/documents.js'
+import { executeReadDocument, projectOverview } from '@/ai/tools/documents.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { clearDocumentInstances } from '@/composables/useDocuments'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
@@ -45,6 +45,9 @@ const APP = {
 
 /** One that edits and comments. */
 const WRITER = { ...APP, edit: 'editing', comment: true }
+
+/** One whose edits are suggested, and that comments. */
+const SUGGESTER = { ...APP, edit: 'suggesting', comment: true }
 
 const signal = new AbortController().signal
 
@@ -85,8 +88,8 @@ describe('toolsFor', () => {
     ])
   })
 
-  it('offers none of them to one that suggests, until suggesting is there', () => {
-    expect(toolsFor({ ...APP, edit: 'suggesting' })).toEqual(toolsFor(APP))
+  it('offers the same tools to one that suggests, whose changes wait on the writer', () => {
+    expect(toolsFor({ ...APP, edit: 'suggesting' })).toEqual(toolsFor({ ...APP, edit: 'editing' }))
   })
 
   it('offers the tools that comment to a connection that comments', () => {
@@ -438,5 +441,212 @@ describe('callTool', () => {
       note: expect.stringContaining('`stored`'),
     })
     expect(stored).toBe('- rope\n- a lamp')
+  })
+})
+
+describe('a connection that suggests', () => {
+  /** @type {ReturnType<typeof useDocumentsStore>} */
+  let store
+
+  const PLAN = 'The vault opens at noon.\n\nBring rope and a lamp.'
+
+  /** The plan as someone else reads it: the text as it stands. */
+  const asItStands = async () =>
+    (await executeReadDocument({ path: 'Plan' }, { storyId: STORY })).content
+
+  /** The plan as the connection reads it. */
+  const asRead = async app =>
+    parts(await callTool(app, 'read_document', { path: 'Plan' }, signal))[1]
+
+  /** The plan's suggestions, by their ids. */
+  const suggestions = () =>
+    Object.entries(store.getDocument('doc_plan').comments || {}).filter(
+      ([, thread]) => thread.suggestion
+    )
+
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    clearDocumentInstances()
+    vi.clearAllMocks()
+    store = useDocumentsStore()
+    projects.findProject.mockResolvedValue({ id: STORY, name: 'Thief', summary: '' })
+    projects.inProject.mockImplementation(async (_, work) => ({ value: await work() }))
+    await projectOverview(STORY)
+    store.createDocument({
+      id: 'doc_plan',
+      storyId: STORY,
+      parentId: rootIdFor(STORY),
+      type: 'text',
+      title: 'Plan',
+      content: PLAN,
+    })
+  })
+
+  it('has its edit laid out in the text for the writer, under its name, and reads it as made', async () => {
+    const answer = await callTool(
+      SUGGESTER,
+      'edit_document',
+      { path: 'Plan', old: 'Bring rope', new: 'Bring wire' },
+      signal
+    )
+
+    const said = JSON.parse(parts(answer)[0])
+    expect(said).toMatchObject({ suggested: true, document: { path: 'Plan' } })
+    expect(said.note).toContain('accepts or rejects')
+
+    expect(await asItStands()).toBe(PLAN)
+    expect(await asRead(SUGGESTER)).toBe(PLAN.replace('rope', 'wire'))
+
+    const [[id, thread]] = suggestions()
+    expect(id).toBe(said.suggestion)
+    expect(thread.suggestion).toMatchObject({ chat: 'app:app_1', name: 'Claude Code' })
+    expect(thread.status).toBe('open')
+  })
+
+  it('folds a later change that touches its suggestion into it', async () => {
+    const first = JSON.parse(
+      parts(
+        await callTool(
+          SUGGESTER,
+          'edit_document',
+          { path: 'Plan', old: 'Bring rope', new: 'Bring wire' },
+          signal
+        )
+      )[0]
+    )
+    const second = JSON.parse(
+      parts(
+        await callTool(
+          SUGGESTER,
+          'edit_document',
+          { path: 'Plan', old: 'Bring wire', new: 'Bring thin wire' },
+          signal
+        )
+      )[0]
+    )
+
+    expect(second.suggestion).toBe(first.suggestion)
+    expect(suggestions()).toHaveLength(1)
+    expect(await asRead(SUGGESTER)).toContain('Bring thin wire and a lamp.')
+    expect(await asItStands()).toBe(PLAN)
+  })
+
+  it('is one connection’s: another reads the text as it stands, and suggests apart', async () => {
+    await callTool(
+      SUGGESTER,
+      'edit_document',
+      { path: 'Plan', old: 'Bring rope', new: 'Bring wire' },
+      signal
+    )
+    const other = { ...SUGGESTER, id: 'app_2', name: 'Another agent' }
+
+    expect(await asRead(other)).toBe(PLAN)
+    await callTool(other, 'edit_document', { path: 'Plan', old: 'at noon', new: 'at dusk' }, signal)
+
+    expect(
+      suggestions()
+        .map(([, thread]) => thread.suggestion.name)
+        .sort()
+    ).toEqual(['Another agent', 'Claude Code'])
+    expect(await asRead(other)).toBe(PLAN.replace('noon', 'dusk'))
+    expect(await asRead(SUGGESTER)).toBe(PLAN.replace('rope', 'wire'))
+  })
+
+  it('suggests several edits in a call, and what is added to the end', async () => {
+    const many = await callTool(
+      SUGGESTER,
+      'edit_document',
+      {
+        path: 'Plan',
+        edits: [
+          { old: 'noon', new: 'dusk' },
+          { old: 'rope', new: 'wire' },
+        ],
+      },
+      signal
+    )
+    expect(JSON.parse(parts(many)[0])).toMatchObject({ suggested: true, edits: 2 })
+
+    const added = await callTool(
+      SUGGESTER,
+      'append_document',
+      { path: 'Plan', text: '* chalk' },
+      signal
+    )
+    const [about, stored] = parts(added)
+    expect(JSON.parse(about).suggested).toBe(true)
+    expect(stored).toBe('- chalk')
+
+    expect(await asItStands()).toBe(PLAN)
+    expect(await asRead(SUGGESTER)).toBe(
+      'The vault opens at dusk.\n\nBring wire and a lamp.\n\n- chalk'
+    )
+  })
+
+  it('makes a new document, a move and a delete at once, there being no chat to propose them in', async () => {
+    const made = await callTool(
+      SUGGESTER,
+      'create_document',
+      { path: 'Crew', content: 'Mara picks locks.' },
+      signal
+    )
+    expect(JSON.parse(parts(made)[0])).toMatchObject({ success: true, document: { path: 'Crew' } })
+
+    await callTool(SUGGESTER, 'move_document', { path: 'Crew', to: 'The crew' }, signal)
+    expect(parts(await callTool(SUGGESTER, 'list_documents', {}, signal))[0]).toContain('The crew')
+
+    const gone = await callTool(SUGGESTER, 'delete_document', { path: 'The crew' }, signal)
+    expect(JSON.parse(parts(gone)[0])).toMatchObject({ success: true })
+    expect(parts(await callTool(SUGGESTER, 'list_documents', {}, signal))[0]).not.toContain('crew')
+  })
+
+  it('changes a plain document at once, which has no room for the marks', async () => {
+    await callTool(SUGGESTER, 'create_document', { path: 'odds.py', content: 'print(1)' }, signal)
+    const edit = await callTool(
+      SUGGESTER,
+      'edit_document',
+      { path: 'odds.py', old: 'print(1)', new: 'print(2)' },
+      signal
+    )
+
+    expect(JSON.parse(parts(edit)[0])).toMatchObject({ success: true })
+    const script = [...store.documents.values()].find(document => document.title === 'odds.py')
+    expect(script.content).toBe('print(2)')
+  })
+
+  it('comments at once, as any connection that comments does', async () => {
+    const added = await callTool(
+      SUGGESTER,
+      'add_comment',
+      { path: 'Plan', passage: 'Bring rope', text: 'How much?' },
+      signal
+    )
+
+    const { comment, success } = JSON.parse(parts(added)[0])
+    expect(success).toBe(true)
+    expect(store.getDocument('doc_plan').comments[comment].posts[0]).toMatchObject({
+      author: 'model',
+      name: 'Claude Code',
+    })
+  })
+
+  it('is not told to say why with a tool it is not offered', async () => {
+    const quiet = { ...SUGGESTER, comment: false }
+    const answer = await callTool(
+      quiet,
+      'edit_document',
+      { path: 'Plan', old: 'rope', new: 'wire' },
+      signal
+    )
+
+    const { note } = JSON.parse(parts(answer)[0])
+    expect(note).toContain('accepts or rejects')
+    expect(note).not.toContain('reply_comment')
+  })
+
+  it('makes a change at once for a connection that edits', async () => {
+    await callTool(WRITER, 'edit_document', { path: 'Plan', old: 'rope', new: 'wire' }, signal)
+    expect(await asItStands()).toBe(PLAN.replace('rope', 'wire'))
+    expect(suggestions()).toHaveLength(0)
   })
 })

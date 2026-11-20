@@ -668,4 +668,10 @@ describe('suggesterOf', () => {
     expect(suggesterOf({ text: 'x', created: 1, chat: 'chat_1' })).toBe('')
     expect(suggesterOf(undefined)).toBe('')
   })
+
+  it('names a connected app that suggested a change, by its connection’s name', () => {
+    expect(suggesterOf({ text: 'x', created: 1, chat: 'app:app_1', name: 'Claude Code' })).toBe(
+      'Claude Code'
+    )
+  })
 })

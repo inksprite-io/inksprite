@@ -2660,6 +2660,7 @@ function changeSeen(context, api, document, tool, { before, own }, written) {
   const { changes, ...touched } = suggestionThreads(threads, doc, made.into, mine, made.ids, {
     suggesting,
     chat: context.chatId,
+    name: context.postsAs,
   })
   // Made at once, the change resolves the comments whose passages it took.
   const resolved = suggesting ? [] : resolving(api, document.id, commentsGone(before, doc))
@@ -2691,10 +2692,11 @@ function changeSeen(context, api, document, tool, { before, own }, written) {
  * @param {Record<string, string>} into
  * @param {string[]} own - Oldest first
  * @param {string[]} ids - Those the change made, in the text's order
- * @param {{suggesting: boolean, chat?: string}} by
+ * @param {{suggesting: boolean, chat?: string, name?: string}} by - Whose
+ *   they are: the chat's, or a connected app's under its connection's name
  * @returns {{changes: CommentChange[], suggested: string[], joined: Array<{id: string, into: string}>, withdrawn: string[]}}
  */
-function suggestionThreads(threads, doc, into, own, ids, { suggesting, chat }) {
+function suggestionThreads(threads, doc, into, own, ids, { suggesting, chat, name }) {
   const present = new Set(suggestionsIn(doc))
   /** @type {Map<string, CommentThread|null>} */
   const next = new Map()
@@ -2712,7 +2714,7 @@ function suggestionThreads(threads, doc, into, own, ids, { suggesting, chat }) {
   const created = Date.now()
   for (const id of suggesting ? ids : []) {
     if (!present.has(id)) continue
-    const made = { text: '', created, ...(chat ? { chat } : {}) }
+    const made = { text: '', created, ...(chat ? { chat } : {}), ...(name ? { name } : {}) }
     next.set(id, saying({ status: 'open', quote: '', posts: [], suggestion: made }, id))
   }
   /** @type {Array<{id: string, into: string}>} */
