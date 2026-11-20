@@ -103,7 +103,16 @@ import {
   suggestionsIn,
 } from '@/editor/suggestions.js'
 import { holdsSuggestions, withoutSuggestionMarkup } from '@/editor/suggestionText.js'
-import { commentsBetween, ownSuggestions, placedAsRead, postsOf, seenText } from './commentReads.js'
+import {
+  commentsBetween,
+  ownSuggestions,
+  placedAsRead,
+  postsOf,
+  seenText,
+  suggestionListed,
+  suggestionsAsRead,
+  suggestionsBetween,
+} from './commentReads.js'
 import { peopleOf } from '@/cloud/people.js'
 import { extensionFor, isData, isUnreadText, sizeLabel } from '@/files/inspect.js'
 import { namesOf, storedPassage, substitute } from '@/cards/macros.js'
@@ -382,6 +391,15 @@ function readBasis(document) {
  * @returns {string}
  */
 const readKey = document => textHash(readBasis(document))
+
+/**
+ * What a chat is called, for a suggestion its model made that another reader
+ * is told of. Nothing for a connected app's, which has its own name.
+ *
+ * @param {string} chatId
+ * @returns {string}
+ */
+const chatTitle = chatId => useChatsStore().getChatById(chatId)?.title || ''
 
 /**
  * The documents in a story, the root first, depth first: a document that
@@ -1139,9 +1157,13 @@ export async function executeReadDocument(args, context) {
 
   // The open comments whose passages end in what was read, after its text:
   // a comment over the end of a slice comes with the slice that has its last
-  // words. In their place, the count of the document's.
+  // words. In their place, the count of the document's. With them, the
+  // changes suggested there that the writer has not settled, whoever made
+  // them: the chat's own are in the text it was given, and nothing in the
+  // text says so.
   const placed =
     document.type === 'text' ? placedAsRead(stored.get(document.id), names, chatId) : null
+  const suggested = suggestionsAsRead(stored.get(document.id), names, chatId)
   /**
    * @template {Record<string, any>} T
    * @param {T} result
@@ -1149,11 +1171,21 @@ export async function executeReadDocument(args, context) {
    * @param {number} to
    */
   const withComments = (result, from, to) => {
-    const listed = placed
-      ? commentsBetween(placed, names, from, to, peopleOf(document.storyId))
-      : []
+    const people = peopleOf(document.storyId)
+    const listed = placed ? commentsBetween(placed, names, from, to, people) : []
+    const waiting = suggestionsBetween(suggested.placed, from, to, {
+      names,
+      chatId,
+      people,
+      chatTitle,
+    })
     const { comments: _count, ...rest } = result
-    return listed.length > 0 ? { ...rest, comments: listed } : rest
+    return {
+      ...rest,
+      ...(listed.length > 0 ? { comments: listed } : {}),
+      ...(waiting.length > 0 ? { suggestions: waiting } : {}),
+      ...(suggested.more > 0 ? { moreSuggestions: suggested.more } : {}),
+    }
   }
 
   // A file answers with the text that was read out of it when it came in —
@@ -1533,7 +1565,7 @@ export const listCommentsDefinition = {
   function: {
     name: 'list_comments',
     description:
-      'The open comments on passages, by the writer and by you: each with its id, its document, its passage, and what has been said on it, by whom. A read lists the comments in what it read after the text; this lists them without reading every document. A comment whose passage was deleted says so.',
+      'The open comments on passages, by the writer and by you: each with its id, its document, its passage, and what has been said on it, by whom. A read lists the comments in what it read after the text; this lists them without reading every document. A comment whose passage was deleted says so. The changes suggested and not yet accepted or rejected are listed too, under `suggestions`, as a read lists them: each with its id, who suggested it (`you`, or `model` for another chat, named under `chat`), the words as they stand without it (`from`) and with it (`to`), and what has been said on it, which reply_comment answers. Yours are already made in the text you read; the others are not.',
     parameters: {
       type: 'object',
       properties: {
@@ -1567,6 +1599,8 @@ export async function executeListComments(args, context) {
   }
 
   const comments = []
+  /** @type {Array<Record<string, any>>} */
+  const suggestions = []
   for (const document of documents) {
     if (document.type !== 'text') continue
     const threads = api.threadsOf(document.id)
@@ -1592,8 +1626,24 @@ export async function executeListComments(args, context) {
         posts: postsOf(thread, names, peopleOf(context.storyId)),
       })
     }
+    // The changes suggested in it and not settled, whoever made them.
+    const waiting = suggestionsAsRead(
+      { ...document, content: api.currentContent(document.id), comments: threads },
+      names,
+      context.chatId
+    )
+    const reader = {
+      names,
+      chatId: context.chatId,
+      people: peopleOf(context.storyId),
+      chatTitle,
+    }
+    for (const each of waiting.placed) {
+      const { id, ...rest } = suggestionListed(each, reader)
+      suggestions.push({ id, path, ...rest })
+    }
   }
-  return { comments }
+  return { comments, ...(suggestions.length > 0 ? { suggestions } : {}) }
 }
 
 /**

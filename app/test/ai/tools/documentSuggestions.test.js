@@ -13,7 +13,9 @@ import {
   settledSuggestions,
   SUGGESTED_NOTE,
 } from '@/ai/tools/documents.js'
+import { SUGGESTIONS_MOST, suggestionsAsRead } from '@/ai/tools/commentReads.js'
 import { useComments } from '@/composables/useComments'
+import { useChatsStore } from '@/stores/chatsStore'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { clearDocumentInstances, useDocuments } from '@/composables/useDocuments'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
@@ -446,6 +448,22 @@ describe('suggestions from the edit tools', () => {
           .map(([id]) => id)
         expect(open.sort()).toEqual([...placed].sort())
         for (const id of placed) expect(threads(doc.id)[id].suggestion.chat).toBe(CHAT)
+
+        // Each is told of once, to its own chat and to another, as words that
+        // are where it says in the text that chat reads: what it put there
+        // for its own, and what it would change for the other.
+        for (const [reader, read] of [
+          [CHAT, now],
+          [OTHER, first],
+        ]) {
+          const told = suggestionsAsRead(store.getDocument(doc.id), null, reader).placed
+          expect(told.map(each => each.id).sort()).toEqual([...placed].sort())
+          for (const each of told) {
+            expect(each.own).toBe(reader === CHAT)
+            expect(read.slice(each.start, each.end)).toBe(each.own ? each.to : each.from)
+            expect(each.from).not.toBe(each.to)
+          }
+        }
       }
       for (const edit of [...edits].reverse()) expect(api.revertEdit(edit)).toBe(true)
       expect(content(doc.id)).toBe(start)
@@ -494,5 +512,262 @@ describe('suggestions from the edit tools', () => {
     expect((await executeListComments({}, asking())).comments).toEqual([])
     const lines = String(await executeListDocuments({}, asking())).split('\n')
     expect(lines.find(line => line.startsWith('Chapter 1'))).not.toContain('comment')
+  })
+
+  describe('told of where a chat reads', () => {
+    const reading = (chatId = CHAT) => ({ storyId: STORY, chatId })
+
+    it('lists its own after the text, as the change it made to what it reads', async () => {
+      text('Chapter 1', 'A cold night.\n\nThe tide came in.')
+      const { suggestion } = await executeEditDocument(
+        { path: 'Chapter 1', old: 'cold', new: 'warm' },
+        asking()
+      )
+
+      const read = await executeReadDocument({ path: 'Chapter 1' }, reading())
+
+      expect(read.content).toBe('A warm night.\n\nThe tide came in.')
+      expect(read.suggestions).toEqual([{ id: suggestion, by: 'you', from: 'cold', to: 'warm' }])
+      expect(read.comments).toBeUndefined()
+    })
+
+    it('lists another chat’s, by its chat, in the text as it stands', async () => {
+      text('Chapter 1', 'A cold night.')
+      useChatsStore().chats.set(OTHER, { id: OTHER, storyId: STORY, title: 'A second look' })
+      const { suggestion } = await executeEditDocument(
+        { path: 'Chapter 1', old: 'cold', new: 'warm' },
+        asking(OTHER)
+      )
+
+      const read = await executeReadDocument({ path: 'Chapter 1' }, reading())
+
+      expect(read.content).toBe('A cold night.')
+      expect(read.suggestions).toEqual([
+        { id: suggestion, by: 'model', chat: 'A second look', from: 'cold', to: 'warm' },
+      ])
+      // The writer reads with no chat, and is told of it the same.
+      const plainly = await executeReadDocument({ path: 'Chapter 1' }, { storyId: STORY })
+      expect(plainly.suggestions).toEqual(read.suggestions)
+    })
+
+    it('names a connected app by its connection, and someone in a linked Doc by name', async () => {
+      const doc = text('Chapter 1', 'A cold night.\n\nThe tide came in.')
+      const { suggestion } = await executeEditDocument(
+        { path: 'Chapter 1', old: 'cold', new: 'warm' },
+        { storyId: STORY, chatId: 'app:app_1', postsAs: 'Claude Code', propose: true, edits }
+      )
+      // One that came in from a Doc: a person's, by the name Google shows.
+      store.updateDocument(doc.id, {
+        content: content(doc.id).replace('tide', '{--tide--}{>>sdoc01<<}{++sea++}{>>sdoc01<<}'),
+        comments: {
+          ...threads(doc.id),
+          sdoc01: {
+            status: 'open',
+            quote: 'tide',
+            posts: [],
+            suggestion: { text: 'sea', created: 2, author: 'person', name: 'Ada Marsh' },
+          },
+        },
+      })
+
+      const read = await executeReadDocument({ path: 'Chapter 1' }, reading())
+
+      expect(read.content).toBe('A cold night.\n\nThe tide came in.')
+      expect(read.suggestions).toEqual([
+        { id: suggestion, by: 'Claude Code', from: 'cold', to: 'warm' },
+        { id: 'sdoc01', by: 'Ada Marsh', from: 'tide', to: 'sea' },
+      ])
+    })
+
+    it('lists what has been said on one: why, and the writer’s answer', async () => {
+      const doc = text('Chapter 1', 'A cold night.')
+      const { suggestion } = await executeEditDocument(
+        { path: 'Chapter 1', old: 'cold', new: 'warm' },
+        asking()
+      )
+      await executeReplyComment(
+        { path: 'Chapter 1', id: suggestion, text: 'It is August.' },
+        reading()
+      )
+      useComments(STORY).reply(doc.id, suggestion, 'August nights are cold here.')
+      const said = [
+        { author: 'model', text: 'It is August.' },
+        { author: 'writer', text: 'August nights are cold here.' },
+      ]
+
+      // To the chat that made it, and to one asked about it.
+      const own = await executeReadDocument({ path: 'Chapter 1' }, reading())
+      const other = await executeReadDocument({ path: 'Chapter 1' }, reading(OTHER))
+      expect(own.suggestions).toEqual([
+        { id: suggestion, by: 'you', from: 'cold', to: 'warm', posts: said },
+      ])
+      expect(other.suggestions).toEqual([
+        { id: suggestion, by: 'model', from: 'cold', to: 'warm', posts: said },
+      ])
+
+      // Which that one can answer in turn.
+      const answered = await executeReplyComment(
+        { path: 'Chapter 1', id: suggestion, text: 'Warm for the coast, then.' },
+        reading(OTHER)
+      )
+      expect(answered.error).toBeUndefined()
+      expect(threads(doc.id)[suggestion].posts).toHaveLength(3)
+    })
+
+    it('gives words put in or taken out with enough around them to be found', async () => {
+      text('Chapter 1', 'A cold night.\n\nThe tide came in.')
+      await executeEditDocument({ path: 'Chapter 1', old: ' cold', new: '' }, asking())
+      await executeAppendDocument({ path: 'Chapter 1', text: 'Nobody slept.' }, asking())
+
+      const own = await executeReadDocument({ path: 'Chapter 1' }, reading())
+      const other = await executeReadDocument({ path: 'Chapter 1' }, reading(OTHER))
+
+      expect(own.suggestions).toHaveLength(2)
+      for (const [mine, theirs] of own.suggestions.map((each, at) => [
+        each,
+        other.suggestions[at],
+      ])) {
+        // The same change either way, in whichever text has it.
+        expect(theirs).toMatchObject({ id: mine.id, from: mine.from, to: mine.to })
+        expect(mine.from).not.toBe('')
+        expect(mine.to).not.toBe('')
+        expect(own.content.split(mine.to)).toHaveLength(2)
+        expect(other.content.split(theirs.from)).toHaveLength(2)
+      }
+      expect(own.content).toBe('A night.\n\nThe tide came in.\n\nNobody slept.')
+    })
+
+    it('lists with a section the ones in it, in the text’s order, beside its comments', async () => {
+      text(
+        'Chapter 1',
+        [
+          '# Dusk',
+          'A cold night, and {==quiet==}{>>c7k2m1<<}.',
+          '# Dawn',
+          'The tide came in. The gulls came after.',
+        ].join('\n\n'),
+        { comments: { c7k2m1: { status: 'open', quote: 'quiet', posts: [] } } }
+      )
+      const gulls = await executeEditDocument(
+        { path: 'Chapter 1', old: 'gulls', new: 'terns' },
+        asking()
+      )
+      const tide = await executeEditDocument(
+        { path: 'Chapter 1', old: 'tide', new: 'fog' },
+        asking(OTHER)
+      )
+      const cold = await executeEditDocument(
+        { path: 'Chapter 1', old: 'cold', new: 'warm' },
+        asking()
+      )
+
+      const whole = await executeReadDocument({ path: 'Chapter 1' }, reading())
+      expect(whole.suggestions.map(each => each.id)).toEqual([
+        cold.suggestion,
+        tide.suggestion,
+        gulls.suggestion,
+      ])
+      expect(whole.comments).toHaveLength(1)
+
+      const dusk = await executeReadDocument({ path: 'Chapter 1', section: 'dusk' }, reading())
+      expect(dusk.suggestions.map(each => each.id)).toEqual([cold.suggestion])
+      expect(dusk.comments).toHaveLength(1)
+      const dawn = await executeReadDocument({ path: 'Chapter 1', section: 'dawn' }, reading())
+      expect(dawn.suggestions.map(each => each.id)).toEqual([tide.suggestion, gulls.suggestion])
+      expect(dawn.comments).toBeUndefined()
+    })
+
+    it('lists them by document in a list of comments, and none where none wait', async () => {
+      text('Chapter 1', 'A cold night.')
+      text('Chapter 2', 'The tide came in.')
+      expect(await executeListComments({}, reading())).toEqual({ comments: [] })
+
+      const cold = await executeEditDocument(
+        { path: 'Chapter 1', old: 'cold', new: 'warm' },
+        asking()
+      )
+      const tide = await executeEditDocument(
+        { path: 'Chapter 2', old: 'tide', new: 'fog' },
+        asking(OTHER)
+      )
+
+      expect(await executeListComments({}, reading())).toEqual({
+        comments: [],
+        suggestions: [
+          { id: cold.suggestion, path: 'Chapter 1', by: 'you', from: 'cold', to: 'warm' },
+          { id: tide.suggestion, path: 'Chapter 2', by: 'model', from: 'tide', to: 'fog' },
+        ],
+      })
+      expect((await executeListComments({ path: 'Chapter 2' }, reading())).suggestions).toEqual([
+        { id: tide.suggestion, path: 'Chapter 2', by: 'model', from: 'tide', to: 'fog' },
+      ])
+    })
+
+    it('tells of one no more once the writer settles it', async () => {
+      const doc = text('Chapter 1', 'A cold night.\n\nThe tide came in.')
+      const cold = await executeEditDocument(
+        { path: 'Chapter 1', old: 'cold', new: 'warm' },
+        asking()
+      )
+      const tide = await executeEditDocument(
+        { path: 'Chapter 1', old: 'tide', new: 'fog' },
+        asking()
+      )
+      const comments = useComments(STORY)
+      expect(comments.accept(doc.id, cold.suggestion)).toBe(true)
+      expect(comments.reject(doc.id, tide.suggestion)).toBe(true)
+
+      const read = await executeReadDocument({ path: 'Chapter 1' }, reading())
+      expect(read.content).toBe('A warm night.\n\nThe tide came in.')
+      expect(read.suggestions).toBeUndefined()
+      expect(await executeListComments({}, reading())).toEqual({ comments: [] })
+    })
+
+    it('cuts a long change short, and tells of only so many', async () => {
+      const long = `${'A sentence of the old kind. '.repeat(20)}`.trim()
+      text('Chapter 1', long)
+      await executeUpdateDocument(
+        { path: 'Chapter 1', content: `${'Something new entirely here. '.repeat(20)}`.trim() },
+        asking()
+      )
+      const [whole] = (await executeReadDocument({ path: 'Chapter 1' }, reading())).suggestions
+      expect(whole.from.length).toBeLessThan(320)
+      expect(whole.from).toContain(' … ')
+
+      // More than a read tells of: the first of them, and how many more.
+      const many = Array.from({ length: SUGGESTIONS_MOST + 2 }, (_, n) => ({
+        id: `s${String(n).padStart(5, '0')}`,
+        word: `word${n}`,
+      }))
+      const stored = {
+        id: 'doc_many',
+        type: 'text',
+        content: many
+          .map(
+            ({ id, word }) =>
+              `Line with {--${word}--}{>>${id}<<}{++other${word}++}{>>${id}<<} in it.`
+          )
+          .join('\n\n'),
+        comments: Object.fromEntries(
+          many.map(({ id, word }, n) => [
+            id,
+            {
+              status: 'open',
+              quote: word,
+              posts: [],
+              suggestion: { text: `other${word}`, created: n, chat: OTHER },
+            },
+          ])
+        ),
+      }
+      const told = suggestionsAsRead(stored, null, CHAT)
+      expect(told.placed).toHaveLength(SUGGESTIONS_MOST)
+      expect(told.more).toBe(2)
+      // In the text's order, each with the words around it that find it.
+      expect(told.placed[0]).toMatchObject({ id: 's00000', own: false, start: 0 })
+      expect(told.placed[0].from).toContain('word0')
+      expect(told.placed[0].to).toContain('otherword0')
+      expect(told.placed.at(-1).id).toBe(`s${String(SUGGESTIONS_MOST - 1).padStart(5, '0')}`)
+    })
   })
 })

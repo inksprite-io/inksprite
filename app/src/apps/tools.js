@@ -41,6 +41,10 @@
  *   `suggest`: the change is then laid out in the text, for the writer to
  *   accept or reject, as a chat that asks first has its. A plain document
  *   holds no such marks, and a suggestion to one is refused.
+ *   What is suggested and still waits is listed where it reads, as it is
+ *   for a chat: after a document's comments and among a list of them, its
+ *   own and everyone else's, with what was said on each
+ *   (`ai/tools/commentReads.js`).
  *
  * Hidden documents are not in an app's project, as they are not in a
  * chat's: hiding keeps a document from models.
@@ -177,7 +181,7 @@ const SAID_OUTSIDE = {
   }),
   read_document: ({ parameters }) => ({
     description:
-      'Read a document. Its text comes after what is said about it, as it is written: Markdown. A document up to about 7,000 words comes whole; a longer one comes one slice at a time, with `next` for the offset to go on from and its top sections with their links. For a long document, look at its sections with describe_document first and read the ones you need with `section`, rather than paging through it. The open comments on what was read are listed after it, each with the passage it is on. The user may be writing in it: what a read gives is the text as it stood then, and its `revision`, which changes_since takes to say what has changed since. A source file in a repository comes with its line numbers, and is read by line with `line` and `until`.',
+      'Read a document. Its text comes after what is said about it, as it is written: Markdown. A document up to about 7,000 words comes whole; a longer one comes one slice at a time, with `next` for the offset to go on from and its top sections with their links. For a long document, look at its sections with describe_document first and read the ones you need with `section`, rather than paging through it. The open comments on what was read are listed after it, each with the passage it is on, and with them, under `suggestions`, the changes suggested there that the user has not yet accepted or rejected: each with its id, who suggested it, the words as they stand without it (`from`) and with it (`to`), and what has been said on it. Yours (`by` is `you`) are already made in the text you read; the others are not. The user may be writing in it: what a read gives is the text as it stood then, and its `revision`, which changes_since takes to say what has changed since. A source file in a repository comes with its line numbers, and is read by line with `line` and `until`.',
     parameters: {
       ...parameters,
       properties: {
@@ -247,7 +251,12 @@ const SAID_OUTSIDE = {
   // The comments there are the user's, inksprite's own assistant's and the
   // app's: "by the writer and by you" is a chat's.
   list_comments: ({ description }) => ({
-    description: description.replace(', by the writer and by you:', ':'),
+    description: description
+      .replace(', by the writer and by you:', ':')
+      .replace(
+        '(`you`, or `model` for another chat, named under `chat`)',
+        "(`you`, `model` for inksprite's own assistant, or a name)"
+      ),
   }),
   move_document: ({ description }) => ({
     description: without(
@@ -289,7 +298,7 @@ const LIST_PROJECTS_TOOL = {
 const CHANGES_SINCE_TOOL = {
   name: CHANGES_SINCE,
   description:
-    'What has changed in a document since a revision you hold: its text as a diff, what has been said on its comments, and which of your suggestions the user accepted or rejected. Every read and write of a document answers with its `revision`; give the one you have. Use it when the user has had time with a document, in place of reading it again. Given a folder, or "/" for the whole project, it names the documents you have read that have changed since, each with the revision you had. Where no record is kept of a revision, it says so, and the document is to be read again.',
+    'What has changed in a document since a revision you hold: its text as a diff, what has been said on its comments, and which of your suggestions the user accepted or rejected, with what they said on them. Every read and write of a document answers with its `revision`; give the one you have. Use it when the user has had time with a document, in place of reading it again. Given a folder, or "/" for the whole project, it names the documents you have read that have changed since, each with the revision you had. Where no record is kept of a revision, it says so, and the document is to be read again.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -437,12 +446,17 @@ export function toResult(value) {
     return { content: [said(alone ? answer.error : JSON.stringify(answer))], isError: true }
   }
   if (typeof answer.content === 'string') {
-    const { content, comments, ...about } = answer
+    const { content, comments, suggestions, moreSuggestions, ...about } = answer
+    const after = {
+      ...(comments ? { comments } : {}),
+      ...(suggestions ? { suggestions } : {}),
+      ...(moreSuggestions ? { moreSuggestions } : {}),
+    }
     return {
       content: [
         said(JSON.stringify(about)),
         said(content),
-        ...(comments ? [said(JSON.stringify({ comments }))] : []),
+        ...(Object.keys(after).length > 0 ? [said(JSON.stringify(after))] : []),
       ],
     }
   }

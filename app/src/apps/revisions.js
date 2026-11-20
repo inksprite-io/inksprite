@@ -9,8 +9,9 @@
  * answers with the document's `revision`, a short hash of its text and its
  * comments as the connection reads them, and `changes_since` answers, for a
  * revision the app holds, what the writer has done since: the text as a
- * diff, what was said on its comments, and which of the connection's own
- * suggestions were accepted or rejected. That is the second round of a
+ * diff, what was said on its comments, and what became of the changes
+ * suggested in it: which were accepted or rejected, what was said on them,
+ * and which someone else has made since. That is the second round of a
  * review, without reading the document again.
  *
  * To say what changed, what the connection last had of each document is
@@ -29,7 +30,7 @@
  */
 
 import { documentForChat, pathInProject } from '@/ai/tools/documents.js'
-import { postsOf } from '@/ai/tools/commentReads.js'
+import { postsOf, suggestedBy } from '@/ai/tools/commentReads.js'
 import { textHash } from '@/ai/context/reads.js'
 import { peopleOf } from '@/cloud/people.js'
 import { useEditor } from '@/composables/useEditor.js'
@@ -52,6 +53,7 @@ import { lineDiff } from '@/utils/lineDiff.js'
  * @property {'open'|'resolved'} status
  * @property {number} posts - How many
  * @property {string} said - A hash of what they say
+ * @property {true} [suggestion] - A suggested change's, not a comment's
  * @property {true} [mine] - A suggestion of the connection's own
  * @property {string} [settled] - How a suggestion ended, once it has
  */
@@ -107,18 +109,19 @@ export async function stateAt(asking, path) {
   const text = document.content || ''
   const all = /** @type {Record<string, CommentThread>} */ (document.comments || {})
 
-  // The comments, and the connection's own suggestions: another's suggestion
-  // is not in what this one reads, and its coming and going changes nothing.
+  // The comments and the suggestions, everyone's: a read lists them all, so
+  // one made, answered or settled is a change to what the connection has,
+  // though another's changes nothing in the text it reads.
   /** @type {Record<string, SeenThread>} */
   const threads = {}
   for (const id of Object.keys(all).sort()) {
     const thread = all[id]
     const mine = thread.suggestion?.chat === asking.chatId
-    if (thread.suggestion && !mine) continue
     threads[id] = {
       status: thread.status,
       posts: thread.posts.length,
       said: textHash(JSON.stringify(thread.posts.map(post => [post.author, post.name, post.text]))),
+      ...(thread.suggestion ? { suggestion: /** @type {const} */ (true) } : {}),
       ...(mine ? { mine: /** @type {const} */ (true) } : {}),
       ...(thread.suggestion?.settled ? { settled: thread.suggestion.settled } : {}),
     }
@@ -280,26 +283,52 @@ function commentsSince(had, threads, storyId) {
 }
 
 /**
- * Which of a connection's suggestions, waiting when it last had the
- * document, the writer has settled since, and how.
+ * What has become of the changes suggested in a document since a connection
+ * last had it: one someone else has made, one the writer has settled, and
+ * how, and what was said on one, settled or still waiting. A suggestion's
+ * thread is not a comment's, so what is said on it is told of here.
+ *
+ * The change is given as its thread holds it, the words it takes out and
+ * puts in, which is there after it is settled too; a read gives one still
+ * waiting with the words around it.
  *
  * @param {Seen} had
  * @param {Record<string, CommentThread>} threads - As they are
+ * @param {Asking} asking
  */
-function suggestionsSince(had, threads) {
-  /** @type {Array<{id: string, outcome: string, from: string, to: string}>} */
-  const settled = []
-  for (const [id, before] of Object.entries(had.threads)) {
-    const suggestion = threads[id]?.suggestion
-    if (!before.mine || before.settled || !suggestion?.settled) continue
-    settled.push({
-      id,
-      outcome: suggestion.settled,
-      from: threads[id].quote,
-      to: suggestion.text,
+function suggestionsSince(had, threads, asking) {
+  const people = peopleOf(asking.storyId)
+  /** @type {Array<Record<string, any>>} */
+  const changed = []
+  for (const [id, thread] of Object.entries(threads)) {
+    const made = thread.suggestion
+    if (!made) continue
+    const before = had.threads[id]
+    const outcome = made.settled
+    const about = { id, by: suggestedBy(made, asking.chatId), from: thread.quote, to: made.text }
+    if (!before) {
+      // Made since. The connection's own it made itself, and one already
+      // settled it never saw waiting.
+      if (made.chat === asking.chatId || outcome) continue
+      changed.push({
+        ...about,
+        new: true,
+        ...(thread.posts.length > 0 ? { posts: postsOf(thread, null, people) } : {}),
+      })
+      continue
+    }
+    const more = thread.posts.length > before.posts
+    // Settled since, or spoken on since: one settled before says so still.
+    if (!(outcome && !before.settled) && !more) continue
+    changed.push({
+      ...about,
+      ...(outcome ? { outcome } : {}),
+      ...(more
+        ? { posts: postsOf({ ...thread, posts: thread.posts.slice(before.posts) }, null, people) }
+        : {}),
     })
   }
-  return settled
+  return changed
 }
 
 /**
@@ -394,7 +423,7 @@ export async function changesSince(app, asking, args) {
 
   const diff = lineDiff(had.text, seen.text)
   const comments = commentsSince(had, threads, asking.storyId)
-  const suggestions = suggestionsSince(had, threads)
+  const suggestions = suggestionsSince(had, threads, asking)
   await keep(app, seen, had, true)
   return {
     path: seen.path,

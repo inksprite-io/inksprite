@@ -43,7 +43,7 @@ export function instructionsFor(app) {
     ...(writes
       ? [
           '- What you write is in the document at once, where the user sees it, and inksprite keeps a version of the text from before. edit_document changes passages and leaves the rest; append_document adds to the end; update_document rewrites the whole.',
-          '- When the user asks for suggestions and not edits, give those three `suggest`: the change is laid out in the document for the user to accept or reject there. Until they do, you read the document with your suggestions made and everyone else reads it without.',
+          "- When the user asks for suggestions and not edits, give those three `suggest`: the change is laid out in the document for the user to accept or reject there. Until they do, you read the document with your suggestions made and everyone else reads it without. A read lists every suggestion still waiting, yours and anyone else's, with what was said on it, and changes_since says which were accepted or rejected.",
         ]
       : []),
     '- export_document gives a document, or a folder, as files to fetch with your shell: for putting a finished design into a repository.',

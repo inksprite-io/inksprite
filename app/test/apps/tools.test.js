@@ -53,6 +53,7 @@ import { LIST_PROJECTS, callTool, toResult, toolsFor } from '@/apps/tools.js'
 import { executeReadDocument, projectOverview } from '@/ai/tools/documents.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { clearDocumentInstances } from '@/composables/useDocuments'
+import { useComments } from '@/composables/useComments.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
 const STORY = 'story_1'
@@ -244,6 +245,27 @@ describe('toResult', () => {
       '{"comments":[{"id":"c1","passage":"quoted"}]}',
     ])
     expect(answer.isError).toBeUndefined()
+  })
+
+  it('sends the suggestions still waiting with the comments, after the text', () => {
+    const waiting = [{ id: 's1', from: 'rope', to: 'wire' }]
+    const both = toResult({
+      path: 'Plan',
+      content: 'Bring wire.',
+      comments: [{ id: 'c1', passage: 'Bring' }],
+      suggestions: waiting,
+    })
+    expect(JSON.parse(both.content[2].text)).toEqual({
+      comments: [{ id: 'c1', passage: 'Bring' }],
+      suggestions: waiting,
+    })
+
+    const alone = toResult({ path: 'Plan', content: 'Bring wire.', suggestions: waiting })
+    expect(alone.content.map(part => part.text)).toEqual([
+      '{"path":"Plan"}',
+      'Bring wire.',
+      '{"suggestions":[{"id":"s1","from":"rope","to":"wire"}]}',
+    ])
   })
 
   it('sends how a write was stored as it reads, after what is said of the write', () => {
@@ -809,6 +831,73 @@ describe('a change that is suggested', () => {
     expect(await asRead(WRITER)).toBe(
       'The vault opens at dusk.\n\nBring wire and a lamp.\n\n- chalk'
     )
+  })
+
+  it('is listed where the connection reads until the writer settles it, with what was said on it', async () => {
+    const made = JSON.parse(
+      parts(await suggest(WRITER, 'edit_document', { path: 'Plan', old: 'rope', new: 'wire' }))[0]
+    )
+    await callTool(
+      WRITER,
+      'reply_comment',
+      { path: 'Plan', id: made.suggestion, text: 'Wire holds more.' },
+      signal
+    )
+    const waiting = {
+      id: made.suggestion,
+      by: 'you',
+      from: 'rope',
+      to: 'wire',
+      posts: [{ author: 'Claude Code', text: 'Wire holds more.' }],
+    }
+
+    // After a read's text, where its comments would be.
+    const read = parts(await callTool(WRITER, 'read_document', { path: 'Plan' }, signal))
+    expect(read[1]).toBe(PLAN.replace('rope', 'wire'))
+    expect(JSON.parse(read[2])).toEqual({ suggestions: [waiting] })
+
+    // Among a list of comments, by its document.
+    const all = await callTool(WRITER, 'list_comments', {}, signal)
+    expect(JSON.parse(parts(all)[0])).toEqual({
+      comments: [],
+      suggestions: [{ ...waiting, path: 'Plan' }],
+    })
+
+    // Another connection is told of it as this one's: its text is as it stands.
+    const other = { ...WRITER, id: 'app_2', name: 'Another agent' }
+    const theirs = parts(await callTool(other, 'read_document', { path: 'Plan' }, signal))
+    expect(theirs[1]).toBe(PLAN)
+    expect(JSON.parse(theirs[2])).toEqual({ suggestions: [{ ...waiting, by: 'Claude Code' }] })
+
+    // Settled, it waits no more.
+    expect(useComments(STORY).accept('doc_plan', made.suggestion)).toBe(true)
+    expect(parts(await callTool(WRITER, 'read_document', { path: 'Plan' }, signal))).toHaveLength(2)
+    const after = await callTool(WRITER, 'list_comments', { path: 'Plan' }, signal)
+    expect(JSON.parse(parts(after)[0])).toEqual({ comments: [] })
+  })
+
+  it('is listed beside the comments on what was read, in the text’s order', async () => {
+    await callTool(
+      WRITER,
+      'add_comment',
+      { path: 'Plan', passage: 'a lamp', text: 'Two lamps.' },
+      signal
+    )
+    const rope = JSON.parse(
+      parts(await suggest(WRITER, 'edit_document', { path: 'Plan', old: 'rope', new: 'wire' }))[0]
+    )
+    const noon = JSON.parse(
+      parts(await suggest(WRITER, 'edit_document', { path: 'Plan', old: 'noon', new: 'dusk' }))[0]
+    )
+
+    const read = parts(await callTool(WRITER, 'read_document', { path: 'Plan' }, signal))
+    const after = JSON.parse(read[2])
+
+    expect(after.comments).toHaveLength(1)
+    expect(after.suggestions).toEqual([
+      { id: noon.suggestion, by: 'you', from: 'noon', to: 'dusk' },
+      { id: rope.suggestion, by: 'you', from: 'rope', to: 'wire' },
+    ])
   })
 
   it('can be a whole rewrite', async () => {

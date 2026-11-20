@@ -13,6 +13,9 @@
 
 import { passageInText, readableText } from '@/editor/comments.js'
 import { holdsSuggestions, seenMarkdown } from '@/editor/suggestionText.js'
+import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
+import { seeing, suggestionsIn } from '@/editor/suggestions.js'
+import { diffEdit } from '@/utils/edits.js'
 import { substitute } from '@/cards/macros.js'
 import { isMine, nameOf } from '@/cloud/people.js'
 
@@ -117,4 +120,178 @@ export function commentsBetween({ text, placed }, names, from, to, people = null
           : passageInText(text, start, end)
       return { id, ...where, posts: postsOf(thread, names, people) }
     })
+}
+
+/** How many of a document's waiting suggestions one read tells of. */
+export const SUGGESTIONS_MOST = 60
+
+/**
+ * A suggestion still waiting on the writer, as one reader is told of it:
+ * the change it makes to the text that reader has, and where.
+ *
+ * @typedef {Object} PlacedSuggestion
+ * @property {string} id
+ * @property {import('@/types/models.js').CommentThread} thread
+ * @property {boolean} own - The reader's: made in the text it reads
+ * @property {string} from - The words without it, enough of them to be found
+ * @property {string} to - The words with it
+ * @property {number} start - Where it is in the text as read
+ * @property {number} end
+ */
+
+/** A letter, a digit, or what joins them into one word. */
+const WORDY = /[\p{L}\p{N}_'’]/u
+
+/**
+ * A pair that turns one text into another, grown to whole words: the least
+ * pair ends where the two texts first differ, which is mid-word wherever
+ * the words on either side share letters ("rope" to "wire" differ as "rop"
+ * and "wir").
+ *
+ * @param {{old: string, new: string}} pair
+ * @param {string} before - The text `pair.old` is found in, once
+ * @returns {{old: string, new: string}}
+ */
+function wholeWords(pair, before) {
+  const at = before.indexOf(pair.old)
+  if (at < 0) return pair
+  let left = at
+  let right = at + pair.old.length
+  const wordy = (/** @type {string|undefined} */ char) => Boolean(char) && WORDY.test(char ?? '')
+  // An end is in a word when a letter is on both sides of it, in either text.
+  if (wordy(pair.old[0]) || wordy(pair.new[0])) {
+    while (left > 0 && wordy(before[left - 1])) left--
+  }
+  if (wordy(pair.old.at(-1)) || wordy(pair.new.at(-1))) {
+    while (right < before.length && wordy(before[right])) right++
+  }
+  const [lead, trail] = [before.slice(left, at), before.slice(at + pair.old.length, right)]
+  return { old: `${lead}${pair.old}${trail}`, new: `${lead}${pair.new}${trail}` }
+}
+
+/**
+ * The suggestions waiting in a document, as one reader is told of them, in
+ * the text's order. Every one is there, whoever made it: a chat is asked
+ * about another chat's, or a connected app's, and a suggestion is talked
+ * over on its thread.
+ *
+ * Each is the change it makes, as a pair that can be found: the words as
+ * they stand without it, and with it. The reader's own are made in the text
+ * it reads, so its text has the second; anyone else's are not, and its text
+ * has the first.
+ *
+ * @param {import('@/types/models.js').Document|undefined} stored - The document as stored, markup and all
+ * @param {import('@/cards/macros.js').Names|null} names
+ * @param {string|null} [chatId]
+ * @returns {{placed: PlacedSuggestion[], more: number}} `more` is how many
+ *   past `SUGGESTIONS_MOST` are left out
+ */
+export function suggestionsAsRead(stored, names, chatId = null) {
+  const none = { placed: [], more: 0 }
+  const threads = stored?.comments
+  const content = stored?.type === 'text' && !stored.plain ? stored.content || '' : ''
+  if (!threads || !holdsSuggestions(content)) return none
+  const doc = parseMarkdown(content)
+  const waiting = suggestionsIn(doc).filter(id => threads[id]?.suggestion)
+  if (waiting.length === 0) return none
+
+  const own = ownSuggestions(threads, chatId).filter(id => waiting.includes(id))
+  /** The text with these suggestions made and every other not, as a read gives it. */
+  const textWith = (/** @type {string[]} */ made) =>
+    readableText(serializeMarkdown(seeing(doc, made).doc), undefined).text
+  const text = textWith(own)
+  const named = (/** @type {string} */ words) => (names ? substitute(words, names) : words)
+
+  /** @type {PlacedSuggestion[]} */
+  const placed = []
+  for (const id of waiting.slice(0, SUGGESTIONS_MOST)) {
+    const mine = own.includes(id)
+    const [before, after] = mine
+      ? [textWith(own.filter(each => each !== id)), text]
+      : [text, textWith([...own, id])]
+    const least = diffEdit(before, after)
+    if (!least) continue
+    const pair = wholeWords(least, before)
+    const here = mine ? pair.new : pair.old
+    const at = Math.max(0, text.indexOf(here))
+    placed.push({
+      id,
+      thread: threads[id],
+      own: mine,
+      from: named(pair.old),
+      to: named(pair.new),
+      start: named(text.slice(0, at)).length,
+      end: named(text.slice(0, at + here.length)).length,
+    })
+  }
+  return {
+    placed: placed.sort((a, b) => a.start - b.start),
+    more: Math.max(0, waiting.length - SUGGESTIONS_MOST),
+  }
+}
+
+/**
+ * Who suggested a change, as a reader is told: `you` for the reader's own;
+ * a connected app by its connection's name; someone in a linked Google Doc
+ * by name, or `writer`; and `model` for the assistant in another chat.
+ *
+ * @param {import('@/types/models.js').CommentSuggestion} suggestion
+ * @param {string|null|undefined} chatId - The reader's
+ * @returns {string}
+ */
+export function suggestedBy(suggestion, chatId) {
+  if (chatId && suggestion.chat === chatId) return 'you'
+  if (suggestion.author === 'person') return suggestion.name || 'someone'
+  if (suggestion.author === 'writer') return 'writer'
+  return suggestion.name || 'model'
+}
+
+/**
+ * Words as a list gives them: a long run by its two ends.
+ * @param {string} words
+ */
+const clipped = words =>
+  words.length > PASSAGE_LIMIT
+    ? `${words.slice(0, PASSAGE_LIMIT / 2)} … ${words.slice(-PASSAGE_LIMIT / 2)}`
+    : words
+
+/**
+ * A waiting suggestion as a read lists it: its id, who suggested it, the
+ * words without it and with it, and what has been said on it.
+ *
+ * @param {PlacedSuggestion} suggestion
+ * @param {Object} reader
+ * @param {import('@/cards/macros.js').Names|null} reader.names
+ * @param {string|null|undefined} reader.chatId
+ * @param {import('@/cloud/people.js').People|null} [reader.people] - Where the project is shared
+ * @param {(chatId: string) => string} [reader.chatTitle] - What another chat
+ *   is called, for a suggestion its model made
+ */
+export function suggestionListed({ id, thread, from, to }, { names, chatId, people, chatTitle }) {
+  const made = /** @type {import('@/types/models.js').CommentSuggestion} */ (thread.suggestion)
+  const by = suggestedBy(made, chatId)
+  const chat = by === 'model' && made.chat ? chatTitle?.(made.chat) : ''
+  return {
+    id,
+    by,
+    ...(chat ? { chat } : {}),
+    from: clipped(from),
+    to: clipped(to),
+    ...(thread.posts.length > 0 ? { posts: postsOf(thread, names, people ?? null) } : {}),
+  }
+}
+
+/**
+ * The waiting suggestions that end between two places in the text, as a
+ * read lists them after its comments.
+ *
+ * @param {PlacedSuggestion[]} placed
+ * @param {number} from
+ * @param {number} to
+ * @param {Parameters<typeof suggestionListed>[1]} reader
+ */
+export function suggestionsBetween(placed, from, to, reader) {
+  return placed
+    .filter(({ end }) => end > from && end <= to)
+    .map(each => suggestionListed(each, reader))
 }

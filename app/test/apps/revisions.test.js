@@ -152,19 +152,20 @@ describe('a document’s revision', () => {
     expect(new Set(seen).size).toBe(4)
   })
 
-  it('changes with the connection’s own suggestion, and not with another’s', async () => {
+  it('changes with a suggestion, the connection’s own or another’s: a read lists both', async () => {
     const first = await revision()
     await executeEditDocument(
       { path: 'Plan', old: 'noon', new: 'dusk' },
       { storyId: STORY, chatId: 'app:app_2', propose: true }
     )
-    expect(await revision()).toBe(first)
+    const second = await revision()
+    expect(second).not.toBe(first)
 
     await executeEditDocument(
       { path: 'Plan', old: 'rope', new: 'wire' },
       { ...asking, propose: true }
     )
-    expect(await revision()).not.toBe(first)
+    expect(await revision()).not.toBe(second)
   })
 
   it('is of nothing for a folder, or a path with no document', async () => {
@@ -449,8 +450,8 @@ describe('changesSince', () => {
     expect(since.suggestions).toHaveLength(2)
     expect(since.suggestions).toEqual(
       expect.arrayContaining([
-        { id: first.suggestion, outcome: 'accepted', from: 'noon', to: 'dusk' },
-        { id: second.suggestion, outcome: 'rejected', from: 'rope', to: 'wire' },
+        { id: first.suggestion, by: 'you', outcome: 'accepted', from: 'noon', to: 'dusk' },
+        { id: second.suggestion, by: 'you', outcome: 'rejected', from: 'rope', to: 'wire' },
       ])
     )
     // The accepted one is in the text for everyone now; to the connection,
@@ -458,6 +459,102 @@ describe('changesSince', () => {
     expect(since.content).toContain('-Bring wire and a lamp.')
     expect(since.content).toContain('+Bring rope and a lamp.')
     expect(since.content).not.toContain('noon')
+  })
+
+  it('tells what was said on a suggestion since, one still waiting and one settled', async () => {
+    const suggesting = { ...asking, propose: true }
+    const first = await executeEditDocument({ path: 'Plan', old: 'noon', new: 'dusk' }, suggesting)
+    const second = await executeEditDocument({ path: 'Plan', old: 'rope', new: 'wire' }, suggesting)
+    // One in another paragraph, so it is a suggestion of its own.
+    const quiet = await executeEditDocument(
+      { path: 'Plan', old: '# The vault', new: '# The heist' },
+      suggesting
+    )
+    // Its own word on one, said before it last had the document: not news.
+    await executeReplyComment(
+      { path: 'Plan', id: first.suggestion, text: 'The guard changes at dusk.' },
+      asking
+    )
+    const { revision: had } = await read()
+
+    await executeReplyComment({ path: 'Plan', id: first.suggestion, text: 'Which gate?' }, writer)
+    await executeReplyComment(
+      { path: 'Plan', id: second.suggestion, text: 'Rope is quieter.' },
+      writer
+    )
+    expect(useComments(STORY).reject('doc_plan', second.suggestion)).toBe(true)
+
+    const since = await changesSince(APP, asking, { path: 'Plan', revision: had })
+    const byId = Object.fromEntries(since.suggestions.map(each => [each.id, each]))
+
+    // Still waiting, and answered.
+    expect(byId[first.suggestion]).toEqual({
+      id: first.suggestion,
+      by: 'you',
+      from: 'noon',
+      to: 'dusk',
+      posts: [{ author: 'model', text: 'Which gate?' }],
+    })
+    // Turned down, with why.
+    expect(byId[second.suggestion]).toEqual({
+      id: second.suggestion,
+      by: 'you',
+      outcome: 'rejected',
+      from: 'rope',
+      to: 'wire',
+      posts: [{ author: 'model', text: 'Rope is quieter.' }],
+    })
+    // Nothing became of the third, and a suggestion's thread is no comment's.
+    expect(byId[quiet.suggestion]).toBeUndefined()
+    expect(since.comments).toBeUndefined()
+
+    // Told once: asked again, only what is said after.
+    await executeReplyComment({ path: 'Plan', id: second.suggestion, text: 'Sorry.' }, writer)
+    const later = await changesSince(APP, asking, { path: 'Plan', revision: since.revision })
+    expect(later.suggestions).toEqual([
+      {
+        id: second.suggestion,
+        by: 'you',
+        outcome: 'rejected',
+        from: 'rope',
+        to: 'wire',
+        posts: [{ author: 'model', text: 'Sorry.' }],
+      },
+    ])
+  })
+
+  it('tells of a change someone else suggested since, and of what became of it', async () => {
+    const { revision: had } = await read()
+    // inksprite's own assistant, in a chat, suggests; the text is as it was.
+    const theirs = await executeEditDocument(
+      { path: 'Plan', old: 'noon', new: 'dusk' },
+      { storyId: STORY, chatId: 'chat_9', propose: true }
+    )
+    await executeReplyComment(
+      { path: 'Plan', id: theirs.suggestion, text: 'Dusk suits the plan.' },
+      { storyId: STORY, chatId: 'chat_9' }
+    )
+
+    const since = await changesSince(APP, asking, { path: 'Plan', revision: had })
+    expect(since.text).toBe('The text is as it was.')
+    expect(since.suggestions).toEqual([
+      {
+        id: theirs.suggestion,
+        by: 'model',
+        from: 'noon',
+        to: 'dusk',
+        new: true,
+        posts: [{ author: 'model', text: 'Dusk suits the plan.' }],
+      },
+    ])
+
+    // Accepted, it is in the text for everyone, the connection among them.
+    expect(useComments(STORY).accept('doc_plan', theirs.suggestion)).toBe(true)
+    const later = await changesSince(APP, asking, { path: 'Plan', revision: since.revision })
+    expect(later.suggestions).toEqual([
+      { id: theirs.suggestion, by: 'model', outcome: 'accepted', from: 'noon', to: 'dusk' },
+    ])
+    expect(later.content).toContain('+The vault opens at dusk.')
   })
 
   it('says to read again for a revision it has no record of', async () => {
