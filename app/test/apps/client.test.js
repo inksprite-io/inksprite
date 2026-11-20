@@ -95,7 +95,8 @@ beforeAll(async () => {
     },
     exports: held,
   })
-  await door.sync()
+  // A page has said it answers, which is when the door opens.
+  await door.pageAnswers()
 })
 
 afterAll(() => {

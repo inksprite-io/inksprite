@@ -18,6 +18,10 @@ vi.mock('../../src/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange, trackDelete }),
 }))
 
+/** What a connected app's reads kept of a document, in the desktop app: told of its going. */
+const forgetReadsOf = vi.hoisted(() => vi.fn())
+vi.mock('@/platform/apps.js', () => ({ forgetReadsOf }))
+
 describe('DocumentsStore trash', () => {
   /** @type {ReturnType<typeof useDocumentsStore>} */
   let store
@@ -155,6 +159,18 @@ describe('DocumentsStore trash', () => {
       expect(trackDelete).toHaveBeenCalledWith('documents', 'elara')
     })
 
+    it('lets go of what connected apps had read of a document, once it is deleted for good', () => {
+      project()
+
+      // In the trash it can still be restored, and what was read of it is kept.
+      store.trashDocument('notes')
+      expect(forgetReadsOf).not.toHaveBeenCalled()
+
+      store.deleteTrashed('notes')
+      // The document's, a copy of its text; a folder has none.
+      expect(forgetReadsOf.mock.calls).toEqual([[{ document: 'elara' }]])
+    })
+
     it('deletes nothing that is not in the trash', () => {
       project()
       expect(store.deleteTrashed('chapter')).toBe(0)
@@ -194,6 +210,8 @@ describe('DocumentsStore trash', () => {
       expect(trackDelete).toHaveBeenCalledWith('documents', 'old')
       expect(trackDelete).toHaveBeenCalledWith('documents', 'inside')
       expect(store.trashedOf('story_b').map(d => d.id)).toEqual(['recent'])
+      // And of what connected apps had read of them, where there was text.
+      expect(forgetReadsOf.mock.calls).toEqual([[{ document: 'inside' }]])
     })
   })
 

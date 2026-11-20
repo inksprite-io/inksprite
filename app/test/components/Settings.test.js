@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
@@ -321,6 +321,107 @@ describe('Settings', () => {
       useApplicationState().setExtension('web', true)
       await wrapper.vm.$nextTick()
       expect(partsOf(wrapper)).toEqual(['AI providers', 'MCP servers', 'Web search'])
+    })
+
+    describe('Connected apps', () => {
+      /** The desktop app, new enough to let other apps in. */
+      const inDesktopApp = () => {
+        globalThis.__INKSPRITE_DESKTOP__ = { apps: {} }
+      }
+
+      afterEach(() => {
+        vi.unstubAllEnvs()
+        delete globalThis.__INKSPRITE_DESKTOP__
+      })
+
+      it('is listed under Connections in the desktop app, after the rest, while it is in preview', async () => {
+        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+        inDesktopApp()
+        const wrapper = mountSettings()
+        await go(wrapper, 'connections')
+
+        expect(partsOf(wrapper)).toEqual([
+          'AI providers',
+          'MCP servers',
+          'Web search',
+          'Connected apps',
+        ])
+
+        await go(wrapper, 'connections', 'apps')
+        expect(wrapper.find('h2').text()).toBe('Connected apps')
+        expect(wrapper.find('[data-section-pane="connections"]').attributes('data-part')).toBe(
+          'apps'
+        )
+      })
+
+      it('is there whether or not web search is', async () => {
+        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+        inDesktopApp()
+        useApplicationState().setExtension('web', false)
+        const wrapper = mountSettings()
+        await go(wrapper, 'connections')
+
+        expect(partsOf(wrapper)).toEqual(['AI providers', 'MCP servers', 'Connected apps'])
+      })
+
+      it('is not listed in a browser, though it is in preview', async () => {
+        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+        const wrapper = mountSettings()
+        await go(wrapper, 'connections')
+
+        expect(partsOf(wrapper)).toEqual(['AI providers', 'MCP servers', 'Web search'])
+      })
+
+      it('is not listed in a desktop app from before apps could be let in', async () => {
+        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+        globalThis.__INKSPRITE_DESKTOP__ = {}
+        const wrapper = mountSettings()
+        await go(wrapper, 'connections')
+
+        expect(partsOf(wrapper)).toEqual(['AI providers', 'MCP servers', 'Web search'])
+      })
+
+      it('is not listed in the desktop app out of preview', async () => {
+        inDesktopApp()
+        const wrapper = mountSettings()
+        await go(wrapper, 'connections')
+
+        expect(partsOf(wrapper)).toEqual(['AI providers', 'MCP servers', 'Web search'])
+
+        // Nor for another feature's preview.
+        vi.stubEnv('VITE_PREVIEW', 'selective-sharing')
+        const other = mountSettings()
+        await go(other, 'connections')
+        expect(partsOf(other)).toEqual(['AI providers', 'MCP servers', 'Web search'])
+      })
+
+      it('opens on it when asked for, as Connections’ other parts are', async () => {
+        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+        inDesktopApp()
+        useSettingsPanel().open('connections', 'apps')
+        const wrapper = mountSettings()
+
+        expect(wrapper.find('[data-section-pane="connections"]').attributes('data-part')).toBe(
+          'apps'
+        )
+        expect(wrapper.find('h2').text()).toBe('Connected apps')
+      })
+
+      it('opens Connections on its first part where the apps were last looked at and are offered no more', async () => {
+        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+        inDesktopApp()
+        const first = mountSettings()
+        await go(first, 'connections', 'apps')
+        first.unmount()
+
+        delete globalThis.__INKSPRITE_DESKTOP__
+        const second = mountSettings()
+
+        expect(second.find('[data-section-pane="connections"]').attributes('data-part')).toBe(
+          'providers'
+        )
+        expect(second.find('h2').text()).toBe('AI providers')
+      })
     })
 
     it('shows Sync and sharing as Account and Backup, with People and Devices once signed in', async () => {

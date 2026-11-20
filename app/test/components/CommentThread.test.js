@@ -115,6 +115,41 @@ describe('CommentThread', () => {
     expect(items()).toEqual(['Delete'])
   })
 
+  it('names a connected app’s post by its connection, and offers Delete alone on it', async () => {
+    const thread = await mountThread({
+      posts: [
+        { author: 'writer', text: 'Is noon right?' },
+        { author: 'model', name: 'Claude Code', text: 'The timetable says one.' },
+        { author: 'model', text: 'It was noon until March.' },
+      ],
+    })
+    expect(thread.findAll('[data-comment-author]').map(author => author.text())).toEqual([
+      'You',
+      'Claude Code',
+      'Assistant',
+    ])
+
+    // No more the writer's to change than the model's is.
+    await openMenu(thread, 1)
+    expect(thread.findAll('[data-post-menu] [role="menuitem"]').map(item => item.text())).toEqual([
+      'Delete',
+    ])
+  })
+
+  it('names an app’s post by its connection in a project shared too', async () => {
+    const thread = await mountThread({
+      people: { me: 1, owner: 1, names: { 1: 'ada', 2: 'grace' } },
+      posts: [
+        { author: 'writer', by: 2, text: 'Is noon right?' },
+        { author: 'model', name: 'Claude Code', text: 'The timetable says one.' },
+      ],
+    })
+    expect(thread.findAll('[data-comment-author]').map(author => author.text())).toEqual([
+      'grace',
+      'Claude Code',
+    ])
+  })
+
   it("changes a writer's post in place", async () => {
     const thread = await mountThread()
     await openMenu(thread, 2)

@@ -19,6 +19,7 @@
  * - **useExplore** - Exploring a folder, a document or the project for the model, on the chat's model: asked first with its size, then the job
  * - **useProfiles** - The chat profiles: how a chat is run, built-in and saved
  * - **useSkills** - The writer's own skills: the library, a file kept as it is written (`createSkill`, `writeSkill`), and why one can't be used (`problemOf`)
+ * - **useConnectedApps** - The other apps on the computer let into the writer's projects, in the desktop app: each one's name, projects and whether it only reads, and the server they come in by
  * - **useMcpServers** - The writer's MCP servers: adding one after a look at what it offers, listing it again, its profiles and the tools always allowed
  * - **useToolApprovals** - The calls of a server's tools waiting on the writer to allow them
  * - **usePrompts** - Legacy. The prompt library the profiles replaced; read by cleanup alone

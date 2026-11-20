@@ -1,7 +1,9 @@
 /**
  * The door other apps on this computer come in by: MCP over HTTP, on the
- * loopback alone, and only while there is a connection to let in and the
- * writer hasn't turned apps off (`apps.js`).
+ * loopback alone, and only while there is a connection to let in, the writer
+ * hasn't turned apps off (`apps.js`), and a page has said it answers what
+ * they ask: a build whose page doesn't offer connected apps never listens,
+ * whatever `apps.json` holds.
  *
  * It is MCP's Streamable HTTP at its plainest: `POST /mcp`, a JSON answer to
  * each request, no stream and no session. The door knows who is asking and
@@ -25,20 +27,30 @@
 import http from 'node:http'
 
 /** Where apps post. */
-export const PATH = '/mcp'
+const PATH = '/mcp'
 
 /** Where an app fetches what was made ready for it, by its id. */
-export const EXPORTS = '/export/'
+const EXPORTS = '/export/'
 
 /** The most a request's body may be: a document written whole, and room. */
 export const MOST_BYTES = 4 * 1024 * 1024
 
 /**
- * The names this computer is asked by: its loopback, and the one a container
- * on it uses for the computer it runs on.
+ * The names this computer is asked by: its loopback, and the ones a
+ * container on it uses for the computer it runs on, under Docker, Podman and
+ * Lima. Those are safe to name: `.internal` is set aside for private use and
+ * is never in the public DNS, so no site can take one of them and point it
+ * here, which is what refusing other names guards against.
  * @type {ReadonlySet<string>}
  */
-const HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', 'host.docker.internal'])
+const HOSTS = new Set([
+  'localhost',
+  '127.0.0.1',
+  '[::1]',
+  'host.docker.internal',
+  'host.containers.internal',
+  'host.lima.internal',
+])
 
 /** JSON-RPC's codes for what the door itself turns down. */
 const PARSE_ERROR = -32700
@@ -146,12 +158,14 @@ function listenOn(answer, host, port) {
  * @param {(connection: import('./apps.js').AppConnection, message: object, signal: AbortSignal, address: string) => Promise<object>} options.ask -
  *   Has a window answer a request, told where the app reaches this computer;
  *   rejects, in words for the app's model, when none can
- * @param {Pick<import('./appExports.js').AppExports, 'take'>} [options.exports] -
+ * @param {Pick<import('./appExports.js').AppExports, 'take'>} options.exports -
  *   What is ready for apps to fetch
  */
 export function appDoor({ connections, ask, exports }) {
   /** @type {http.Server[]} */
   let servers = []
+  /** Whether a page of this run has said it answers what apps ask. */
+  let answered = false
   /** The port listened on, or null while not listening. @type {number|null} */
   let listening = null
   /** Why it isn't listening though it should be. @type {string|null} */
@@ -190,7 +204,7 @@ export function appDoor({ connections, ask, exports }) {
     // A browser says where it is fetching from, or why: nothing here is for one.
     if (request.headers['sec-fetch-site'] !== undefined) return send(response, 403)
     if (request.method !== 'GET') return send(response, 405, undefined, { Allow: 'GET' })
-    const file = exports?.take(id) ?? null
+    const file = exports.take(id)
     if (!file) return send(response, 404)
     response
       .writeHead(200, {
@@ -289,38 +303,56 @@ export function appDoor({ connections, ask, exports }) {
     listening = null
   }
 
+  /**
+   * Listen if there is a connection to let in and a page to answer it, on
+   * the port the file names, and stop if there is none, or apps are turned
+   * off.
+   *
+   * @returns {Promise<void>}
+   */
+  const sync = async () => {
+    const { port, enabled, connections: all } = await connections.all()
+    if (!answered || !enabled || all.length === 0) {
+      stop()
+      problem = null
+      return
+    }
+    if (listening === port) return
+    stop()
+    try {
+      servers.push(await listenOn(answer, '127.0.0.1', port))
+      // `localhost` is IPv6 first on some systems. A system without IPv6 has
+      // the one above. One where something else has the port there has
+      // neither: an app that asks by `localhost` would hand that its token.
+      const v6 = await listenOn(answer, '::1', port).catch(error => {
+        if (/** @type {NodeJS.ErrnoException} */ (error).code === 'EADDRINUSE') throw error
+        return null
+      })
+      if (v6) servers.push(v6)
+      listening = port
+      problem = null
+    } catch (error) {
+      stop()
+      problem =
+        /** @type {NodeJS.ErrnoException} */ (error).code === 'EADDRINUSE'
+          ? `Port ${port} is in use by something else.`
+          : `Port ${port} couldn’t be listened on.`
+      console.error(`${problem} ${/** @type {Error} */ (error).message}`)
+    }
+  }
+
   return {
+    sync,
+
     /**
-     * Listen if there is a connection to let in, on the port the file names,
-     * and stop if there is none, or apps are turned off.
+     * A page has said it answers what apps ask: from now on, for as long as
+     * the app runs, the door listens where there is a connection to let in.
      *
      * @returns {Promise<void>}
      */
-    async sync() {
-      const { port, enabled, connections: all } = await connections.all()
-      if (!enabled || all.length === 0) {
-        stop()
-        problem = null
-        return
-      }
-      if (listening === port) return
-      stop()
-      try {
-        servers.push(await listenOn(answer, '127.0.0.1', port))
-        // `localhost` is IPv6 first on some systems; a system without it
-        // has the one above.
-        const v6 = await listenOn(answer, '::1', port).catch(() => null)
-        if (v6) servers.push(v6)
-        listening = port
-        problem = null
-      } catch (error) {
-        stop()
-        problem =
-          /** @type {NodeJS.ErrnoException} */ (error).code === 'EADDRINUSE'
-            ? `Port ${port} is in use by something else.`
-            : `Port ${port} couldn’t be listened on.`
-        console.error(`${problem} ${/** @type {Error} */ (error).message}`)
-      }
+    pageAnswers() {
+      answered = true
+      return sync()
     },
 
     stop,

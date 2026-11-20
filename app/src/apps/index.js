@@ -10,10 +10,17 @@
  * window. This module is what the asking means:
  *
  * - **protocol** - MCP's requests answered, as far as tools go
- * - **tools** - The tools an app is offered, the documents' reading ones so
- *   far, and a call to one run
+ * - **tools** - The tools an app is offered, a chat's document tools with a
+ *   project named on each, or only those that read for a connection that
+ *   only reads, and a call to one run
  * - **projects** - The projects ticked for an app, by name, and a call run in
  *   one in the window that has it, or that takes it for the call
+ * - **writes** - Several edits in one call, and an answer that says how the
+ *   text was stored where that isn't how it was sent
+ * - **revisions** - A revision on every read and write of a document, what
+ *   the connection last had of it, and what has changed since
+ * - **exports** - A document or a folder made ready as files, each text
+ *   stamped with its document, for the app's own shell to fetch by a link
  */
 
 import { inPreview } from '@/config/preview.js'

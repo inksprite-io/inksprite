@@ -31,6 +31,7 @@ import { orderSiblings } from '@/utils/siblingOrder.js'
 import { pictureKey, picturesIn, unreferencedPictures } from '@/utils/pictures.js'
 import { expired, trashedIds } from '@/utils/trash.js'
 import { sharing } from '@/cloud/people.js'
+import { forgetReadsOf } from '@/platform/apps.js'
 
 /** @typedef {import('../types/models.js').Document} Document */
 /** @typedef {import('../types/models.js').RepositorySource} RepositorySource */
@@ -529,6 +530,8 @@ export const useDocumentsStore = defineStore('documents', () => {
     syncStore.trackDelete('documents', documentId)
     if (document.type === 'file') syncStore.trackDelete('files', documentId)
     if (document.type === 'text') versionsStore.dropFor(documentId)
+    // And the copy of its text a connected app's reads left, in the desktop app.
+    if (document.type !== 'folder') forgetReadsOf({ document: documentId })
     for (const name of Object.keys(document.pictures || {})) {
       syncStore.trackDelete('files', pictureKey(documentId, name))
     }

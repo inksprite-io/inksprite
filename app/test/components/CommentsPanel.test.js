@@ -192,6 +192,36 @@ describe('CommentsPanel', () => {
     expect(wrapper.emitted('open-document')).toBeUndefined()
   })
 
+  it('names the connected app that suggested a change, and no one for a chat’s model', () => {
+    /** A suggestion waiting, made by whoever its thread says. */
+    const suggested = (id, by) => ({
+      id,
+      passage: 'damp',
+      state: 'open',
+      change: { out: 'damp', in: 'dry' },
+      thread: {
+        status: 'open',
+        quote: 'damp',
+        posts: [],
+        suggestion: { text: 'dry', created: 1, ...by },
+      },
+    })
+    comments.groups = ref([
+      {
+        ...GROUPS[1],
+        comments: [
+          suggested('sabcd1', { chat: 'app:app_1', name: 'Claude Code' }),
+          suggested('sabcd2', { chat: 'chat_1' }),
+        ],
+      },
+    ])
+    const wrapper = mountPanel()
+    const suggester = id => wrapper.find(`[data-comment-entry="${id}"] [data-suggestion-author]`)
+
+    expect(suggester('sabcd1').text()).toBe('Claude Code')
+    expect(suggester('sabcd2').exists()).toBe(false)
+  })
+
   it('keeps the focus once what was done takes its button away, and takes it back with Mod-Z', async () => {
     const wrapper = mountPanel({}, { attachTo: document.body })
     const panel = wrapper.find('[data-comments-panel]')
@@ -220,6 +250,29 @@ describe('CommentsPanel', () => {
       wrapper.findAll(`[data-comment-entry="${entry}"] [data-comment-author]`).map(a => a.text())
     expect(authors('cabcd1')).toEqual(['You'])
     expect(authors('cabcd2')).toEqual(['You', 'Assistant'])
+  })
+
+  it('says a connected app said what it did, by its connection’s name', () => {
+    comments.groups = ref([
+      {
+        ...GROUPS[1],
+        comments: [
+          listed(
+            'cabcd3',
+            'x',
+            'open',
+            said('y'),
+            { ...said('Two words would do.', 'model'), name: 'Claude Code' },
+            said('Cut it.', 'model')
+          ),
+        ],
+      },
+    ])
+    const wrapper = mountPanel()
+
+    expect(
+      wrapper.findAll('[data-comment-entry="cabcd3"] [data-comment-author]').map(a => a.text())
+    ).toEqual(['You', 'Claude Code', 'Assistant'])
   })
 
   it('strikes through a comment whose passage is gone, and opens no document for it', async () => {

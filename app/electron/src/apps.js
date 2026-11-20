@@ -21,7 +21,7 @@ import { appExports } from './appExports.js'
 import { appReads } from './appReads.js'
 
 /** The file's name, beside `library.json`. */
-export const APPS_FILE = 'apps.json'
+const APPS_FILE = 'apps.json'
 
 /** The port listened on unless the writer names another: INKS on a phone's keys. */
 export const DEFAULT_PORT = 4657
@@ -49,7 +49,7 @@ const NAME_MOST = 100
  */
 
 /** Where the file is: `~/Library/Application Support/inksprite/` on a Mac. */
-export const appsPath = () => path.join(app.getPath('userData'), APPS_FILE)
+const appsPath = () => path.join(app.getPath('userData'), APPS_FILE)
 
 /**
  * Whether a number is a port an app may listen on without the system's leave.
@@ -284,8 +284,13 @@ export function appConnections(file = appsPath()) {
 
 /**
  * Answer the page's calls about connections, and open the door to the apps
- * that have one: listening only while there is a connection and apps are let
- * in, and handing what an app asks to a window to answer (`appCalls.js`).
+ * that have one: listening only while there is a connection, apps are let
+ * in and a page has said it answers them, and handing what an app asks to a
+ * window to answer (`appCalls.js`).
+ *
+ * The door is not opened as the app starts, whatever `apps.json` holds: a
+ * page says it answers (`apps:answering`) only where it offers connected
+ * apps, so a build whose page doesn't never listens.
  *
  * @param {Object} bridge
  * @param {(channel: string, answer: (event: Electron.IpcMainInvokeEvent, ...args: any[]) => any) => void} bridge.handle -
@@ -294,15 +299,40 @@ export function appConnections(file = appsPath()) {
  *   Listen on a channel, from the app's page only
  * @param {() => Electron.WebContents[]} bridge.pages - The app's windows'
  *   pages, the one in front first
+ * @param {number} [bridge.patience] - How long a page is waited on to answer
+ *   an app, in milliseconds, where that isn't `appCalls.js`'s own
  */
-export function handleApps({ handle, on, pages }) {
+export function handleApps({ handle, on, pages, patience }) {
   const connections = appConnections()
-  const asker = windowAsker(pages)
+  const asker = windowAsker(pages, patience === undefined ? {} : { patience })
   const exports = appExports()
   const door = appDoor({ connections, ask: asker.ask, exports })
   const reads = appReads()
 
   on('apps:answer', (event, request, answer) => asker.answered(event.sender.id, request, answer))
+  // Connections made before the app last quit are let in once a page says
+  // it answers what they ask, and from then on.
+  on('apps:answering', () => {
+    door
+      .pageAnswers()
+      .catch(error => console.error(`Apps could not be listened for: ${error.message}`))
+  })
+
+  /**
+   * A connection's id, where there is such a connection: what the page asks
+   * to be kept or held is kept or held for one of them only.
+   *
+   * @param {unknown} id
+   * @returns {Promise<string>}
+   * @throws {Error} For anything else
+   */
+  const known = async id => {
+    const { connections: all } = await connections.all()
+    if (typeof id !== 'string' || !all.some(one => one.id === id)) {
+      throw new Error('No such connection.')
+    }
+    return id
+  }
 
   /** What the page shows: the connections, and whether they can get in. */
   const state = async () => ({ ...(await connections.all()), ...door.state() })
@@ -312,7 +342,17 @@ export function handleApps({ handle, on, pages }) {
     await door.sync()
     return made
   })
-  handle('apps:update', (_, id, patch) => connections.update(id, patch))
+  handle('apps:update', async (_, id, patch) => {
+    const before = (await connections.all()).connections.find(one => one.id === id)
+    const after = await connections.update(id, patch)
+    // What it had read of a project unticked goes with the tick: a record
+    // says which project its document is in, as `storyId`.
+    const unticked = (before?.projects ?? []).filter(project => !after.projects.includes(project))
+    if (unticked.length > 0) {
+      await reads.forgetWhere(record => unticked.includes(record.storyId), id).catch(() => {})
+    }
+    return after
+  })
   handle('apps:remove', async (_, id) => {
     await connections.remove(id)
     await door.sync()
@@ -334,15 +374,27 @@ export function handleApps({ handle, on, pages }) {
   })
 
   // What each connection last read or wrote of each document, kept for the
-  // page to say what changed since (`appReads.js`).
-  handle('apps:read', (_, connection, document) => reads.get(connection, document))
-  handle('apps:reads', (_, connection) => reads.all(connection))
-  handle('apps:keep', (_, connection, document, record) => reads.put(connection, document, record))
+  // page to say what changed since (`appReads.js`): for a connection there
+  // is, and no other id.
+  handle('apps:read', async (_, connection, document) =>
+    reads.get(await known(connection), document)
+  )
+  handle('apps:reads', async (_, connection, fields) => reads.all(await known(connection), fields))
+  handle('apps:keep', async (_, connection, document, record) =>
+    reads.put(await known(connection), document, record)
+  )
+  // Let go of, as the page says what is gone: documents' records, one
+  // connection's or everyone's, and a project's, by the `storyId` each
+  // record carries. A connection no longer there has nothing kept.
+  handle('apps:forget', async (_, what) => {
+    const { connection = null, documents = null, project = null } = what ?? {}
+    if (documents !== null) await reads.forgetDocuments(documents, connection)
+    if (typeof project === 'string' && project) {
+      await reads.forgetWhere(record => record.storyId === project, connection)
+    }
+  })
 
   // What a page has made ready for a connection's app to fetch, by a link
   // that works once (`appExports.js`).
-  handle('apps:offer', (_, connection, file) => exports.offer(connection, file))
-
-  // Connections made before the app last quit are let in as it starts.
-  door.sync().catch(error => console.error(`Apps could not be listened for: ${error.message}`))
+  handle('apps:offer', async (_, connection, file) => exports.offer(await known(connection), file))
 }

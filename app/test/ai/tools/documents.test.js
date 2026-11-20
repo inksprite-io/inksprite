@@ -16,6 +16,9 @@ import {
   executeListDocuments,
   executeDescribeDocument,
   executeDeleteDocument,
+  executeListComments,
+  executeAddComment,
+  pathInProject,
   digestAbout,
   listDocumentsDefinition,
   LISTING_LIMIT,
@@ -179,6 +182,84 @@ describe('document tools', () => {
         expect((await executeReadDocument({ path: 'notes/Nobody' }, inChat)).error).toBe(
           'No document at "notes/Nobody". list_documents shows what the project holds.'
         )
+      } finally {
+        setLibrarySkills([])
+      }
+    })
+
+    it('gives a path by its id only for a document of the project that the reader sees', async () => {
+      await seed()
+      // Another project's document, at the path one has here.
+      await projectOverview('story_2')
+      store.createDocument({
+        id: 'manuscript_2',
+        storyId: 'story_2',
+        parentId: rootIdFor('story_2'),
+        type: 'folder',
+        title: 'manuscript',
+      })
+      store.createDocument({
+        id: 'sc_other',
+        storyId: 'story_2',
+        parentId: 'manuscript_2',
+        type: 'text',
+        title: 'Chapter 1',
+        content: 'Another project’s.',
+      })
+      store.createDocument({
+        id: 'sc_hidden',
+        storyId: STORY,
+        parentId: 'cat_1',
+        type: 'text',
+        title: 'Spoilers',
+        content: 'Hidden from models.',
+        hidden: true,
+      })
+
+      expect(await pathInProject(inChat, 'sc_1')).toBe('manuscript/Chapter 1')
+      expect(await pathInProject(inChat, rootIdFor(STORY))).toBe('/')
+      // Each of these is known by its id, and is nobody's here: where it is,
+      // and what it is called, is not said.
+      for (const id of ['sc_other', rootIdFor('story_2'), 'sc_hidden', 'nothing']) {
+        expect(await pathInProject(inChat, id), id).toBe('')
+      }
+      // Hidden by the chat alone, it is not that chat's, and is another's.
+      markChat({ hiddenIds: ['lore_1'] })
+      expect(await pathInProject(inChat, 'lore_1')).toBe('')
+      expect(await pathInProject({ storyId: STORY, chatId: 'app:app_1' }, 'lore_1')).toBe(
+        'notes/Characters/Elara'
+      )
+    })
+
+    it('names no skill to a connected app, which is told only that nothing is there', async () => {
+      await seed()
+      setLibrarySkills([
+        {
+          id: 'skill_style',
+          text: '---\nname: house-style\ndescription: The house style.\n---\n\nSee references/voice.md.\n',
+          files: [{ path: 'references/voice.md', content: 'No dashes.' }],
+        },
+      ])
+      // A connected app's call: its posts go under its connection's name.
+      const app = { storyId: STORY, chatId: 'app:app_1', postsAs: 'Claude Code' }
+      const nothing =
+        'No document at "references/voice.md". list_documents shows what the project holds.'
+
+      try {
+        const args = { path: 'references/voice.md' }
+        const answers = [
+          await executeReadDocument(args, app),
+          await executeDescribeDocument(args, app),
+          await executeListComments(args, app),
+          await executeAddComment({ ...args, passage: 'a', text: 'b' }, app),
+          await executeUpdateDocument({ ...args, content: 'x' }, app),
+          await executeEditDocument({ ...args, old: 'a', new: 'b' }, app),
+          await executeAppendDocument({ ...args, text: 'x' }, app),
+          await executeMoveDocument({ ...args, to: 'elsewhere' }, app),
+          await executeDeleteDocument(args, app),
+        ]
+        for (const answer of answers) expect(answer).toEqual({ error: nothing })
+        expect(JSON.stringify(answers)).not.toMatch(/house-style|use_skill/)
       } finally {
         setLibrarySkills([])
       }

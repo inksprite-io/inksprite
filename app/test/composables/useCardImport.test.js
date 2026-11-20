@@ -266,14 +266,13 @@ describe('useCardImport', () => {
       expect(document.content).toContain('# The Road North')
     })
 
-    it('takes the stamp off a file exported to a linked folder', async () => {
+    it('takes the stamp off a file that was exported for a connected app', async () => {
       const text = [
         '---',
         'inksprite:',
         '  project: Thief',
         '  document: Chapter 1',
         '  id: doc_1',
-        '  hash: 0123456789abcdef',
         '  note: Exported from inksprite.',
         '---',
         '',

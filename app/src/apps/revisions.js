@@ -16,12 +16,17 @@
  *
  * To say what changed, what the connection last had of each document is
  * kept: its text and the state of its comments, by the native side
- * (`platform/apps.js`), on this computer, and gone with the connection. One
- * record for each document, the last, with the revisions the connection held
- * on its way there: an app holds the revision of its read while its own
- * edits move the document on, and asked with that one, it is told what has
- * changed since the last of them. A revision that is none of these can't be
- * told from, and the app is to read the document again.
+ * (`platform/apps.js`), on this computer. One record for each document, the
+ * last, with the revisions the connection held on its way there: an app
+ * holds the revision of its read while its own edits move the document on,
+ * and asked with that one, it is told what has changed since the last of
+ * them. A revision that is none of these can't be told from, and the app is
+ * to read the document again.
+ *
+ * A record is a copy of a document's text, so it is let go of when what it
+ * is of goes: with its connection, with a project unticked for it, with a
+ * document or a project deleted for good, and once the app has been told
+ * that a document it had read is gone.
  *
  * A write tells the app the revision it left. Where the document had
  * changed since the app last had it, besides the write, what is kept stays
@@ -34,7 +39,7 @@ import { postsOf, suggestedBy } from '@/ai/tools/commentReads.js'
 import { textHash } from '@/ai/context/reads.js'
 import { peopleOf } from '@/cloud/people.js'
 import { useEditor } from '@/composables/useEditor.js'
-import { appRead, appReads, keepAppRead } from '@/platform/apps.js'
+import { forgetReads, keepRead, keptRead, keptReads } from '@/platform/apps.js'
 import { lineDiff } from '@/utils/lineDiff.js'
 
 /** @typedef {import('@/platform/apps.js').AskingApp} AskingApp */
@@ -76,7 +81,7 @@ import { lineDiff } from '@/utils/lineDiff.js'
  */
 
 /** The longest text kept to tell changes from, in characters. */
-export const TEXT_MOST = 1_000_000
+const TEXT_MOST = 1_000_000
 
 /** How many of the revisions a connection held before the last are remembered. */
 export const PASSED_MOST = 20
@@ -165,7 +170,7 @@ export async function keep(app, seen, had = null, sawAll = false) {
             .slice(-PASSED_MOST)
         : []
   try {
-    await keepAppRead(app.id, seen.document, { ...seen, ...(passed.length ? { passed } : {}) })
+    await keepRead(app.id, seen.document, { ...seen, ...(passed.length ? { passed } : {}) })
   } catch (error) {
     // Not kept: `changes_since` will say to read again.
     console.error('What a connected app read could not be kept:', error)
@@ -180,7 +185,7 @@ export async function keep(app, seen, had = null, sawAll = false) {
  * @returns {Promise<Seen|null>}
  */
 export async function kept(app, documentId) {
-  const record = /** @type {any} */ (await appRead(app.id, documentId).catch(() => null))
+  const record = /** @type {any} */ (await keptRead(app.id, documentId).catch(() => null))
   return record && typeof record.revision === 'string' && record.threads ? record : null
 }
 
@@ -331,10 +336,14 @@ function suggestionsSince(had, threads, asking) {
   return changed
 }
 
+/** What a folder's answer needs of each record: which document, where it was, and at what revision. */
+const ABOUT = ['storyId', 'document', 'path', 'revision']
+
 /**
  * The documents under a folder that a connection has read and that have
  * changed since, each with the revision it had of it, and those that are
- * gone.
+ * gone. One that is gone is told of once: what was kept of it is let go of
+ * with the telling, its text with it.
  *
  * @param {AskingApp} app
  * @param {Asking} asking
@@ -342,20 +351,30 @@ function suggestionsSince(had, threads, asking) {
  */
 async function changedUnder(app, asking, folder) {
   const within = folder === '/' ? '' : `${folder}/`
-  const records = /** @type {any[]} */ (await appReads(app.id).catch(() => []))
+  const records = /** @type {any[]} */ (await keptReads(app.id, ABOUT).catch(() => []))
   /** @type {Array<{path: string, revision: string}>} */
   const changed = []
   /** @type {string[]} */
   const gone = []
+  /** @type {string[]} */
+  const told = []
   for (const record of records) {
     if (record?.storyId !== asking.storyId || typeof record.document !== 'string') continue
     const path = await pathInProject(asking, record.document)
     const now = path ? await stateAt(asking, path) : null
     if (!now) {
-      if (String(record.path).startsWith(within)) gone.push(String(record.path))
+      if (String(record.path).startsWith(within)) {
+        gone.push(String(record.path))
+        told.push(record.document)
+      }
     } else if (now.seen.path.startsWith(within) && now.seen.revision !== record.revision) {
       changed.push({ path: now.seen.path, revision: record.revision })
     }
+  }
+  if (told.length > 0) {
+    await forgetReads({ connection: app.id, documents: told }).catch(error =>
+      console.error('What a connected app had of documents now gone could not be let go of:', error)
+    )
   }
   const by = (/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)
   return {

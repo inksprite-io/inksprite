@@ -2,6 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { appLocal } from '@/cloud/local.js'
 
+/** What connected apps' reads kept of a document, in the desktop app: told of its going. */
+const forgetReadsOf = vi.hoisted(() => vi.fn())
+vi.mock('@/platform/apps.js', () => ({ forgetReadsOf }))
+
 /** A project's rows, as storage would hand them over. */
 const rows = vi.hoisted(() => ({ documents: /** @type {any[]} */ ([]) }))
 /** What was written straight to storage, by table. */
@@ -39,6 +43,7 @@ describe('cloud/local', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     written.length = 0
+    forgetReadsOf.mockClear()
   })
 
   describe('write', () => {
@@ -56,6 +61,21 @@ describe('cloud/local', () => {
       expect(written.map(([table, changes]) => [table, changes.map(change => change.id)])).toEqual([
         ['files', ['doc_pdf']],
       ])
+    })
+
+    it('lets go of what connected apps had read of a document deleted for good elsewhere', async () => {
+      const local = appLocal({ syncsForApp: () => true })
+
+      await local.write('story_1', [
+        // Changed, or gone to the trash, it is still a document.
+        { table: 'documents', id: 'doc_kept', row: doc('doc_kept', 'root') },
+        { table: 'documents', id: 'doc_bin', row: doc('doc_bin', 'root', { trashed: 5 }) },
+        { table: 'documents', id: 'doc_gone', row: null },
+        // Another table's row of the same going is no document.
+        { table: 'files', id: 'file_gone', row: null },
+      ])
+
+      expect(forgetReadsOf.mock.calls).toEqual([[{ document: 'doc_gone' }]])
     })
 
     it('writes the setup only rows of the setup’s tables', async () => {

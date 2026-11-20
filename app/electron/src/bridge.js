@@ -36,8 +36,10 @@ const NO_BODY = new Set([101, 103, 204, 205, 304])
  *   server's
  * @param {{openWindow: (path: string) => unknown}} windows - Opens a window on
  *   a path of the page (`windows.js`)
+ * @param {{appPatience?: number}} [limits] - How long a page is waited on to
+ *   answer a connected app, where that isn't `appCalls.js`'s own
  */
-export function handleBridge(origin, { openWindow }) {
+export function handleBridge(origin, { openWindow }, { appPatience } = {}) {
   /**
    * Answer `channel` with `answer`'s result as `{value}`, or what it threw as
    * `{error}`, which the preload throws again as an Error with that message.
@@ -289,7 +291,7 @@ export function handleBridge(origin, { openWindow }) {
   // Other apps on this computer, working in the projects ticked for them
   // (`apps.js`, and `src/apps/` in the page): what one asks is handed to a
   // window on the app's own page, the one in front first.
-  handleApps({ handle, on, pages })
+  handleApps({ handle, on, pages, patience: appPatience })
 }
 
 /**

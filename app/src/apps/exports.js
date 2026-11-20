@@ -15,6 +15,14 @@
  * document it came from (`files/exportStamp.js`). One file goes as itself,
  * more as a tar. A repository imported into the project is left out: its
  * files are where it came from, which is likely where the export is going.
+ * A picture comes with the text that shows it only where the document it
+ * belongs to is one the app sees in this project.
+ *
+ * The command an answer gives is run by a shell we know nothing of, so
+ * nothing in it is a name of the writer's making: a document's title may
+ * have come from a web page or a file's name, and what quotes it for one
+ * shell runs it in another. The file is saved under a plain name
+ * (`plainName`), and the answer's `file` has the real one.
  */
 
 import { documentForChat, documentsForChat } from '@/ai/tools/documents.js'
@@ -27,6 +35,7 @@ import { isRepository, repositoryOf } from '@/source/tree.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { useFilesStore } from '@/stores/filesStore'
 import { documentPath } from '@/utils/documentPath.js'
+import { pictureOfKey } from '@/utils/pictures.js'
 
 /** @typedef {import('@/platform/apps.js').AskingApp} AskingApp */
 
@@ -41,10 +50,36 @@ export const LINK_NOTE =
   'The link works once, and for five minutes. To change the text, change the document here and export again.'
 
 /**
- * A word as a shell takes it whole.
- * @param {string} text
+ * The link as a shell takes it whole, whichever shell: sh and its kin,
+ * PowerShell and cmd.exe all read double quotes, and cmd.exe reads no other.
+ * A link is made here of an address the native side checked and an id of
+ * letters, digits, dashes and underscores, so it holds nothing any of them
+ * expands; one that held anything else is not put in a command.
+ * @param {string} link
  */
-const quoted = text => `'${text.replace(/'/g, `'\\''`)}'`
+const quoted = link => {
+  if (!/^[\w:/.[\]-]+$/.test(link)) throw new Error('The link can’t be put in a command.')
+  return `"${link}"`
+}
+
+/**
+ * A file's name as a command can hold it, with no quoting, in any shell: its
+ * letters and digits, of any script, with `.`, `_` and `-`, and one `-` for
+ * each run of anything else, a space or a quote among them. Never empty, and
+ * never starting with a dot or a dash, which would hide the file or be read
+ * as an option. The marks that are part of a letter in many scripts are kept
+ * with it.
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+export function plainName(name) {
+  const plain = name
+    .replace(/[^\p{L}\p{M}\p{N}._-]/gu, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^[.-]+/, '')
+  return plain || 'export'
+}
 
 /**
  * Make a document, or a folder with what is in it, ready for an app to
@@ -85,7 +120,13 @@ export async function exportFor(app, asking, args) {
         rootId,
       },
       content: api.currentContent,
-      read: key => files.getFile(key),
+      // A picture is its document's own, kept by that document's id: read
+      // only where the document is one the app sees in this project,
+      // whatever document a text here names as the picture's.
+      read: async key => {
+        const picture = pictureOfKey(key)
+        return picture && !seen.has(picture.documentId) ? null : files.getFile(key)
+      },
       // A file in a repository ends with a newline: an editor there adds
       // one, and the file would then read as changed.
       stamp: (document, text) =>
@@ -127,13 +168,18 @@ export async function exportFor(app, asking, args) {
         }
       : {}
 
-  // One file, as itself.
+  // One file, as itself, saved under a name that is safe in any shell.
   if (paths.length === 1 && made.entries.length === 1) {
+    const plain = plainName(filename)
+    const renamed =
+      plain === filename
+        ? ''
+        : ` It saves the file as "${plain}", a name any shell takes as it is; \`file\` is what the document is called.`
     return {
       file: filename,
       url,
-      command: `curl -fsS ${quoted(url)} -o ${quoted(filename)}`,
-      note: `${LINK_NOTE} The command writes the file into the directory it is run in: run it where the file should go, or give -o another path.`,
+      command: `curl -fsS ${quoted(url)} -o ${plain}`,
+      note: `${LINK_NOTE} The command writes the file into the directory it is run in: run it where the file should go, or give -o another path.${renamed}`,
       ...left,
     }
   }

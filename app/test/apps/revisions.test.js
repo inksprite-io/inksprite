@@ -24,17 +24,27 @@ const records = vi.hoisted(() => ({
   kept: new Map(),
 }))
 vi.mock('@/platform/apps.js', () => ({
-  appRead: vi.fn(
+  keptRead: vi.fn(
     async (connection, document) => records.kept.get(`${connection}/${document}`) ?? null
   ),
-  appReads: vi.fn(async connection =>
+  // Whole, or the fields asked for, as the native side gives them.
+  keptReads: vi.fn(async (connection, fields) =>
     [...records.kept]
       .filter(([key]) => key.startsWith(`${connection}/`))
-      .map(([, record]) => record)
+      .map(([, record]) =>
+        fields
+          ? Object.fromEntries(fields.filter(f => f in record).map(f => [f, record[f]]))
+          : record
+      )
   ),
-  keepAppRead: vi.fn(async (connection, document, record) => {
+  keepRead: vi.fn(async (connection, document, record) => {
     records.kept.set(`${connection}/${document}`, JSON.parse(JSON.stringify(record)))
   }),
+  forgetReads: vi.fn(async ({ connection, documents = [] }) => {
+    for (const document of documents) records.kept.delete(`${connection}/${document}`)
+  }),
+  // What the stores say of a document deleted for good (`documentsStore`).
+  forgetReadsOf: vi.fn(),
 }))
 
 import {
@@ -59,6 +69,7 @@ import {
   executeResolveComment,
   projectOverview,
 } from '@/ai/tools/documents.js'
+import * as platform from '@/platform/apps.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { clearDocumentInstances } from '@/composables/useDocuments'
 import { useComments } from '@/composables/useComments.js'
@@ -628,12 +639,65 @@ describe('changesSince', () => {
       expect(since.note).toBe('Nothing you have read here has changed.')
     })
 
-    it('names a document that is gone', async () => {
+    it('names a document that is gone, once, and keeps its text no longer', async () => {
+      await read()
       await readCrew()
       await executeDeleteDocument({ path: 'notes/Crew' }, writer)
+      expect(records.kept.get('app_1/doc_crew').text).toBe('Mara picks locks.')
 
       const since = await changesSince(APP, asking, { path: '/' })
       expect(since.gone).toEqual(['notes/Crew'])
+      // Told of, it is let go of: the copy of its text with it, and no other's.
+      expect(platform.forgetReads).toHaveBeenCalledWith({
+        connection: 'app_1',
+        documents: ['doc_crew'],
+      })
+      expect([...records.kept.keys()]).toEqual(['app_1/doc_plan'])
+
+      // Asked again, it is not told of again.
+      expect((await changesSince(APP, asking, { path: '/' })).gone).toBeUndefined()
+    })
+
+    it('goes on keeping what is gone from somewhere it was not asked about', async () => {
+      await readCrew()
+      await executeDeleteDocument({ path: 'notes/Crew' }, writer)
+      store.createDocument({
+        id: 'folder_other',
+        storyId: STORY,
+        parentId: rootIdFor(STORY),
+        type: 'folder',
+        title: 'other',
+      })
+
+      // Not under the folder asked about: not told of, so not let go of yet.
+      expect((await changesSince(APP, asking, { path: 'other' })).gone).toBeUndefined()
+      expect(platform.forgetReads).not.toHaveBeenCalled()
+      expect((await changesSince(APP, asking, { path: 'notes' })).gone).toEqual(['notes/Crew'])
+    })
+
+    it('lets go of one hidden since as of one deleted, and says no more of it', async () => {
+      await readCrew()
+      store.updateDocument('doc_crew', { hidden: true })
+
+      expect((await changesSince(APP, asking, { path: '/' })).gone).toEqual(['notes/Crew'])
+      expect(records.kept.has('app_1/doc_crew')).toBe(false)
+    })
+
+    it('asks the native side for what it needs of each record, and for no document’s text', async () => {
+      await read()
+      await readCrew()
+
+      await changesSince(APP, asking, { path: '/' })
+
+      expect(platform.keptReads).toHaveBeenCalledWith('app_1', [
+        'storyId',
+        'document',
+        'path',
+        'revision',
+      ])
+      const handed = await platform.keptReads.mock.results.at(-1).value
+      expect(handed).toHaveLength(2)
+      for (const record of handed) expect(record).not.toHaveProperty('text')
     })
 
     it('knows nothing of another project’s documents, or another connection’s reads', async () => {

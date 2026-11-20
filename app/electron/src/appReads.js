@@ -9,6 +9,10 @@
  * A record is whatever the page hands over, a file for each connection and
  * document: `app-reads/<connection>/<document>.json`. The page's ids are
  * the names, so only an id that could be one is taken.
+ *
+ * A record holds a document's text, so it is let go of when what it is of
+ * goes: with its connection, with a project unticked for it, and with a
+ * document or a project deleted for good (`apps.js`).
  */
 
 import { app } from 'electron'
@@ -16,7 +20,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 /** The folder's name, in the app's data folder. */
-export const READS_FOLDER = 'app-reads'
+const READS_FOLDER = 'app-reads'
 
 /** The most a record may be, written out: a long document's text, and room. */
 export const RECORD_MOST = 4 * 1024 * 1024
@@ -25,7 +29,7 @@ export const RECORD_MOST = 4 * 1024 * 1024
 const ID = /^[A-Za-z0-9_-]{1,100}$/
 
 /** Where the records are: `~/Library/Application Support/inksprite/app-reads` on a Mac. */
-export const readsPath = () => path.join(app.getPath('userData'), READS_FOLDER)
+const readsPath = () => path.join(app.getPath('userData'), READS_FOLDER)
 
 /**
  * @param {unknown} id
@@ -64,6 +68,29 @@ export function appReads(folder = readsPath()) {
     }
   }
 
+  /**
+   * The folders of the connections asked of: the one named, or every one
+   * that has anything kept.
+   *
+   * @param {unknown} [connection]
+   * @returns {Promise<string[]>}
+   */
+  const dirsOf = async connection => {
+    if (connection != null) return [dirOf(connection)]
+    const names = await fs.readdir(folder).catch(() => /** @type {string[]} */ ([]))
+    return names.filter(name => ID.test(name)).map(name => path.join(folder, name))
+  }
+
+  /**
+   * The records' files in a connection's folder.
+   * @param {string} dir
+   * @returns {Promise<string[]>}
+   */
+  const filesIn = async dir => {
+    const names = await fs.readdir(dir).catch(() => /** @type {string[]} */ ([]))
+    return names.filter(name => name.endsWith('.json'))
+  }
+
   return {
     /**
      * What a connection last had of a document, or null.
@@ -97,18 +124,36 @@ export function appReads(folder = readsPath()) {
     },
 
     /**
-     * Everything kept for a connection, a record for each document.
+     * Everything kept for a connection, a record for each document: whole,
+     * or only the fields named, for a caller that wants to know which
+     * documents there are without being handed the text of each.
      *
      * @param {unknown} connection
+     * @param {unknown} [fields]
      * @returns {Promise<object[]>}
+     * @throws {Error} For fields that aren't a list of names
      */
-    async all(connection) {
+    async all(connection, fields) {
+      if (fields != null && !(Array.isArray(fields) && fields.every(f => typeof f === 'string'))) {
+        throw new Error('The fields asked for are a list of their names.')
+      }
+      const wanted = /** @type {string[]|null} */ (fields ?? null)
       const dir = dirOf(connection)
-      const names = await fs.readdir(dir).catch(() => /** @type {string[]} */ ([]))
-      const records = await Promise.all(
-        names.filter(name => name.endsWith('.json')).map(name => read(path.join(dir, name)))
-      )
-      return records.filter(record => record !== null)
+      /** @type {Array<Record<string, any>>} */
+      const records = []
+      // One at a time: each is read whole, text and all, to be cut down.
+      for (const name of await filesIn(dir)) {
+        const record = /** @type {Record<string, any>|null} */ (await read(path.join(dir, name)))
+        if (!record) continue
+        records.push(
+          wanted
+            ? Object.fromEntries(
+                wanted.filter(field => Object.hasOwn(record, field)).map(f => [f, record[f]])
+              )
+            : record
+        )
+      }
+      return records
     },
 
     /**
@@ -119,6 +164,43 @@ export function appReads(folder = readsPath()) {
      */
     async forget(connection) {
       await fs.rm(dirOf(connection), { recursive: true, force: true })
+    },
+
+    /**
+     * Forget what was kept of some documents: one connection's, or every
+     * connection's where none is named, as for documents deleted for good.
+     *
+     * @param {unknown} documents - Their ids
+     * @param {unknown} [connection]
+     * @returns {Promise<void>}
+     * @throws {Error} For anything that isn't a list of ids
+     */
+    async forgetDocuments(documents, connection) {
+      if (!Array.isArray(documents)) throw new Error('Not a list of documents.')
+      const gone = new Set(documents.map(document => `${idOf(document)}.json`))
+      for (const dir of await dirsOf(connection)) {
+        for (const name of await filesIn(dir)) {
+          if (gone.has(name)) await fs.rm(path.join(dir, name), { force: true })
+        }
+      }
+    },
+
+    /**
+     * Forget the records a test picks out: one connection's, or every
+     * connection's where none is named. Each is read to be asked of.
+     *
+     * @param {(record: Record<string, any>) => boolean} matches
+     * @param {unknown} [connection]
+     * @returns {Promise<void>}
+     */
+    async forgetWhere(matches, connection) {
+      for (const dir of await dirsOf(connection)) {
+        for (const name of await filesIn(dir)) {
+          const file = path.join(dir, name)
+          const record = /** @type {Record<string, any>|null} */ (await read(file))
+          if (record && matches(record)) await fs.rm(file, { force: true })
+        }
+      }
     },
   }
 }

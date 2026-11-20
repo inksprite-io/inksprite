@@ -26,6 +26,7 @@ import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore'
 import { useDocumentsStore } from './documentsStore'
 import { storage } from '@/storage/index.js'
+import { forgetReadsOf } from '@/platform/apps.js'
 import { freeName as freeAmong } from '@/utils/titleValidation.js'
 
 /** @typedef {import('../types/models.js').Story} Story */
@@ -391,6 +392,9 @@ export const useStoriesStore = defineStore('stories', () => {
     }
 
     useProjectViewsStore().deleteView(storyId)
+    // What connected apps had read of it, in the desktop app, whatever
+    // became of the documents they read.
+    forgetReadsOf({ project: storyId })
     syncStore.trackDelete('stories', storyId)
     stories.value.delete(storyId)
     trash.value.delete(storyId)

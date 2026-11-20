@@ -25,17 +25,27 @@ const records = vi.hoisted(() => ({
   kept: new Map(),
 }))
 vi.mock('@/platform/apps.js', () => ({
-  appRead: vi.fn(
+  keptRead: vi.fn(
     async (connection, document) => records.kept.get(`${connection}/${document}`) ?? null
   ),
-  appReads: vi.fn(async connection =>
+  // Whole, or the fields asked for, as the native side gives them.
+  keptReads: vi.fn(async (connection, fields) =>
     [...records.kept]
       .filter(([key]) => key.startsWith(`${connection}/`))
-      .map(([, record]) => record)
+      .map(([, record]) =>
+        fields
+          ? Object.fromEntries(fields.filter(f => f in record).map(f => [f, record[f]]))
+          : record
+      )
   ),
-  keepAppRead: vi.fn(async (connection, document, record) => {
+  keepRead: vi.fn(async (connection, document, record) => {
     records.kept.set(`${connection}/${document}`, JSON.parse(JSON.stringify(record)))
   }),
+  forgetReads: vi.fn(async ({ connection, documents = [] }) => {
+    for (const document of documents) records.kept.delete(`${connection}/${document}`)
+  }),
+  // What the stores say of a document deleted for good (`documentsStore`).
+  forgetReadsOf: vi.fn(),
 }))
 
 /** What makes an export ready for an app to fetch, stood in for (`apps/exports.test.js`). */
@@ -483,27 +493,63 @@ describe('callTool', () => {
     expect(JSON.parse(parts(since)[0]).path).toBe('notes/The plan')
   })
 
-  it('says so for an id no document here has, or one that is hidden', async () => {
-    const none = await callTool(APP, 'read_document', { path: 'id:doc_nothing' }, signal)
-    expect(none.result).toEqual({
+  it('answers an id of a hidden document, or of another project’s, as one nobody has', async () => {
+    // Another project's document, at the path one has here.
+    await projectOverview('story_2')
+    store.createDocument({
+      id: 'folder_notes_2',
+      storyId: 'story_2',
+      parentId: rootIdFor('story_2'),
+      type: 'folder',
+      title: 'notes',
+    })
+    store.createDocument({
+      id: 'doc_other',
+      storyId: 'story_2',
+      parentId: 'folder_notes_2',
+      type: 'text',
+      title: 'Plan',
+      content: 'Another project’s plan.',
+    })
+    /** What an id that is no document's is answered with: nothing of where one is. */
+    const nobodys = id => ({
       content: [
         {
           type: 'text',
-          text: 'No document with the id "doc_nothing" in "Thief". list_documents shows what the project holds.',
+          text: `No document with the id "${id}" in "Thief". list_documents shows what the project holds.`,
         },
       ],
       isError: true,
     })
-    const hidden = await callTool(APP, 'read_document', { path: 'id:doc_secret' }, signal)
-    expect(hidden.result.isError).toBe(true)
-    expect(parts(hidden).join(' ')).not.toContain('Nobody reads this')
+
+    for (const id of ['doc_nothing', 'doc_secret', 'doc_other']) {
+      for (const tool of ['read_document', 'describe_document', 'changes_since']) {
+        const answer = await callTool(APP, tool, { path: `id:${id}`, revision: 'x' }, signal)
+        expect(answer.result, `${tool} ${id}`).toEqual(nobodys(id))
+      }
+      const exported = await callTool(APP, 'export_document', { path: `id:${id}` }, signal)
+      expect(exported.result, `export_document ${id}`).toEqual(nobodys(id))
+    }
+    expect(exporting.exportFor).not.toHaveBeenCalled()
+
+    // A write by another project's id is not made to the document that is at
+    // that one's path here.
+    const write = await callTool(
+      WRITER,
+      'update_document',
+      { path: 'id:doc_other', content: 'Rewritten.' },
+      signal
+    )
+    expect(write.result).toEqual(nobodys('doc_other'))
+    expect(store.getDocument('doc_plan').content).toBe('The vault opens at "noon".\n\nBring rope.')
+    expect(store.getDocument('doc_other').content).toBe('Another project’s plan.')
   })
 
   it('hands a document or a folder over as files, for any connection, in the window that has the project', async () => {
     exporting.exportFor.mockResolvedValue({
       file: 'Plan.md',
       url: 'http://127.0.0.1:4657/export/abc',
-      command: "curl -fsS 'http://127.0.0.1:4657/export/abc' -o 'Plan.md'",
+      command: 'curl -fsS "http://127.0.0.1:4657/export/abc" -o Plan.md',
     })
 
     for (const app of [APP, WRITER]) {
@@ -944,11 +990,36 @@ describe('a change that is suggested', () => {
     expect(parts(answer)[0]).not.toContain('suggested')
   })
 
-  it('is asked for outright: anything but a plain yes has the change made', async () => {
+  it('is asked for with true or false: anything else is refused, and nothing is changed', async () => {
+    const calls = {
+      edit_document: { path: 'Plan', old: 'rope', new: 'wire' },
+      append_document: { path: 'Plan', text: 'And a map.' },
+      update_document: { path: 'Plan', content: 'All new.' },
+    }
+    // What a client sends for a yes when it has the type wrong: taken for a
+    // no, each would have the change made where a suggestion was asked for.
+    for (const suggest of ['true', 'please', 1, 0, null, {}, ['true']]) {
+      for (const [name, args] of Object.entries(calls)) {
+        const answer = await callTool(WRITER, name, { ...args, suggest }, signal)
+        expect(answer.result, `${name} ${JSON.stringify(suggest)}`).toEqual({
+          content: [
+            {
+              type: 'text',
+              text: '"suggest" is true or false: true has the change suggested to the user, and false, or leaving it out, has it made. Nothing was changed.',
+            },
+          ],
+          isError: true,
+        })
+      }
+    }
+    expect(await asItStands()).toBe(PLAN)
+    expect(suggestions()).toHaveLength(0)
+
+    // A plain no has the change made, as leaving it out does.
     await callTool(
       WRITER,
       'edit_document',
-      { path: 'Plan', old: 'rope', new: 'wire', suggest: 'please' },
+      { path: 'Plan', old: 'rope', new: 'wire', suggest: false },
       signal
     )
     expect(await asItStands()).toBe(PLAN.replace('rope', 'wire'))

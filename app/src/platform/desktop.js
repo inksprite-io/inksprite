@@ -148,21 +148,25 @@
  *   another port, from now
  * @property {(enabled: boolean) => Promise<AppsState>} setEnabled - Let apps
  *   in, or none
- * @property {(connection: string, document: string) => Promise<object|null>} [read] -
+ * @property {(connection: string, document: string) => Promise<object|null>} read -
  *   What a connection last read or wrote of a document, as `keep` was handed
- *   it, or null. Missing, with `reads` and `keep`, from a desktop app from
- *   before they were kept.
- * @property {(connection: string) => Promise<object[]>} [reads] - Everything
- *   kept for a connection
- * @property {(connection: string, document: string, record: object) => Promise<void>} [keep] -
+ *   it, or null
+ * @property {(connection: string, fields?: string[]) => Promise<object[]>} reads -
+ *   Everything kept for a connection, a record for each document: whole, or
+ *   only the fields named
+ * @property {(connection: string, document: string, record: object) => Promise<void>} keep -
  *   Keep what a connection now has of a document
+ * @property {(what: {connection?: string, documents?: string[], project?: string}) => Promise<void>} forget -
+ *   Let go of what was kept of some documents, or of a project's: one
+ *   connection's, or every connection's where none is named
  * @property {(connection: string, file: {name: string, bytes: Uint8Array}) => Promise<{id: string}>} offer -
  *   Hold a file for a connection's app to fetch, once and within a few
  *   minutes, at `/export/<id>` of the address it reaches this computer by
  * @property {(answer: (connection: Omit<AppConnection, 'token'|'created'> & {address: string}, message: object, onStop: (stop: () => void) => void) => Promise<AppAnswer>) => void} answer -
  *   Say what answers an app's request in this window. `address` is where
  *   the app reaches this computer, and `onStop` takes what stops the
- *   request, should the app give up on it.
+ *   request, should the app give up on it. The native side lets apps in only
+ *   once a page has said this.
  */
 
 /**

@@ -119,6 +119,16 @@ import { namesOf, storedPassage, substitute } from '@/cards/macros.js'
 import { currentDigests } from '@/jobs/index.js'
 
 /**
+ * Whether a call is a connected app's, and not a chat's model's: its posts
+ * go under a name of its own. It is told nothing of the writer's chats or
+ * skills, which are no part of the projects opened to it.
+ *
+ * @param {ToolContext|null|undefined} context
+ * @returns {boolean}
+ */
+const byConnectedApp = context => Boolean(context?.postsAs)
+
+/**
  * The answer for a path nothing is at. When the path is one of the files of a
  * skill the model loads, it says how that is read: told only that there is no
  * such document, a model asked to read a skill's file goes on looking among
@@ -127,10 +137,12 @@ import { currentDigests } from '@/jobs/index.js'
  *
  * @param {string} path
  * @param {string[]} [named] - Paths of what goes by that name elsewhere
+ * @param {ToolContext|null} [context] - Whose call it is. A connected app
+ *   has no skills to load, and is not told the name of one of the writer's.
  * @returns {{error: string}}
  */
-function noDocument(path, named = []) {
-  const owner = skillWithFile(path)
+function noDocument(path, named = [], context = null) {
+  const owner = byConnectedApp(context) ? null : skillWithFile(path)
   return {
     error: owner
       ? `No document at "${path}". It is one of the ${owner} skill's files, not a document: read it with use_skill(name: "${owner}", file: "${path}").`
@@ -400,6 +412,17 @@ const readKey = document => textHash(readBasis(document))
  * @returns {string}
  */
 const chatTitle = chatId => useChatsStore().getChatById(chatId)?.title || ''
+
+/**
+ * How a caller is told which chat suggested a change: by its title, for a
+ * chat's own model. A connected app is told only that it was the assistant:
+ * the writer's chats are no part of what is opened to it, their titles
+ * among them.
+ *
+ * @param {ToolContext} context
+ * @returns {((chatId: string) => string)|undefined}
+ */
+const chatTitleFor = context => (byConnectedApp(context) ? undefined : chatTitle)
 
 /**
  * The documents in a story, the root first, depth first: a document that
@@ -1123,7 +1146,9 @@ export async function executeReadDocument(args, context) {
   const { api, stored, sees, names, chatId } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
+  if (!document) {
+    return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees), context)
+  }
   if (document.type === 'folder') {
     return { error: `"${args.path}" is a folder. list_documents lists what is in it.` }
   }
@@ -1177,7 +1202,7 @@ export async function executeReadDocument(args, context) {
       names,
       chatId,
       people,
-      chatTitle,
+      chatTitle: chatTitleFor(context),
     })
     const { comments: _count, ...rest } = result
     return {
@@ -1348,7 +1373,9 @@ export async function executeDescribeDocument(args, context) {
   const { api, sees } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
+  if (!document) {
+    return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees), context)
+  }
   // What explore wrote of it and of its long sections, for the model, while
   // it is current.
   const digest =
@@ -1549,11 +1576,12 @@ const resolvedNote = (changes, names) =>
  * @param {string} storyId
  * @param {string} path
  * @param {(document: Document) => boolean} sees
+ * @param {ToolContext} context - Whose call it is
  * @returns {{document: Document}|{error: string}}
  */
-function commentable(api, storyId, path, sees) {
+function commentable(api, storyId, path, sees, context) {
   const document = findByPath(api, storyId, path, sees)
-  if (!document) return noDocument(path, namedElsewhere(api, storyId, path, sees))
+  if (!document) return noDocument(path, namedElsewhere(api, storyId, path, sees), context)
   if (document.type === 'folder') return { error: 'A folder has no comments' }
   if (document.type === 'file') return { error: fileIsNotWritten(path) }
   return { document }
@@ -1591,7 +1619,7 @@ export async function executeListComments(args, context) {
   if (args?.path) {
     const document = findByPath(api, context.storyId, args.path, sees)
     if (!document) {
-      return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
+      return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees), context)
     }
     documents = [document]
   } else {
@@ -1636,7 +1664,7 @@ export async function executeListComments(args, context) {
       names,
       chatId: context.chatId,
       people: peopleOf(context.storyId),
-      chatTitle,
+      chatTitle: chatTitleFor(context),
     }
     for (const each of waiting.placed) {
       const { id, ...rest } = suggestionListed(each, reader)
@@ -1686,7 +1714,7 @@ export const addCommentDefinition = {
 export async function executeAddComment(args, context) {
   if (!context?.storyId) return { error: 'No story context available' }
   const { api, sees, names } = await open(context.storyId, context.chatId)
-  const target = commentable(api, context.storyId, args.path, sees)
+  const target = commentable(api, context.storyId, args.path, sees, context)
   if ('error' in target) return target
   const { document } = target
 
@@ -1803,7 +1831,7 @@ export const replyCommentDefinition = {
 export async function executeReplyComment(args, context) {
   if (!context?.storyId) return { error: 'No story context available' }
   const { api, sees, names } = await open(context.storyId, context.chatId)
-  const target = commentable(api, context.storyId, args.path, sees)
+  const target = commentable(api, context.storyId, args.path, sees, context)
   if ('error' in target) return target
   const { document } = target
 
@@ -1869,7 +1897,7 @@ export const resolveCommentDefinition = {
 export async function executeResolveComment(args, context) {
   if (!context?.storyId) return { error: 'No story context available' }
   const { api, sees } = await open(context.storyId, context.chatId)
-  const target = commentable(api, context.storyId, args.path, sees)
+  const target = commentable(api, context.storyId, args.path, sees, context)
   if ('error' in target) return target
   const { document } = target
 
@@ -2582,16 +2610,21 @@ export async function keptFrom(context, url) {
 }
 
 /**
- * A document's path, as every tool gives it.
+ * A document's path, as every tool gives it: of a document in the call's
+ * project that the caller sees, and of no other. An id is known across
+ * projects, and stays known after its document is hidden, so one of another
+ * project, or of a document hidden since, is answered as one that is
+ * nobody's: its path would say where it is and what it is called.
  *
  * @param {ToolContext} context
  * @param {string} id
  * @returns {Promise<string>} '' when it is not there
  */
 export async function pathInProject(context, id) {
-  const { api } = await open(context.storyId, context.chatId)
+  const { api, sees } = await open(context.storyId, context.chatId)
   const document = api.get(id)
-  return document ? pathOf(api, document) : ''
+  if (!document || document.storyId !== context.storyId || !sees(document)) return ''
+  return pathOf(api, document)
 }
 
 // ============================================================================
@@ -2941,7 +2974,9 @@ export async function executeUpdateDocument(args, context) {
   const { api, sees, names } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
+  if (!document) {
+    return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees), context)
+  }
 
   const content = typeof args.content === 'string' ? args.content : args.updates?.content
   if (typeof args.updates?.title === 'string' && typeof content !== 'string') {
@@ -3041,7 +3076,9 @@ export async function executeMoveDocument(args, context) {
   const { api, sees } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
+  if (!document) {
+    return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees), context)
+  }
   const from = pathOf(api, document)
   const target = placeToMoveTo(api, context.storyId, document, args.to, sees)
   if ('error' in target) return target
@@ -3185,7 +3222,7 @@ export async function executeDeleteDocument(args, context) {
 
   const document = findByPath(api, context.storyId, args.path, sees)
   if (!document) {
-    return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
+    return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees), context)
   }
   if (document.id === rootIdFor(context.storyId)) {
     return { error: 'The project itself is not deleted from here.' }
@@ -3368,7 +3405,9 @@ export async function executeEditDocument(args, context) {
   const { api, sees, names } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
+  if (!document) {
+    return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees), context)
+  }
   if (document.type === 'folder') return { error: 'A folder has no content to edit' }
   if (document.type === 'file') return { error: fileIsNotWritten(args.path) }
 
@@ -3496,7 +3535,9 @@ export async function executeAppendDocument(args, context) {
   const { api, sees } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
+  if (!document) {
+    return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees), context)
+  }
   if (document.type === 'folder') return { error: 'A folder has no content to append to' }
   if (document.type === 'file') return { error: fileIsNotWritten(args.path) }
 

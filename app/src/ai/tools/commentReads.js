@@ -9,6 +9,10 @@
  * A chat sees its own pending suggestions made and everyone else's not, as
  * Docs shows a writer theirs: the change it suggested is the text it goes on
  * from. See editor/suggestions.js.
+ *
+ * After the comments come the suggestions waiting in what was read
+ * (`suggestionsAsRead`), whoever made them: whose each is, the change as a
+ * pair of passages found in the reader's text, and what was said on it.
  */
 
 import { passageInText, readableText } from '@/editor/comments.js'
@@ -21,6 +25,15 @@ import { isMine, nameOf } from '@/cloud/people.js'
 
 /** A passage longer than this is shown by its two ends in a read's list. */
 const PASSAGE_LIMIT = 300
+
+/**
+ * Words as a list gives them: a long run by its two ends.
+ * @param {string} words
+ */
+const clipped = words =>
+  words.length > PASSAGE_LIMIT
+    ? `${words.slice(0, PASSAGE_LIMIT / 2)} … ${words.slice(-PASSAGE_LIMIT / 2)}`
+    : words
 
 /**
  * A chat's own pending suggestions in a document, oldest first: those its
@@ -74,6 +87,24 @@ export function placedAsRead(stored, names, chatId = null) {
 }
 
 /**
+ * The words a read uses for who said or suggested something. No name from
+ * outside may pass for one of them.
+ */
+const SPEAKERS = new Set(['you', 'writer', 'model', 'someone'])
+
+/**
+ * A name from outside as a read gives it: someone's in a linked Google Doc,
+ * a connected app's, an account's in a shared project. It is whatever its
+ * owner chose, so one that is a word a read uses for who is speaking is
+ * said to be a name: a commenter called "writer" is not the writer.
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+export const asName = name =>
+  SPEAKERS.has(name.trim().toLowerCase()) ? `someone named "${name.trim()}"` : name
+
+/**
  * What has been said on a thread, by whom, as the model reads it: someone in
  * a linked Google Doc by the name Google shows, a connected app by its
  * connection's name, and in a project shared, someone the writer shares it
@@ -87,11 +118,11 @@ export const postsOf = (thread, names, people = null) =>
   thread.posts.map(post => ({
     author:
       post.author === 'person'
-        ? post.name || 'someone'
+        ? asName(post.name || 'someone')
         : post.author === 'writer' && people && !isMine(post, people)
-          ? nameOf(post, people)
+          ? asName(nameOf(post, people))
           : post.author === 'model' && post.name
-            ? post.name
+            ? asName(post.name)
             : post.author,
     text: substitute(post.text, names),
   }))
@@ -114,9 +145,7 @@ export function commentsBetween({ text, placed }, names, from, to, people = null
       const passage = text.slice(start, end)
       const where =
         passage.length > PASSAGE_LIMIT
-          ? {
-              passage: `${passage.slice(0, PASSAGE_LIMIT / 2)} … ${passage.slice(-PASSAGE_LIMIT / 2)}`,
-            }
+          ? { passage: clipped(passage) }
           : passageInText(text, start, end)
       return { id, ...where, posts: postsOf(thread, names, people) }
     })
@@ -241,19 +270,10 @@ export function suggestionsAsRead(stored, names, chatId = null) {
  */
 export function suggestedBy(suggestion, chatId) {
   if (chatId && suggestion.chat === chatId) return 'you'
-  if (suggestion.author === 'person') return suggestion.name || 'someone'
+  if (suggestion.author === 'person') return suggestion.name ? asName(suggestion.name) : 'someone'
   if (suggestion.author === 'writer') return 'writer'
-  return suggestion.name || 'model'
+  return suggestion.name ? asName(suggestion.name) : 'model'
 }
-
-/**
- * Words as a list gives them: a long run by its two ends.
- * @param {string} words
- */
-const clipped = words =>
-  words.length > PASSAGE_LIMIT
-    ? `${words.slice(0, PASSAGE_LIMIT / 2)} … ${words.slice(-PASSAGE_LIMIT / 2)}`
-    : words
 
 /**
  * A waiting suggestion as a read lists it: its id, who suggested it, the

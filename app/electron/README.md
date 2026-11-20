@@ -116,6 +116,27 @@ opens, and leaves it there; the page imports what changed since it last did,
 without asking (`src/composables/useSettingsFile.js` in the page). The design
 is `.llm/settings_import_design.md`.
 
+## Connected apps
+
+Other apps on the computer, a coding agent first, reach the projects the writer
+ticked for each over MCP, in the `mcp-server` preview (`.llm/mcp_server_design.md`).
+
+`src/apps.js` keeps the connections in `apps.json` in the app's data folder:
+each one's name, its token, its projects and whether it only reads, with the
+port (4657 unless changed) and whether the server is on. `src/appServer.js` is
+the door: it listens on the loopback, only while there is a connection, the
+server is on and a page of this run has said it answers, which only a page
+with the feature does. `POST /mcp` with a connection's token is handed whole to
+a window's page (`src/appCalls.js`), where the tools are (`src/apps/` in the
+page), and `GET /export/<id>` serves, once, a file a tool made ready
+(`src/appExports.js`, held in memory for five minutes). What each connection
+last had of each document is in `app-reads/` beside `apps.json`
+(`src/appReads.js`), for telling it what changed since, and goes with the
+document, the project's tick or the connection.
+
+`scripts/check-apps.js` checks a request's way from the door to a page and back
+in a real Electron, as `scripts/check-sandbox.js` checks Python.
+
 ## The menu
 
 `src/menu.js` is the menu bar. Its File and Window menus have the keys a

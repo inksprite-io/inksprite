@@ -93,6 +93,10 @@ const { mockNanoid, resetIds } = vi.hoisted(() => {
 })
 vi.mock('nanoid', () => ({ nanoid: mockNanoid }))
 
+/** What connected apps' reads kept of a project's documents, in the desktop app: told of its going. */
+const forgetReadsOf = vi.hoisted(() => vi.fn())
+vi.mock('@/platform/apps.js', () => ({ forgetReadsOf }))
+
 describe('StoriesStore', () => {
   /** @type {import('../../src/stores/storiesStore').useStoriesStore} */
   let store
@@ -304,6 +308,12 @@ describe('StoriesStore', () => {
       await store.deleteStory('story_1')
 
       expect(trackDelete).toHaveBeenCalledWith('projectViews', 'story_1')
+    })
+
+    it('lets go of what connected apps had read of its documents', async () => {
+      await store.deleteStory('story_1')
+
+      expect(forgetReadsOf).toHaveBeenCalledWith({ project: 'story_1' })
     })
 
     it('should throw error when deleting non-existent story', async () => {

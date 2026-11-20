@@ -468,6 +468,7 @@ describe('ConnectionsSection, a server always allowed', () => {
 describe('ConnectionsSection, a part at a time', () => {
   const AiConnections = { name: 'AiConnections', template: '<div data-ai-connections />' }
   const WebSearchConnection = { name: 'WebSearchConnection', template: '<div data-web-search />' }
+  const ConnectedApps = { name: 'ConnectedApps', template: '<div data-apps />' }
 
   /** @param {string} [part] */
   const mountPart = async part => {
@@ -476,7 +477,7 @@ describe('ConnectionsSection, a part at a time', () => {
       global: {
         plugins: [PrimeVue],
         directives: { tooltip: {} },
-        stubs: { AiConnections, WebSearchConnection },
+        stubs: { AiConnections, WebSearchConnection, ConnectedApps },
       },
     })
     await flushPromises()
@@ -535,6 +536,61 @@ describe('ConnectionsSection, a part at a time', () => {
   it('has none of them with the AI off', async () => {
     useApplicationState().setAiEnabled(false)
     expect(showing(await mountPart('web')).web).toBe(false)
+  })
+
+  describe('the connected apps', () => {
+    /** Whether the apps let into the writer's projects are showing. */
+    const apps = wrapper => wrapper.find('[data-apps]').exists()
+
+    /** The desktop app, new enough to let other apps in. */
+    const inDesktopApp = () => {
+      globalThis.__INKSPRITE_DESKTOP__ = { apps: {} }
+    }
+
+    afterEach(() => {
+      vi.unstubAllEnvs()
+      delete globalThis.__INKSPRITE_DESKTOP__
+    })
+
+    it('shows them alone, in the desktop app while they are in preview', async () => {
+      vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+      inDesktopApp()
+      const wrapper = await mountPart('apps')
+
+      expect(apps(wrapper)).toBe(true)
+      expect(showing(wrapper)).toEqual({ providers: false, mcp: false, web: false })
+      expect(wrapper.find('[data-connections-section]').attributes('data-part')).toBe('apps')
+      // The servers' plus is not theirs.
+      expect(wrapper.find('[data-action="add-server"]').exists()).toBe(false)
+    })
+
+    it('shows them for their part alone, and moves from part to part as told', async () => {
+      vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+      inDesktopApp()
+      const wrapper = await mountPart('mcp')
+      expect(apps(wrapper)).toBe(false)
+
+      await wrapper.setProps({ part: 'apps' })
+      expect(apps(wrapper)).toBe(true)
+      expect(showing(wrapper).mcp).toBe(false)
+
+      await wrapper.setProps({ part: 'providers' })
+      expect(apps(wrapper)).toBe(false)
+      expect(showing(wrapper).providers).toBe(true)
+    })
+
+    it('has none in a browser, or in a desktop app from before apps could be let in', async () => {
+      vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+      expect(apps(await mountPart('apps'))).toBe(false)
+
+      globalThis.__INKSPRITE_DESKTOP__ = {}
+      expect(apps(await mountPart('apps'))).toBe(false)
+    })
+
+    it('has none out of preview', async () => {
+      inDesktopApp()
+      expect(apps(await mountPart('apps'))).toBe(false)
+    })
   })
 })
 

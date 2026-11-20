@@ -24,6 +24,13 @@ const freePort = () =>
     })
   })
 
+/** Whether this computer has a loopback over IPv6 to listen on. */
+const hasV6 = await new Promise(resolve => {
+  const server = http.createServer()
+  server.once('error', () => resolve(false))
+  server.listen(0, '::1', () => server.close(() => resolve(true)))
+})
+
 /** @type {number} */
 let port
 /** @type {Array<typeof CONNECTION>} */
@@ -49,7 +56,8 @@ beforeEach(async () => {
   ask = vi.fn(async (_, message) => ({ jsonrpc: '2.0', id: message.id, result: { ok: true } }))
   exports = appExports()
   door = appDoor({ connections, ask, exports })
-  await door.sync()
+  // A page has said it answers: the door listens for no one before.
+  await door.pageAnswers()
 })
 
 afterEach(() => {
@@ -160,9 +168,29 @@ describe('appDoor', () => {
     }
     expect(ask).not.toHaveBeenCalled()
 
-    for (const host of ['localhost', `127.0.0.1:${port}`, '[::1]:4657', 'host.docker.internal']) {
-      expect((await send({ headers: { Host: host } })).status).toBe(200)
+    for (const host of [
+      'localhost',
+      `127.0.0.1:${port}`,
+      '[::1]:4657',
+      'host.docker.internal',
+      // What a container calls the computer it runs on, under Podman and Lima.
+      `host.containers.internal:${port}`,
+      'host.lima.internal',
+    ]) {
+      expect((await send({ headers: { Host: host } })).status, host).toBe(200)
     }
+  })
+
+  it('takes no name that only looks like one of this computer’s', async () => {
+    for (const host of [
+      'host.docker.internal.example.com',
+      'evil.host.containers.internal',
+      'host.lima.internal.',
+      'containers.internal',
+    ]) {
+      expect((await send({ headers: { Host: host } })).status, host).toBe(403)
+    }
+    expect(ask).not.toHaveBeenCalled()
   })
 
   it('answers only a POST to its one path', async () => {
@@ -256,6 +284,29 @@ describe('appDoor', () => {
     await vi.waitFor(() => expect(signal.aborted).toBe(true))
   })
 
+  it('listens for no one until a page has said it answers, whatever connections there are', async () => {
+    door.stop()
+    const unanswered = appDoor({ connections, ask, exports })
+
+    // As the app starts, and as a connection is made: nothing to answer it.
+    await unanswered.sync()
+    expect(unanswered.state()).toMatchObject({ listening: false, problem: null })
+    await expect(send()).rejects.toThrow()
+
+    await unanswered.pageAnswers()
+    expect(unanswered.state().listening).toBe(true)
+    expect((await send()).status).toBe(200)
+
+    // And from then on, for the run: a connection removed and made again.
+    held = []
+    await unanswered.sync()
+    await expect(send()).rejects.toThrow()
+    held = [CONNECTION]
+    await unanswered.sync()
+    expect((await send()).status).toBe(200)
+    unanswered.stop()
+  })
+
   it('listens only while there is a connection', async () => {
     expect(door.state()).toMatchObject({ listening: true, problem: null })
 
@@ -306,6 +357,34 @@ describe('appDoor', () => {
     other.close()
     error.mockRestore()
   })
+
+  it.skipIf(!hasV6)(
+    'says the port is in use when something else has it over IPv6, and listens on neither',
+    async () => {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      door.stop()
+      // Something else at `[::1]`, which is where `localhost` leads on some
+      // systems: an app set up with that name would hand it its token.
+      const other = http.createServer()
+      await new Promise(resolve => other.listen(port, '::1', resolve))
+
+      await door.sync()
+
+      expect(door.state()).toEqual({
+        listening: false,
+        problem: `Port ${port} is in use by something else.`,
+        called: {},
+      })
+      await expect(send()).rejects.toThrow()
+
+      // Once it is free, the door has both.
+      await new Promise(resolve => other.close(resolve))
+      await door.sync()
+      expect(door.state()).toMatchObject({ listening: true, problem: null })
+      expect((await send()).status).toBe(200)
+      error.mockRestore()
+    }
+  )
 })
 
 describe('what was made ready for an app to fetch', () => {
@@ -376,7 +455,7 @@ describe('what was made ready for an app to fetch', () => {
     const short = appExports({ life: 1 })
     const brief = appDoor({ connections, ask, exports: short })
     door.stop()
-    await brief.sync()
+    await brief.pageAnswers()
     const { id } = short.offer('app_1', FILE)
     await new Promise(resolve => setTimeout(resolve, 20))
 
@@ -414,17 +493,11 @@ describe('what was made ready for an app to fetch', () => {
   })
 
   it('is reached by the names a container asks by', async () => {
-    const { id } = exports.offer('app_1', FILE)
-    const answer = await fetchFile(id, { headers: { Host: `host.docker.internal:${port}` } })
-    expect(answer.status).toBe(200)
-  })
-
-  it('is nothing a door without any serves', async () => {
-    const bare = appDoor({ connections, ask })
-    door.stop()
-    await bare.sync()
-    expect((await fetchFile('anything')).status).toBe(404)
-    bare.stop()
+    for (const name of ['host.docker.internal', 'host.containers.internal', 'host.lima.internal']) {
+      const { id } = exports.offer('app_1', FILE)
+      const answer = await fetchFile(id, { headers: { Host: `${name}:${port}` } })
+      expect(answer.status, name).toBe(200)
+    }
   })
 })
 

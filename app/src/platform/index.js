@@ -35,6 +35,10 @@
  *   one at a time, and what the windows tell each other they changed
  * - **python** - In the desktop app, Python for the model to run code in, a
  *   session for each chat, fenced from the writer's data and the network
+ * - **apps** - In the desktop app, the other apps on the computer let into
+ *   the writer's projects: their connections and the server they come in
+ *   by, kept by the native side, this window answering what one asks, what
+ *   each last had of a document, and a file made ready for one to fetch
  * - **exportFolder** - In the desktop app, a project or a folder exported to
  *   a folder the writer chooses, rather than downloaded as a zip
  * - **printing** - In the desktop app, a document saved as a PDF where the

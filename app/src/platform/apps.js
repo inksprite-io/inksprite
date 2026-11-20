@@ -1,4 +1,4 @@
-/* global AbortController */
+/* global AbortController, queueMicrotask */
 /**
  * @module platform/apps
  * @description In the desktop app, the other apps on this computer let into
@@ -83,23 +83,24 @@ export const setAppsPort = port => bridge().setPort(port)
 export const setAppsEnabled = enabled => bridge().setEnabled(enabled)
 
 /**
- * What a connection last read or wrote of a document, as `keepAppRead` was
- * handed it: null for none, and in a desktop app from before they were kept.
+ * What a connection last read or wrote of a document, as `keepRead` was
+ * handed it, or null for none.
  *
  * @param {string} connection
  * @param {string} document
  * @returns {Promise<object|null>}
  */
-export const appRead = async (connection, document) =>
-  (await bridge().read?.(connection, document)) ?? null
+export const keptRead = async (connection, document) => bridge().read(connection, document)
 
 /**
- * Everything kept for a connection, a record for each document.
+ * Everything kept for a connection, a record for each document: whole, or
+ * only the fields named, which spares a caller the text of each.
  *
  * @param {string} connection
+ * @param {string[]} [fields]
  * @returns {Promise<object[]>}
  */
-export const appReads = async connection => (await bridge().reads?.(connection)) ?? []
+export const keptReads = async (connection, fields) => bridge().reads(connection, fields)
 
 /**
  * Keep what a connection now has of a document, in place of what it had.
@@ -109,8 +110,64 @@ export const appReads = async connection => (await bridge().reads?.(connection))
  * @param {object} record
  * @returns {Promise<void>}
  */
-export const keepAppRead = async (connection, document, record) => {
-  await bridge().keep?.(connection, document, record)
+export const keepRead = async (connection, document, record) =>
+  bridge().keep(connection, document, record)
+
+/**
+ * Let go of what was kept of some documents, or of a project's: one
+ * connection's, or every connection's where none is named.
+ *
+ * @param {{connection?: string, documents?: string[], project?: string}} what
+ * @returns {Promise<void>}
+ */
+export const forgetReads = async what => bridge().forget(what)
+
+/**
+ * Documents deleted for good that the native side has yet to be told of.
+ * @type {Set<string>}
+ */
+const deleted = new Set()
+
+/** Whether the telling of them is under way: it is done once for all that gather. */
+let telling = false
+
+/**
+ * Tell the native side what is gone, whatever comes of it: what was deleted
+ * is deleted all the same.
+ * @param {{documents?: string[], project?: string}} what
+ */
+const tellGone = what => {
+  Promise.resolve()
+    .then(() => bridge().forget(what))
+    .catch(error => console.error('What connected apps had read could not be let go of:', error))
+}
+
+/**
+ * Let go of what any connection had of a document, or of a project's
+ * documents, deleted for good: a copy of the text is not kept past it.
+ * Nothing to do outside the desktop app. Documents deleted together, as a
+ * folder's or a project's are, are told of together.
+ *
+ * @param {{document?: string, project?: string}} gone
+ */
+export function forgetReadsOf({ document, project }) {
+  // Called as a document is deleted, which nothing here is a reason to stop.
+  try {
+    if (!canConnectApps()) return
+  } catch {
+    return
+  }
+  if (project) tellGone({ project })
+  if (!document) return
+  deleted.add(document)
+  if (telling) return
+  telling = true
+  queueMicrotask(() => {
+    const documents = [...deleted]
+    deleted.clear()
+    telling = false
+    tellGone({ documents })
+  })
 }
 
 /**

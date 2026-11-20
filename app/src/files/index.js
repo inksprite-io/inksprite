@@ -27,6 +27,8 @@
  * - **download** - The file handed back, named as it came in
  * - **exportDocument** - A project, a folder or a document as it would be
  *   published: its files and directories, each text as it stands
+ * - **exportStamp** - The front matter on a document exported for another app,
+ *   saying which document it came from, and taken off one brought back in
  * - **printPage** - A document as a printed page, in the editor's styles,
  *   which takes the app's place while it prints
  * - **batch** - Many files at once, each with the folders it came in: a

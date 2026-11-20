@@ -12,7 +12,7 @@
  * - **partialJson** - The strings in JSON that has not finished arriving
  * - **plainCopy** - A deep copy of a row, as JSON would have it, without writing it out as JSON
  * - **wordCount** - Words in a document's markdown
- * - **lineDiff** - The lines that changed between two versions of a text
+ * - **lineDiff** - What changed between two texts line by line, as a patch's hunks, for a model that has the first
  * - **compareNames** - Names in the order a person expects, numbers by value
  * - **projectList** - The projects as listed for picking one: found by name, and in an order
  * - **siblingOrder** - The order a folder's children are shown in
@@ -52,6 +52,7 @@
  * - **backup** - Build and validate backup files: the whole database, a chat, settings, and a project or a selection saved before
  * - **backupArchive** - A backup as a zip, its rows as JSON and each file's bytes an entry of its own
  * - **zipWriter** - A zip written a piece at a time, a backup's and an export's
+ * - **tarWriter** - A tar written a piece at a time, an export handed to another app
  * - **settingsFile** - What a settings file holds, which of it the writer picked, and what importing one changes
  * - **settingsTree** - What Export settings offers, as a tree of boxes, and what the boxes ticked choose
  *

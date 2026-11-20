@@ -45,7 +45,8 @@ import { toolOn } from './choice.js'
  * @property {string} [postsAs] - The name the comments and suggestions a call
  *   makes are under, where the caller isn't the chat's own model: a
  *   connected app's (apps/tools.js). Absent in a chat, whose model's carry
- *   no name.
+ *   no name. A call that has one is told nothing of the writer's chats or
+ *   skills: not a chat's title, nor a skill's name.
  * @property {boolean} [propose] - Whether a tool that would change a document
  *   proposes the change to the writer instead of making it. The chat's
  *   setting, read by whoever runs the turn.

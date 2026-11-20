@@ -156,6 +156,14 @@ What differs between the app in a browser and the app in its desktop window (Ele
 
 - Requests to servers: the page's own in a browser, made from the native side in the desktop app, where no server refuses them for their origin
 
+### 🔌 [Apps](./apps.md)
+
+Other apps on the same computer working in the writer's projects, a coding agent first, in the desktop app, which serves them over MCP (in preview):
+
+- MCP's requests answered in a window, as far as tools go: a chat's document tools, with a project named on each, or only those that read
+- Several edits in a call, a revision on every read and write, and what has changed in a document since the app last had it
+- A document or a folder handed over as files by a link the app's own shell fetches, each text stamped with its document
+
 ### 🧩 [Components](./components.md)
 
 Vue components for the application UI:
@@ -257,6 +265,13 @@ Frontend (Vue 3 + Vite)
 ├── Platform (src/platform)
 │   ├── fetch - Requests to servers, from the page or from the desktop app's native side
 │   └── library - The desktop app's projects folder, and its files
+├── Apps (src/apps)
+│   ├── protocol - MCP's requests answered, as far as tools go
+│   ├── tools - The tools an app is offered, and a call to one run
+│   ├── projects - The projects ticked for an app, and a call run in one of them
+│   ├── writes - Several edits in a call, and how the text was stored
+│   ├── revisions - What an app has of a document, and what has changed since
+│   └── exports - A document or a folder made ready as files to fetch
 ├── Source (src/source)
 │   ├── rules - What of a codebase comes in, and what is left out
 │   ├── gather - Its files listed, sorted by the rules, read, and capped

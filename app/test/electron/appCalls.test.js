@@ -19,15 +19,21 @@ const MESSAGE = { jsonrpc: '2.0', id: 7, method: 'tools/list' }
  * @param {number} id
  */
 const page = id => {
-  /** @type {Record<string, () => void>} */
-  const once = {}
+  /** @type {Record<string, (...args: any[]) => void>} */
+  const heard = {}
+  const hear = vi.fn((event, listener) => (heard[event] = listener))
   return {
     id,
     send: vi.fn(),
     isDestroyed: vi.fn(() => false),
-    once: vi.fn((event, listener) => (once[event] = listener)),
+    once: hear,
+    on: hear,
     off: vi.fn(),
-    close: () => once.destroyed?.(),
+    close: () => heard.destroyed?.(),
+    crash: () => heard['render-process-gone']?.(),
+    /** Its window goes to another document, or to another place in this one. */
+    navigate: (event = { isMainFrame: true, isSameDocument: false }) =>
+      heard['did-start-navigation']?.(event),
   }
 }
 
@@ -133,6 +139,67 @@ describe('windowAsker', () => {
 
     expect(await answer).toEqual({ jsonrpc: '2.0', id: 7, result: {} })
     expect(one.off).toHaveBeenCalledWith('destroyed', expect.any(Function))
+  })
+
+  it('goes on to the next window when the one asked is reloaded, or its process ends', async () => {
+    for (const leave of [at => at.navigate(), at => at.crash()]) {
+      const [front, behind] = [page(1), page(2)]
+      const asker = windowAsker(() => [front, behind])
+
+      const answer = asker.ask(CONNECTION, MESSAGE, new AbortController().signal)
+      await tick()
+      leave(front)
+      await tick()
+      asker.answered(2, asked(behind), { response: { result: 'behind' } })
+
+      await expect(answer).resolves.toEqual({ result: 'behind' })
+    }
+  })
+
+  it('goes on waiting through a link followed within the page, and a frame’s own loading', async () => {
+    const front = page(1)
+    const asker = windowAsker(() => [front, page(2)])
+
+    const answer = asker.ask(CONNECTION, MESSAGE, new AbortController().signal)
+    await tick()
+    front.navigate({ isMainFrame: true, isSameDocument: true })
+    front.navigate({ isMainFrame: false, isSameDocument: false })
+    await tick()
+    asker.answered(1, asked(front), { response: { result: 'front' } })
+
+    await expect(answer).resolves.toEqual({ result: 'front' })
+  })
+
+  it('waits on a page only so long, tells it to stop, and asks no other window', async () => {
+    vi.useFakeTimers()
+    try {
+      const [front, behind] = [page(1), page(2)]
+      const asker = windowAsker(() => [front, behind], { patience: 5000 })
+
+      const answer = asker.ask(CONNECTION, MESSAGE, new AbortController().signal)
+      const told = expect(answer).rejects.toThrow(/took too long.*may have been done/)
+      await vi.advanceTimersByTimeAsync(4999)
+      expect(front.send).not.toHaveBeenCalledWith('apps:cancel', expect.anything())
+      await vi.advanceTimersByTimeAsync(1)
+
+      await told
+      expect(front.send).toHaveBeenCalledWith('apps:cancel', asked(front))
+      // The one asked may have done it: nothing is asked of another.
+      expect(behind.send).not.toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('takes a page’s word only for an answer or a pass', async () => {
+    const front = page(1)
+    const asker = windowAsker(() => [front])
+
+    const answer = asker.ask(CONNECTION, MESSAGE, new AbortController().signal)
+    await tick()
+    asker.answered(1, asked(front), { late: true })
+
+    await expect(answer).rejects.toThrow('inksprite isn’t ready')
   })
 
   it('tells the page to stop when the app gives up, and asks no other', async () => {

@@ -226,11 +226,15 @@ const desktop = {
     setPort: port => call('apps:port', port),
     setEnabled: enabled => call('apps:enable', enabled),
     read: (connection, document) => call('apps:read', connection, document),
-    reads: connection => call('apps:reads', connection),
+    reads: (connection, fields) => call('apps:reads', connection, fields),
     keep: (connection, document, record) => call('apps:keep', connection, document, record),
+    forget: what => call('apps:forget', what),
     offer: (connection, file) => call('apps:offer', connection, file),
+    // The native side listens for apps only once a page has said this: a
+    // page that doesn't offer connected apps never does (`apps.js`).
     answer: answer => {
       answerApps = answer
+      ipcRenderer.send('apps:answering')
     },
   },
 }

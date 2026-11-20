@@ -42,6 +42,7 @@ import {
   tellThisWindow,
 } from '@/platform/windows.js'
 import { isDesktop } from '@/platform/desktop.js'
+import { forgetReadsOf } from '@/platform/apps.js'
 import { pictureKey, pictureOfKey } from '@/utils/pictures.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { isSourceFile } from '@/source/tree.js'
@@ -182,6 +183,9 @@ export function appLocal({ syncsForApp }) {
       // A merge about to change this device's text keeps it as a version.
       if (replaced) versionsStore.before(replaced, 'sync')
       if (table === 'versions') versions.push(row)
+      // A document deleted for good elsewhere: no copy of its text is kept
+      // here for a connected app's reads, in the desktop app.
+      if (table === 'documents' && !row) forgetReadsOf({ document: id })
       if (table === 'stories') {
         if (row) storiesStore.receive(row)
         listChanged = true

@@ -27,27 +27,29 @@
  *   or a folder ready and answers with a link the app's own shell fetches,
  *   each text stamped with the document it came from (`./exports.js`), and
  *   a document is reached by the id its stamp carries, written `id:<id>`
- *   where a path goes, whatever it has been renamed since.
+ *   where a path goes, whatever it has been renamed since: a document of the
+ *   project named that the app sees, and no other.
  * - **A revision on every read and write, and what changed since one**
  *   (`./revisions.js`): what a chat's model is told on every turn of the
  *   documents it read, an app asks for.
  * - **A connection is who its comments are by**: its posts are a model's
  *   under the connection's name, which the Comments tab and other readers
  *   show.
- *
  * - **A suggestion is asked for, call by call.** In a chat, whether edits
  *   wait is the chat's setting. Here it is how the app's own assistant was
  *   asked to work, so the three tools that change a document's text take
- *   `suggest`: the change is then laid out in the text, for the writer to
- *   accept or reject, as a chat that asks first has its. A plain document
- *   holds no such marks, and a suggestion to one is refused.
- *   What is suggested and still waits is listed where it reads, as it is
+ *   `suggest`, true or false: the change is then laid out in the text, for
+ *   the writer to accept or reject, as a chat that asks first has its. A
+ *   plain document holds no such marks, and a suggestion to one is refused.
+ * - **The suggestions waiting are listed where an app reads**, as they are
  *   for a chat: after a document's comments and among a list of them, its
  *   own and everyone else's, with what was said on each
- *   (`ai/tools/commentReads.js`).
+ *   (`ai/tools/commentReads.js`). A chat's is said to be the assistant's,
+ *   without the chat's title.
  *
  * Hidden documents are not in an app's project, as they are not in a
- * chat's: hiding keeps a document from models.
+ * chat's: hiding keeps a document from models. Nor is anything of the
+ * writer's outside the projects ticked: their chats, their skills.
  */
 
 import { toolRegistry } from '@/ai/tools/index.js'
@@ -80,10 +82,10 @@ import { changesSince, unchangedAt, withRevision } from './revisions.js'
 export const LIST_PROJECTS = 'list_projects'
 
 /** The tool that says what changed since a revision an app holds. */
-export const CHANGES_SINCE = 'changes_since'
+const CHANGES_SINCE = 'changes_since'
 
 /** The tool that hands a document or a folder over as files. */
-export const EXPORT_DOCUMENT = 'export_document'
+const EXPORT_DOCUMENT = 'export_document'
 
 /** What comes before a document's id where a path goes: an exported file's stamp has the id. */
 const BY_ID = 'id:'
@@ -131,9 +133,6 @@ const WRITES_TEXT = new Set([
   'append_document',
 ])
 
-/** Those that say something on a document's comments. */
-const SAYS = new Set(COMMENTING)
-
 /** Those that change the text of a document that is there: what can be suggested instead. */
 const CHANGES_TEXT = new Set(['update_document', 'edit_document', 'append_document'])
 
@@ -143,6 +142,10 @@ const SUGGEST = {
   description:
     'Suggest the change instead of making it, for when the user asks for suggestions: it is laid out in the document for them to accept or reject there, and changes nothing until they do.',
 }
+
+/** What a call is told when its `suggest` is neither true nor false. */
+const SUGGEST_IS_A_BOOLEAN =
+  '"suggest" is true or false: true has the change suggested to the user, and false, or leaving it out, has it made. Nothing was changed.'
 
 /**
  * A tool's parameters with `suggest` among them.
@@ -505,7 +508,9 @@ export async function callTool(app, name, args, signal) {
   }
   const ran = await inProject(project.id, async () => {
     try {
-      // A document named by its id, as an exported file's stamp has it.
+      // A document named by its id, as an exported file's stamp has it: one
+      // of this project that the app sees. Any other id, a document's
+      // elsewhere or one hidden since, is answered as one nobody has.
       if (typeof rest.path === 'string' && rest.path.startsWith(BY_ID)) {
         const id = rest.path.slice(BY_ID.length).trim()
         const found = await pathInProject(asking, id)
@@ -528,7 +533,12 @@ export async function callTool(app, name, args, signal) {
 
       // Suggested, where the call asks for that: laid out in the text for
       // the writer to settle, as a chat that asks first has its changes.
-      const suggested = CHANGES_TEXT.has(name) && rest.suggest === true
+      // Asked for with anything but true or false, a "true" in quotes or a
+      // 1, the call is refused: taken for a no, the change would be made
+      // where the user had asked for a suggestion.
+      const asked = CHANGES_TEXT.has(name) ? rest.suggest : undefined
+      if (asked !== undefined && typeof asked !== 'boolean') return { error: SUGGEST_IS_A_BOOLEAN }
+      const suggested = asked === true
       if (CHANGES_TEXT.has(name)) delete rest.suggest
       const refused = suggested ? await unsuggestable(asking, path) : null
       if (refused) return refused
@@ -539,7 +549,7 @@ export async function callTool(app, name, args, signal) {
           : tool.execute(rest, context)
       const write = () =>
         WRITES_TEXT.has(name) ? answeringStored(name, rest, context, run) : run()
-      return WRITES_TEXT.has(name) || SAYS.has(name)
+      return WRITES_TEXT.has(name) || COMMENTING.includes(name)
         ? await withRevision(app, asking, name === 'create_document' ? '' : path, write)
         : await write()
     } catch (error) {

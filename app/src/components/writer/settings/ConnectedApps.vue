@@ -22,6 +22,7 @@
             >Enable MCP server</label
           >
           <ToggleSwitch
+            :key="redrawn"
             :model-value="enabled"
             :input-id="`${id}-enabled`"
             class="flex-none"
@@ -121,6 +122,7 @@
               :data-app-project="project.id"
             >
               <Checkbox
+                :key="redrawn"
                 :model-value="one.projects.includes(project.id)"
                 binary
                 size="small"
@@ -138,6 +140,7 @@
             >Read only</label
           >
           <ToggleSwitch
+            :key="redrawn"
             :model-value="one.readOnly"
             :input-id="`${id}-read-only-${one.id}`"
             class="flex-none"
@@ -257,6 +260,16 @@ const connections = computed(() => state.value?.connections ?? [])
 /** The connection whose card is open, if one's is. */
 const open = ref(/** @type {string|null} */ (null))
 
+/**
+ * Counted up when a switch's or a tick's change couldn't be made. A control
+ * keeps what was clicked until it is drawn again, and would go on showing a
+ * change that was never made.
+ */
+const redrawn = ref(0)
+
+/** Whether an app is being added, so that a second click adds no second. */
+let adding = false
+
 /** Each connection's name as it is being typed. */
 const nameDrafts = reactive(/** @type {Record<string, string>} */ ({}))
 
@@ -308,6 +321,8 @@ const projectsLine = one => {
  * over: the projects and what to set the app up with are below it.
  */
 const add = async () => {
+  if (adding) return
+  adding = true
   try {
     const made = await addApp(nextAppName(connections.value))
     open.value = made.id
@@ -320,6 +335,8 @@ const add = async () => {
   } catch (error) {
     console.error('Failed to add a connected app:', error)
     toast.error("The app couldn't be added.")
+  } finally {
+    adding = false
   }
 }
 
@@ -344,6 +361,7 @@ const tick = async (one, storyId, ticked) => {
   } catch (error) {
     console.error('Failed to change a connected app’s projects:', error)
     toast.error("The app's projects couldn't be changed.")
+    redrawn.value++
   }
 }
 
@@ -357,6 +375,7 @@ const switchReadOnly = async (one, readOnly) => {
   } catch (error) {
     console.error('Failed to change what a connected app may do:', error)
     toast.error("What the app may do couldn't be changed.")
+    redrawn.value++
   }
 }
 
@@ -455,6 +474,7 @@ const switchServer = async on => {
   } catch (error) {
     console.error('Failed to turn the MCP server on or off:', error)
     toast.error(`The MCP server couldn't be turned ${on ? 'on' : 'off'}.`)
+    redrawn.value++
   }
 }
 

@@ -103,6 +103,72 @@ describe('appReads', () => {
     expect(await reads.get('app_1', 'doc_1')).toBeNull()
   })
 
+  it('lists only the fields asked for, for a caller that wants no document’s text', async () => {
+    const reads = appReads(folder)
+    await reads.put('app_1', 'doc_1', { ...record('a'), path: 'Plan' })
+    await reads.put('app_1', 'doc_2', { storyId: 'story_b', document: 'doc_2', revision: 'b' })
+
+    const about = await reads.all('app_1', ['storyId', 'document', 'path', 'revision'])
+    expect(about.sort((a, b) => a.document.localeCompare(b.document))).toEqual([
+      { storyId: 'story_a', document: 'doc_1', path: 'Plan', revision: 'a' },
+      // A field a record doesn't have is left out, not made up.
+      { storyId: 'story_b', document: 'doc_2', revision: 'b' },
+    ])
+    // Nothing a record inherits is a field of it.
+    expect(await reads.all('app_1', ['constructor', 'toString'])).toEqual([{}, {}])
+    await expect(reads.all('app_1', 'text')).rejects.toThrow('list')
+    await expect(reads.all('app_1', [1])).rejects.toThrow('list')
+  })
+
+  it('forgets what was kept of documents, for one connection or for every one', async () => {
+    const reads = appReads(folder)
+    for (const connection of ['app_1', 'app_2']) {
+      for (const document of ['doc_1', 'doc_2', 'doc_3']) {
+        await reads.put(connection, document, { ...record(), document })
+      }
+    }
+
+    // Told that one is gone: that connection's record of it, and no other.
+    await reads.forgetDocuments(['doc_1'], 'app_1')
+    expect(await reads.get('app_1', 'doc_1')).toBeNull()
+    expect(await reads.get('app_2', 'doc_1')).not.toBeNull()
+    expect(await reads.get('app_1', 'doc_2')).not.toBeNull()
+
+    // Deleted for good: everyone's, the files with their text gone from the disk.
+    await reads.forgetDocuments(['doc_1', 'doc_2', 'doc_never_read'])
+    for (const connection of ['app_1', 'app_2']) {
+      expect(await fs.readdir(path.join(folder, connection))).toEqual(['doc_3.json'])
+    }
+  })
+
+  it('forgets nothing for what is not a list of ids, and is at ease with nothing kept', async () => {
+    const reads = appReads(folder)
+    await reads.forgetDocuments(['doc_1'])
+    await reads.forgetWhere(() => true)
+
+    await reads.put('app_1', 'doc_1', record())
+    await expect(reads.forgetDocuments('doc_1')).rejects.toThrow('list')
+    await expect(reads.forgetDocuments(['../../apps'])).rejects.toThrow('id')
+    await expect(reads.forgetDocuments(['doc_1'], '../app_1')).rejects.toThrow('id')
+    expect(await reads.get('app_1', 'doc_1')).toEqual(record())
+  })
+
+  it('forgets the records a test picks out, for one connection or for every one', async () => {
+    const reads = appReads(folder)
+    for (const connection of ['app_1', 'app_2']) {
+      await reads.put(connection, 'doc_1', { ...record(), storyId: 'story_a' })
+      await reads.put(connection, 'doc_2', { ...record(), document: 'doc_2', storyId: 'story_b' })
+    }
+    const inA = one => one.storyId === 'story_a'
+
+    await reads.forgetWhere(inA, 'app_1')
+    expect((await reads.all('app_1')).map(one => one.document)).toEqual(['doc_2'])
+    expect(await reads.all('app_2')).toHaveLength(2)
+
+    await reads.forgetWhere(inA)
+    expect((await reads.all('app_2')).map(one => one.document)).toEqual(['doc_2'])
+  })
+
   it('reads a file that is not a record as none', async () => {
     const reads = appReads(folder)
     await fs.mkdir(path.join(folder, 'app_1'), { recursive: true })
