@@ -55,11 +55,14 @@ describe('answerRequest', () => {
     const reads = instructionsFor(APP)
     expect(reads).toContain('to list, search and read their documents')
     expect(reads).toContain('changes_since')
+    expect(reads).toContain('id:<the id>')
+    expect(reads).not.toContain('export_project')
     expect(reads).not.toMatch(/edit_document|add_comment/)
 
     const edits = instructionsFor({ ...APP, edit: 'editing' })
     expect(edits).toContain('to read and write their documents')
     expect(edits).toContain('edit_document')
+    expect(edits).toContain('export_project')
     expect(edits).not.toContain('add_comment')
 
     const comments = instructionsFor({ ...APP, comment: true })

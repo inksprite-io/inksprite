@@ -21,6 +21,7 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useCloudSync } from './useCloudSync.js'
 import { useExport } from './useExport.js'
+import { exportFolderOf, exportFolderOffered, folderName } from './useExportFolder.js'
 import { useProjects } from './useProjects.js'
 import { useReveal } from './useReveal.js'
 import { saveNow } from './useSaveBeforeClosing.js'
@@ -120,6 +121,15 @@ export function useProjectActions() {
   }
 
   /**
+   * To the folder linked to it, in place: a repository's docs, kept up.
+   * @param {string} storyId
+   * @param {boolean} current
+   */
+  const exportToLinked = async (storyId, current) => {
+    if (current || (await ready(storyId))) await useExport(storyId, toast).exportToLinked()
+  }
+
+  /**
    * To the trash, and to another project if it was the one open, with an
    * Undo that brings it back, and back open if it was. One shared goes to
    * this account's trash alone, and stops syncing until it is back.
@@ -209,6 +219,7 @@ export function useProjectActions() {
 
     // One shared with this account shows its people, and is its owner's to keep off.
     const sharedWithMe = sharing.value.projects[storyId]?.role === 'member'
+    const linked = exportFolderOffered() ? exportFolderOf(storyId) : null
     return [
       {
         label: 'Project settings',
@@ -220,6 +231,16 @@ export function useProjectActions() {
         icon: 'pi pi-download',
         command: () => exportProject(storyId, current),
       },
+      // In the desktop app, once it is linked to a folder: there, in place.
+      ...(linked
+        ? [
+            {
+              label: `Export to ${folderName(linked)}`,
+              icon: 'pi pi-file-export',
+              command: () => exportToLinked(storyId, current),
+            },
+          ]
+        : []),
       ...(reveal ? [reveal] : []),
       // Signed in to sync: shared, kept on this device, or synced again. One
       // shared with this account is its owner's to keep off.

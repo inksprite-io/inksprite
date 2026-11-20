@@ -176,6 +176,30 @@
  *   a folder of this name to start with; null when the writer cancelled
  * @property {(target: string, entries: DesktopExportEntry[]) => Promise<void>} write -
  *   Write an export where the writer chose, in place of what is there
+ * @property {(storyId: string) => Promise<string|null>} [linked] - The folder
+ *   a project is exported to again and again, or null
+ *   (`app/electron/src/exportLinks.js`). Missing, with the four below, from a
+ *   desktop app from before folders were linked.
+ * @property {(storyId: string) => Promise<string|null>} [link] - Ask the
+ *   writer for that folder; null when they cancelled
+ * @property {(storyId: string) => Promise<void>} [unlink]
+ * @property {(storyId: string, paths: string[]) => Promise<Record<string, string|null>>} [look] -
+ *   The text of each of these files as it is in the project's folder now
+ * @property {(storyId: string, entries: Array<DesktopExportEntry|{path: string, text: string, own?: boolean}>) => Promise<LinkedExportReport>} [apply] -
+ *   Write an export into the project's folder, in place
+ */
+
+/**
+ * What an export to a project's linked folder did, by paths below the
+ * folder (`app/electron/src/exportLinks.js`).
+ *
+ * @typedef {Object} LinkedExportReport
+ * @property {string} folder - Where, on this disk
+ * @property {string[]} written - Made, or changed
+ * @property {string[]} edited - Of those, the ones changed outside inksprite
+ *   or not the export's: now in the system's trash
+ * @property {string[]} removed - No longer in the export: in the system's trash
+ * @property {number} unchanged - How many were already as they would be written
  */
 
 /**

@@ -26,6 +26,7 @@
  * the same way, by `fromLibrary`.
  */
 
+import { withoutStamp } from '@/files/exportStamp.js'
 import { cardFromPng } from '@/cards/png.js'
 import { shapeOf, readCard, readLorebook } from '@/cards/card.js'
 import { reimportCard, shelfFor, writeCard, writeLorebook, writeMarkdown } from '@/cards/write.js'
@@ -129,8 +130,10 @@ export function useCardImport(storyId) {
     const readable = file.size <= MAX_TEXT_BYTES
 
     if (readable && (MARKDOWN.test(file.name) || file.type === 'text/markdown')) {
-      // A Google Doc's pictures come written into its markdown.
-      const { markdown, pictures } = takePictures(await file.text())
+      // A Google Doc's pictures come written into its markdown. A file an
+      // export stamped comes in without the stamp, which the editor would
+      // read as a rule and a heading.
+      const { markdown, pictures } = takePictures(withoutStamp(await file.text()))
       return {
         shape: 'markdown',
         title: file.name.replace(/\.[^.]+$/, ''),

@@ -24,6 +24,11 @@
  *   project block, the chat, or tools an app isn't offered, the app is given
  *   another.
  * - **Several edits in a call, and how the text was stored** (`./writes.js`).
+ * - **The project written out**: `export_project` writes it into the folder
+ *   the writer linked to it, each text stamped with the document it came
+ *   from (`composables/useExport.js`), and a document is reached by the id
+ *   its stamp carries, written `id:<id>` where a path goes, whatever it has
+ *   been renamed since.
  * - **A revision on every read and write, and what changed since one**
  *   (`./revisions.js`): what a chat's model is told on every turn of the
  *   documents it read, an app asks for.
@@ -43,7 +48,8 @@
  */
 
 import { toolRegistry } from '@/ai/tools/index.js'
-import { SUGGESTED_NOTE, documentForChat } from '@/ai/tools/documents.js'
+import { SUGGESTED_NOTE, documentForChat, pathInProject } from '@/ai/tools/documents.js'
+import { NO_LINKED_FOLDER, exportToLinkedFolder } from '@/composables/useExport.js'
 import { findProject, inProject, projectsOf } from './projects.js'
 import { answeringStored, editMany } from './writes.js'
 import { changesSince, unchangedAt, withRevision } from './revisions.js'
@@ -72,6 +78,12 @@ export const LIST_PROJECTS = 'list_projects'
 
 /** The tool that says what changed since a revision an app holds. */
 export const CHANGES_SINCE = 'changes_since'
+
+/** The tool that writes a project into the folder linked to it. */
+export const EXPORT_PROJECT = 'export_project'
+
+/** What comes before a document's id where a path goes: an exported file's stamp has the id. */
+const BY_ID = 'id:'
 
 /**
  * The document tools that read. `explore_documents` is left out: it runs a
@@ -271,6 +283,15 @@ const CHANGES_SINCE_TOOL = {
   annotations: { readOnlyHint: true },
 }
 
+/** @type {AppTool} */
+const EXPORT_PROJECT_TOOL = {
+  name: EXPORT_PROJECT,
+  description:
+    "Write the project out as Markdown files, into the folder the user linked to it on their computer: for putting a finished design into a repository. Files and folders go by the documents' paths, each text as it stands without comments or suggestions, and only what has changed is written. Each text is stamped in its front matter with the document it came from; its `id` there reaches the document from any tool here, as the path `id:<that id>`. The answer names the folder and, by path below it, what was written and what was removed, and under `edited` any file that had been changed there since it was last exported: that copy is in the system's trash, and the file now says what the document says. Change documents here, not the exported files. Where no folder is linked, it says so: the user links one in inksprite, in Settings › Project.",
+  inputSchema: { type: 'object', properties: { project: PROJECT } },
+  annotations: { readOnlyHint: false, destructiveHint: true },
+}
+
 /**
  * The document tools an app is offered, by name: those that read, and those
  * of what else its connection may do.
@@ -326,12 +347,51 @@ export function toolsFor(app) {
     }
   })
   // What changed since, after the tools that read: it stands in for a read.
+  // The export, after those that edit, for a connection that does.
+  const edits = app.edit === 'off' ? 0 : EDITING.length
   return [
     LIST_PROJECTS_TOOL,
     ...documents.slice(0, READING.length),
     CHANGES_SINCE_TOOL,
-    ...documents.slice(READING.length),
+    ...documents.slice(READING.length, READING.length + edits),
+    ...(edits ? [EXPORT_PROJECT_TOOL] : []),
+    ...documents.slice(READING.length + edits),
   ]
+}
+
+/**
+ * Write a project into the folder linked to it, for an app, and say what
+ * that did.
+ *
+ * @param {string} storyId
+ * @returns {Promise<Record<string, any>>}
+ */
+async function exportProject(storyId) {
+  try {
+    const { folder, written, removed, edited, unchanged, missing } =
+      await exportToLinkedFolder(storyId)
+    return {
+      folder,
+      written,
+      removed,
+      unchanged,
+      ...(edited.length
+        ? {
+            edited,
+            note: "The files under `edited` had been changed in the folder since they were last exported. Those copies are in the system's trash, and the files now say what their documents say: tell the user.",
+          }
+        : {}),
+      ...(missing ? { missing } : {}),
+    }
+  } catch (error) {
+    const why = error instanceof Error ? error.message : String(error)
+    return {
+      error:
+        why === NO_LINKED_FOLDER
+          ? 'No folder is linked to this project. The user links one in inksprite: Settings › Project › Export folder.'
+          : `The project couldn't be exported. ${why}`,
+    }
+  }
 }
 
 /**
@@ -416,11 +476,25 @@ export async function callTool(app, name, args, signal) {
   // and suggestions are by.
   const asking = { storyId: project.id, chatId: `app:${app.id}`, postsAs: app.name, signal }
   const tool = toolRegistry.tools.get(name)
-  if (name !== CHANGES_SINCE && (!tool || !offered(app).includes(name))) {
+  const own = name === CHANGES_SINCE || (name === EXPORT_PROJECT && app.edit !== 'off')
+  if (!own && (!tool || !offered(app).includes(name))) {
     return { result: toResult({ error: `Unknown tool: ${name}` }) }
   }
   const ran = await inProject(project.id, async () => {
     try {
+      if (name === EXPORT_PROJECT) return await exportProject(project.id)
+
+      // A document named by its id, as an exported file's stamp has it.
+      if (typeof rest.path === 'string' && rest.path.startsWith(BY_ID)) {
+        const id = rest.path.slice(BY_ID.length).trim()
+        const found = await pathInProject(asking, id)
+        if (!found) {
+          return {
+            error: `No document with the id "${id}" in "${project.name}". list_documents shows what the project holds.`,
+          }
+        }
+        rest.path = found
+      }
       if (name === CHANGES_SINCE || !tool) return await changesSince(app, asking, rest)
       const path = typeof rest.path === 'string' ? rest.path : ''
       if (name === 'read_document') {

@@ -38,6 +38,13 @@ vi.mock('@/platform/apps.js', () => ({
   }),
 }))
 
+/** The export to a project's linked folder, stood in for: there is no folder here. */
+const exporting = vi.hoisted(() => ({ toLinked: vi.fn() }))
+vi.mock('@/composables/useExport.js', async original => ({
+  ...(await original()),
+  exportToLinkedFolder: (/** @type {string} */ storyId) => exporting.toLinked(storyId),
+}))
+
 const projects = vi.hoisted(() => ({
   projectsOf: vi.fn(),
   findProject: vi.fn(),
@@ -106,6 +113,7 @@ describe('toolsFor', () => {
       'append_document',
       'move_document',
       'delete_document',
+      'export_project',
     ])
   })
 
@@ -115,6 +123,7 @@ describe('toolsFor', () => {
 
   it('offers the tools that comment to a connection that comments', () => {
     const names = toolsFor({ ...APP, comment: true }).map(tool => tool.name)
+    expect(names).not.toContain('export_project')
     expect(names.slice(6)).toEqual([
       'list_comments',
       'add_comment',
@@ -129,7 +138,13 @@ describe('toolsFor', () => {
     for (const name of ['create_document', 'create_folder', 'append_document', 'add_comment']) {
       expect(hints[name], name).toEqual({ readOnlyHint: false, destructiveHint: false })
     }
-    for (const name of ['edit_document', 'update_document', 'move_document', 'delete_document']) {
+    for (const name of [
+      'edit_document',
+      'update_document',
+      'move_document',
+      'delete_document',
+      'export_project',
+    ]) {
       expect(hints[name], name).toEqual({ readOnlyHint: false, destructiveHint: true })
     }
   })
@@ -399,6 +414,102 @@ describe('callTool', () => {
       signal
     )
     expect(parts(since)[1]).toContain('+The vault opens at "dusk".')
+  })
+
+  it('reaches a document by the id an exported file’s stamp carries, whatever it is called now', async () => {
+    const read = await callTool(APP, 'read_document', { path: 'id:doc_plan' }, signal)
+    expect(JSON.parse(parts(read)[0])).toMatchObject({ id: 'doc_plan', path: 'notes/Plan' })
+
+    await callTool(WRITER, 'move_document', { path: 'notes/Plan', to: 'notes/The plan' }, signal)
+    const edit = await callTool(
+      WRITER,
+      'edit_document',
+      { path: 'id:doc_plan', old: 'rope', new: 'wire' },
+      signal
+    )
+    expect(JSON.parse(parts(edit)[0])).toMatchObject({
+      success: true,
+      document: { path: 'notes/The plan' },
+    })
+
+    const since = await callTool(
+      WRITER,
+      'changes_since',
+      { path: ' id:doc_plan'.trim(), revision: 'x' },
+      signal
+    )
+    expect(JSON.parse(parts(since)[0]).path).toBe('notes/The plan')
+  })
+
+  it('says so for an id no document here has, or one that is hidden', async () => {
+    const none = await callTool(APP, 'read_document', { path: 'id:doc_nothing' }, signal)
+    expect(none.result).toEqual({
+      content: [
+        {
+          type: 'text',
+          text: 'No document with the id "doc_nothing" in "Thief". list_documents shows what the project holds.',
+        },
+      ],
+      isError: true,
+    })
+    const hidden = await callTool(APP, 'read_document', { path: 'id:doc_secret' }, signal)
+    expect(hidden.result.isError).toBe(true)
+    expect(parts(hidden).join(' ')).not.toContain('Nobody reads this')
+  })
+
+  it('writes the project out to its linked folder for a connection that edits, and says what that did', async () => {
+    exporting.toLinked.mockResolvedValue({
+      folder: '/repo/docs',
+      written: ['notes/Plan.md'],
+      removed: ['notes/Old.md'],
+      edited: [],
+      unchanged: 3,
+      missing: 0,
+    })
+
+    const answer = await callTool(WRITER, 'export_project', { project: 'Thief' }, signal)
+
+    expect(exporting.toLinked).toHaveBeenCalledWith(STORY)
+    expect(projects.inProject).toHaveBeenCalledWith(STORY, expect.any(Function))
+    expect(JSON.parse(parts(answer)[0])).toEqual({
+      folder: '/repo/docs',
+      written: ['notes/Plan.md'],
+      removed: ['notes/Old.md'],
+      unchanged: 3,
+    })
+  })
+
+  it('names the copies an export replaced that had been changed outside', async () => {
+    exporting.toLinked.mockResolvedValue({
+      folder: '/repo/docs',
+      written: ['notes/Plan.md'],
+      removed: [],
+      edited: ['notes/Plan.md'],
+      unchanged: 0,
+      missing: 2,
+    })
+
+    const said = JSON.parse(parts(await callTool(WRITER, 'export_project', {}, signal))[0])
+    expect(said.edited).toEqual(['notes/Plan.md'])
+    expect(said.note).toContain("system's trash")
+    expect(said.missing).toBe(2)
+  })
+
+  it('says where a folder is linked when the project has none, and what else went wrong', async () => {
+    exporting.toLinked.mockRejectedValue(new Error('No folder is linked to this project.'))
+    const none = await callTool(WRITER, 'export_project', {}, signal)
+    expect(none.result.isError).toBe(true)
+    expect(parts(none)[0]).toContain('Settings › Project › Export folder')
+
+    exporting.toLinked.mockRejectedValue(new Error('Plan.md goes through a link.'))
+    const failed = await callTool(WRITER, 'export_project', {}, signal)
+    expect(parts(failed)[0]).toBe("The project couldn't be exported. Plan.md goes through a link.")
+  })
+
+  it('exports nothing for a connection that doesn’t edit', async () => {
+    const answer = await callTool(APP, 'export_project', {}, signal)
+    expect(parts(answer)[0]).toBe('Unknown tool: export_project')
+    expect(exporting.toLinked).not.toHaveBeenCalled()
   })
 
   it('lists and searches without what is hidden', async () => {

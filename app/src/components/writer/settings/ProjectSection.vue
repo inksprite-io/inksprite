@@ -34,6 +34,38 @@
       />
     </div>
 
+    <!-- In the desktop app: the folder the project is exported to again and
+         again, a repository's docs. -->
+    <div v-if="exportFolderOffered()" class="flex flex-col gap-1 px-2 pt-1 pb-2" data-export-folder>
+      <span class="text-xs font-medium text-surface-700 dark:text-surface-200">Export folder</span>
+      <div class="flex items-center gap-2">
+        <code
+          v-if="exportFolder"
+          class="flex-1 min-w-0 truncate text-xs text-surface-900 dark:text-surface-0"
+          :title="exportFolder"
+          data-export-folder-path
+          >{{ shortFolder(exportFolder) }}</code
+        >
+        <Button
+          :label="exportFolder ? 'Change…' : 'Choose…'"
+          size="small"
+          severity="secondary"
+          outlined
+          data-action="choose-export-folder"
+          @click="chooseExportFolder"
+        />
+        <Button
+          v-if="exportFolder"
+          label="Remove"
+          size="small"
+          severity="secondary"
+          text
+          data-action="remove-export-folder"
+          @click="removeExportFolder"
+        />
+      </div>
+    </div>
+
     <!-- What a new chat here starts on: the chats are the AI's. -->
     <div v-if="aiEnabled" class="flex flex-col gap-1 px-2 pt-1 pb-2">
       <label
@@ -72,6 +104,7 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
@@ -79,6 +112,13 @@ import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import ProjectSharing from './ProjectSharing.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useCloudSync } from '@/composables/useCloudSync.js'
+import {
+  chooseExportFolderFor,
+  exportFolderOf,
+  exportFolderOffered,
+  removeExportFolderOf,
+  shortFolder,
+} from '@/composables/useExportFolder.js'
 import { useProfiles } from '@/composables/useProfiles'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useToast } from '@/composables/useToast'
@@ -108,6 +148,27 @@ const cloud = useCloudSync()
 const toast = useToast()
 
 const root = computed(() => documentsStore.getRoot(props.storyId))
+
+/** The folder the project is exported to again and again, in the desktop app. */
+const exportFolder = computed(() => exportFolderOf(props.storyId))
+
+const chooseExportFolder = async () => {
+  try {
+    await chooseExportFolderFor(props.storyId)
+  } catch (error) {
+    console.error('Failed to choose the export folder:', error)
+    toast.error("The folder couldn't be chosen.")
+  }
+}
+
+const removeExportFolder = async () => {
+  try {
+    await removeExportFolderOf(props.storyId)
+  } catch (error) {
+    console.error('Failed to remove the export folder:', error)
+    toast.error("The folder couldn't be removed.")
+  }
+}
 const story = computed(() => storiesStore.getStory(props.storyId))
 
 /** The field typed in and not left yet, which what changes elsewhere leaves alone. @type {import('vue').Ref<'title'|'summary'|null>} */

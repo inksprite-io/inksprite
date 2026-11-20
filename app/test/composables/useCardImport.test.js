@@ -266,6 +266,28 @@ describe('useCardImport', () => {
       expect(document.content).toContain('# The Road North')
     })
 
+    it('takes the stamp off a file exported to a linked folder', async () => {
+      const text = [
+        '---',
+        'inksprite:',
+        '  project: Thief',
+        '  document: Chapter 1',
+        '  id: doc_1',
+        '  hash: 0123456789abcdef',
+        '  note: Exported from inksprite.',
+        '---',
+        '',
+        '# Chapter 1',
+        '',
+        'It rained.',
+        '',
+      ].join('\n')
+      const found = await useCardImport(STORY).inspect(
+        new File([text], 'Chapter 1.md', { type: 'text/markdown' })
+      )
+      expect(found.value).toBe('# Chapter 1\n\nIt rained.\n')
+    })
+
     it('takes plain text as readily as markdown', async () => {
       const found = await cards.inspect(file('notes.txt', 'Some notes.'))
 

@@ -1,7 +1,13 @@
 /* global Blob */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { unzipSync } from 'fflate'
-import { fileOfExport, useExport } from '@/composables/useExport.js'
+import {
+  NO_LINKED_FOLDER,
+  exportToLinkedFolder,
+  fileOfExport,
+  useExport,
+} from '@/composables/useExport.js'
+import { readStamp, stamped } from '@/files/exportStamp.js'
 
 const documents = {
   root_story_1: { id: 'root_story_1', type: 'folder', title: 'My Project' },
@@ -13,6 +19,7 @@ vi.mock('@/composables/useDocuments.js', () => ({
       documents[/** @type {keyof typeof documents} */ (id)] ?? null,
     childrenOf: () => [],
     currentContent: () => '',
+    init: async () => {},
   }),
 }))
 vi.mock('@/stores/filesStore', () => ({ useFilesStore: () => ({ getFile: async () => null }) }))
@@ -35,11 +42,17 @@ const folders = vi.hoisted(() => ({
   can: false,
   choose: vi.fn(),
   write: vi.fn(),
+  linked: vi.fn(),
+  look: vi.fn(),
+  apply: vi.fn(),
 }))
 vi.mock('@/platform/exportFolder.js', () => ({
   canExportToFolder: () => folders.can,
   chooseExportFolder: (/** @type {string} */ name) => folders.choose(name),
   writeExportFolder: (/** @type {any[]} */ ...args) => folders.write(...args),
+  linkedExportFolder: (/** @type {string} */ storyId) => folders.linked(storyId),
+  lookInLinkedFolder: (/** @type {any[]} */ ...args) => folders.look(...args),
+  writeLinkedFolder: (/** @type {any[]} */ ...args) => folders.apply(...args),
 }))
 vi.mock('@/storage/index.js', () => ({
   storage: { filePath: async (/** @type {string} */ id) => `My Project/${id}.pdf` },
@@ -193,5 +206,117 @@ describe('useExport', () => {
       expect(downloadBlob.mock.calls[0][1]).toBe('Prologue.md')
       expect(exportEntries.mock.calls[0][0].located).toBeUndefined()
     })
+  })
+})
+
+describe('an export to the project’s linked folder', () => {
+  const report = (/** @type {object} */ patch = {}) => ({
+    folder: '/repo/docs',
+    written: ['Prologue.md'],
+    edited: [],
+    removed: [],
+    unchanged: 0,
+    ...patch,
+  })
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    folders.linked.mockResolvedValue('/repo/docs')
+    folders.look.mockResolvedValue({})
+    folders.apply.mockResolvedValue(report())
+    exportEntries.mockResolvedValue({
+      name: 'My Project',
+      entries: [
+        { path: 'My Project', folder: true },
+        { path: 'My Project/Prologue.md', text: 'stamped: The gate.' },
+      ],
+      missing: 0,
+    })
+  })
+
+  it('is refused for a project with no folder, before anything is read', async () => {
+    folders.linked.mockResolvedValue(null)
+
+    await expect(exportToLinkedFolder('story_1')).rejects.toThrow(NO_LINKED_FOLDER)
+    expect(exportEntries).not.toHaveBeenCalled()
+  })
+
+  it('exports the whole project, stamping each text with the document it came from', async () => {
+    const done = await exportToLinkedFolder('story_1')
+
+    expect(done).toEqual({ ...report(), missing: 0 })
+    const [source, top] = exportEntries.mock.calls[0]
+    expect(top).toBe('root_story_1')
+    expect(await source.located('doc_9')).toBe('My Project/doc_9.pdf')
+
+    const text = await source.stamp(documents.doc_1, 'The gate.')
+    expect(readStamp(text)).toMatchObject({
+      stamp: { project: 'My Project', document: 'Prologue', id: 'doc_1' },
+      // Ending in a newline, as a file in a repository does.
+      body: 'The gate.\n',
+    })
+    expect(readStamp(await source.stamp(documents.doc_1, 'The gate.\n')).body).toBe('The gate.\n')
+    expect(folders.apply).toHaveBeenCalledWith('story_1', [
+      { path: 'My Project', folder: true },
+      { path: 'My Project/Prologue.md', text: 'stamped: The gate.' },
+    ])
+  })
+
+  it('looks at the texts that are there, and says which are older exports of its own', async () => {
+    const from = { project: 'My Project', document: 'Prologue', id: 'doc_1' }
+    const now = await stamped(from, 'The gate, rewritten.')
+    const older = await stamped(from, 'The gate.')
+    const entry = { path: 'My Project/Prologue.md', text: now }
+    exportEntries.mockResolvedValue({ name: 'My Project', entries: [entry], missing: 0 })
+
+    // An older export, as it was left: the export's own.
+    folders.look.mockResolvedValue({ 'My Project/Prologue.md': older })
+    await exportToLinkedFolder('story_1')
+    expect(folders.look).toHaveBeenCalledWith('story_1', ['My Project/Prologue.md'])
+    expect(folders.apply).toHaveBeenLastCalledWith('story_1', [{ ...entry, own: true }])
+
+    // Changed outside since: not said to be.
+    folders.look.mockResolvedValue({ 'My Project/Prologue.md': `${older}\nAdded in the repo.` })
+    await exportToLinkedFolder('story_1')
+    expect(folders.apply).toHaveBeenLastCalledWith('story_1', [entry])
+
+    // Nothing there, or the same already: nothing to say.
+    for (const there of [null, now]) {
+      folders.look.mockResolvedValue({ 'My Project/Prologue.md': there })
+      await exportToLinkedFolder('story_1')
+      expect(folders.apply).toHaveBeenLastCalledWith('story_1', [entry])
+    }
+  })
+
+  it('says nothing when it goes as it should', async () => {
+    expect(await useExport('story_1').exportToLinked()).toBe(true)
+    expect(toast.warning).not.toHaveBeenCalled()
+    expect(toast.error).not.toHaveBeenCalled()
+  })
+
+  it('tells of copies changed outside that it replaced, and of files left out', async () => {
+    folders.apply.mockResolvedValue(report({ edited: ['Prologue.md'] }))
+    await useExport('story_1').exportToLinked()
+    expect(toast.warning).toHaveBeenCalledWith(
+      "A file had been changed outside inksprite, and was replaced. The copy that was there is in the system's trash."
+    )
+
+    toast.warning.mockClear()
+    folders.apply.mockResolvedValue(report({ edited: ['a.md', 'b.md'] }))
+    exportEntries.mockResolvedValue({ name: 'My Project', entries: [], missing: 1 })
+    await useExport('story_1').exportToLinked()
+    expect(toast.warning).toHaveBeenCalledTimes(2)
+    expect(toast.warning.mock.calls[1][0]).toContain('2 files had been changed outside inksprite')
+  })
+
+  it('says what went wrong, and that it wasn’t exported', async () => {
+    folders.apply.mockRejectedValue(new Error('Plan.md is there, and isn’t a file.'))
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    expect(await useExport('story_1').exportToLinked()).toBe(false)
+    expect(toast.error).toHaveBeenCalledWith(
+      "The project couldn't be exported. Plan.md is there, and isn’t a file."
+    )
+    error.mockRestore()
   })
 })

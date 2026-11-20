@@ -21,6 +21,14 @@ vi.mock('../../electron/src/sandbox.js', () => ({
 
 const apps = vi.hoisted(() => ({ handleApps: vi.fn() }))
 vi.mock('../../electron/src/apps.js', () => apps)
+const links = vi.hoisted(() => ({
+  linked: vi.fn(),
+  link: vi.fn(),
+  unlink: vi.fn(),
+  look: vi.fn(),
+  apply: vi.fn(),
+}))
+vi.mock('../../electron/src/exportLinks.js', () => ({ exportLinks: () => links }))
 
 import { handleBridge, projectFiles } from '../../electron/src/bridge.js'
 
@@ -87,6 +95,43 @@ describe('handleBridge', () => {
 
     BrowserWindow.getFocusedWindow.mockReturnValue(null)
     expect(appsBridge.pages()).toEqual([back.webContents, front.webContents])
+  })
+
+  it('links a project to a folder by its id, the dialog being the asking window’s', async () => {
+    const window = { id: 7 }
+    BrowserWindow.fromWebContents.mockReturnValue(window)
+    links.link.mockResolvedValue('/repo/docs')
+    links.linked.mockResolvedValue('/repo/docs')
+
+    expect(await handlers['export:link'](page(), 'story_a')).toEqual({ value: '/repo/docs' })
+    expect(links.link).toHaveBeenCalledWith(window, 'story_a')
+    expect(await handlers['export:linked'](page(), 'story_a')).toEqual({ value: '/repo/docs' })
+    await handlers['export:unlink'](page(), 'story_a')
+    expect(links.unlink).toHaveBeenCalledWith('story_a')
+  })
+
+  it('reads and writes a linked folder for the project named, and for the app’s page only', async () => {
+    links.look.mockResolvedValue({ 'Thief/Plan.md': '# Plan' })
+    links.apply.mockResolvedValue({ folder: '/repo/docs', written: ['Plan.md'] })
+    const entries = [{ path: 'Thief/Plan.md', text: '# Plan' }]
+
+    expect(await handlers['export:look'](page(), 'story_a', ['Thief/Plan.md'])).toEqual({
+      value: { 'Thief/Plan.md': '# Plan' },
+    })
+    expect(await handlers['export:apply'](page(), 'story_a', entries)).toEqual({
+      value: { folder: '/repo/docs', written: ['Plan.md'] },
+    })
+    expect(links.apply).toHaveBeenCalledWith('story_a', entries, expect.any(Function))
+
+    links.apply.mockClear()
+    expect(
+      await handlers['export:apply'](
+        page({ url: 'https://elsewhere.example/' }),
+        'story_a',
+        entries
+      )
+    ).toEqual({ error: expect.stringContaining('Only the app') })
+    expect(links.apply).not.toHaveBeenCalled()
   })
 
   it('answers the apps’ handlers for the app’s page only', async () => {

@@ -58,6 +58,10 @@ import { isText } from './inspect.js'
  * @property {(id: string) => Promise<string|null>} [located] - Where a file is
  *   in the library, for an export written to a folder to copy it from; null
  *   for one to read instead
+ * @property {(document: Document, text: string) => Promise<string>} [stamp] -
+ *   A text as it is written, given what it would be: for an export to a
+ *   project's linked folder, which says above each text where it came from
+ *   (`files/exportStamp.js`). Not asked of a plain document, kept as typed.
  */
 
 /**
@@ -345,7 +349,9 @@ export async function exportEntries(source, topId) {
       continue
     }
     if (document.type === 'text') {
-      entries.push({ path: at.path, text: await textOf(document, at) })
+      const text = await textOf(document, at)
+      const written = source.stamp && !document.plain ? await source.stamp(document, text) : text
+      entries.push({ path: at.path, text: written })
     } else {
       const entry = await fileOf(document, at.path)
       if (entry) entries.push(entry)

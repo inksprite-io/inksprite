@@ -346,3 +346,39 @@ describe('exportEntries', () => {
     })
   })
 })
+
+describe('an export that stamps', () => {
+  it('writes each structured text as its stamp makes it, and leaves the rest as they are', async () => {
+    const source = {
+      ...sourceOf(
+        [
+          root,
+          row({ id: 'd1', title: 'Plan', content: 'The plan.' }),
+          row({ id: 'p1', title: 'odds.py', plain: true, content: 'print(1)\n' }),
+          row({ id: 'f1', type: 'folder', title: 'Notes' }),
+          row({ id: 'd2', title: 'Crew', parentId: 'f1', content: 'Mara.' }),
+          row({ id: 'file1', type: 'file', title: 'Rules', mime: 'application/pdf' }),
+        ],
+        { bytes: { file1: new Blob(['%PDF'], { type: 'application/pdf' }) } }
+      ),
+      stamp: async (/** @type {Document} */ document, /** @type {string} */ text) =>
+        `<!-- ${document.id} -->\n${text}`,
+    }
+
+    const { entries } = await exportEntries(source, ROOT)
+    const written = byPath(entries)
+
+    expect(written['My Project/Plan.md']).toBe('<!-- d1 -->\nThe plan.')
+    expect(written['My Project/Notes/Crew.md']).toBe('<!-- d2 -->\nMara.')
+    expect(written['My Project/odds.py']).toBe('print(1)\n')
+    expect(written['My Project/Rules.pdf']).toBeInstanceOf(Blob)
+  })
+
+  it('stamps nothing where none is asked for', async () => {
+    const { entries } = await exportEntries(
+      sourceOf([root, row({ id: 'd1', title: 'Plan', content: 'The plan.' })]),
+      ROOT
+    )
+    expect(byPath(entries)['My Project/Plan.md']).toBe('The plan.')
+  })
+})

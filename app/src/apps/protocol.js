@@ -47,6 +47,12 @@ export function instructionsFor(app) {
             : '- What you write is in the document at once, where the user sees it, and inksprite keeps a version of the text from before. edit_document changes passages and leaves the rest; append_document adds to the end; update_document rewrites the whole.',
         ]
       : []),
+    '- A file exported from inksprite names its document in its front matter. Give its `id` there as a path, written `id:<the id>`, to reach the document whatever it is called now, and change the document, not the file.',
+    ...(edits
+      ? [
+          '- export_project writes the project into the folder the user linked to it, as Markdown files: for putting a finished design into a repository.',
+        ]
+      : []),
     ...(app.comment
       ? [
           "- A comment is on a passage, for the user to read beside it: add_comment for what you have to say about a document, reply_comment and resolve_comment for comments that are there. On a comment, `writer` is the user, `model` is inksprite's own assistant, and what you say carries this connection's name.",

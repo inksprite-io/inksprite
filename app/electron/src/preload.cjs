@@ -202,6 +202,11 @@ const desktop = {
   exportFolder: {
     choose: name => call('export:choose', name),
     write: (target, entries) => call('export:write', target, entries),
+    linked: storyId => call('export:linked', storyId),
+    link: storyId => call('export:link', storyId),
+    unlink: storyId => call('export:unlink', storyId),
+    look: (storyId, paths) => call('export:look', storyId, paths),
+    apply: (storyId, entries) => call('export:apply', storyId, entries),
   },
 
   pdf: {
