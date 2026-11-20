@@ -22,6 +22,7 @@ export const dialog = { showMessageBox: vi.fn(), showOpenDialog: vi.fn(), showSa
 export const BrowserWindow = Object.assign(vi.fn(), {
   fromWebContents: vi.fn(),
   getFocusedWindow: vi.fn(),
+  getAllWindows: vi.fn(() => []),
 })
 export const Menu = { buildFromTemplate: vi.fn(template => template), setApplicationMenu: vi.fn() }
 export const clipboard = { writeText: vi.fn() }

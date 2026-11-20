@@ -50,6 +50,37 @@ ipcRenderer.on('python:fetchFile', async (_, session, request, id) => {
 })
 
 /**
+ * What answers another app's request in this window (`appCalls.js`): the
+ * page's, once it has said so. It is handed a way to say how the request is
+ * stopped, should the app give up on it.
+ * @type {((connection: object, message: object, onStop: (stop: () => void) => void) => Promise<object>)|null}
+ */
+let answerApps = null
+/** @type {Map<number, () => void>} */
+const appStops = new Map()
+
+ipcRenderer.on('apps:call', async (_, request, connection, message) => {
+  /** @type {object} */
+  let answer = { pass: 'unready' }
+  try {
+    if (answerApps) {
+      // Nothing is handed back to the page from taking its way to stop: the
+      // bridge between the two carries plain values only.
+      answer = await answerApps(connection, message, stop => {
+        appStops.set(request, stop)
+      })
+    }
+  } catch (error) {
+    // Not answered here: another window is asked.
+    console.error('An app’s request could not be answered in this window:', error)
+  }
+  appStops.delete(request)
+  ipcRenderer.send('apps:answer', request, answer)
+})
+
+ipcRenderer.on('apps:cancel', (_, request) => appStops.get(request)?.())
+
+/**
  * What the page does before its window closes: saves. Done or not, the
  * window is told, and goes (`closing.js`).
  * @type {(() => Promise<void>)|null}
@@ -142,5 +173,16 @@ contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
 
   pdf: {
     save: name => call('pdf:save', name),
+  },
+
+  apps: {
+    list: () => call('apps:list'),
+    add: name => call('apps:add', name),
+    update: (id, patch) => call('apps:update', id, patch),
+    remove: id => call('apps:remove', id),
+    setPort: port => call('apps:port', port),
+    answer: answer => {
+      answerApps = answer
+    },
   },
 })

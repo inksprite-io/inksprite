@@ -19,6 +19,9 @@ vi.mock('../../electron/src/sandbox.js', () => ({
   },
 }))
 
+const apps = vi.hoisted(() => ({ handleApps: vi.fn() }))
+vi.mock('../../electron/src/apps.js', () => apps)
+
 import { handleBridge, projectFiles } from '../../electron/src/bridge.js'
 
 const ORIGIN = 'app://inksprite'
@@ -42,10 +45,14 @@ const listeners = {}
 /** Opens a window on a path of the page, as `main.js` gives the bridge. */
 const openWindow = vi.fn()
 
+/** What the bridge gave the apps' handlers (`apps.js`). */
+let appsBridge
+
 beforeAll(() => {
   handleBridge(ORIGIN, { openWindow })
   for (const [channel, handler] of ipcMain.handle.mock.calls) handlers[channel] = handler
   for (const [channel, listener] of ipcMain.on.mock.calls) listeners[channel] = listener
+  appsBridge = apps.handleApps.mock.calls[0][0]
 })
 
 beforeEach(() => {
@@ -65,6 +72,34 @@ const streamed = (chunks, init) =>
   )
 
 describe('handleBridge', () => {
+  it('has apps ask the windows on the app’s own page, the one in front first', () => {
+    const window = (url, destroyed = false) => ({
+      webContents: { getURL: () => url, isDestroyed: () => destroyed },
+    })
+    const back = window(`${ORIGIN}/project/1`)
+    const front = window(`${ORIGIN}/project/2`)
+    const elsewhere = window('https://elsewhere.example/')
+    const closed = window(`${ORIGIN}/`, true)
+    BrowserWindow.getAllWindows.mockReturnValue([back, elsewhere, front, closed])
+    BrowserWindow.getFocusedWindow.mockReturnValue(front)
+
+    expect(appsBridge.pages()).toEqual([front.webContents, back.webContents])
+
+    BrowserWindow.getFocusedWindow.mockReturnValue(null)
+    expect(appsBridge.pages()).toEqual([back.webContents, front.webContents])
+  })
+
+  it('answers the apps’ handlers for the app’s page only', async () => {
+    const answer = vi.fn(() => 'answered')
+    appsBridge.handle('apps:test', answer)
+    const handler = ipcMain.handle.mock.calls.find(([channel]) => channel === 'apps:test')[1]
+
+    expect(await handler(page())).toEqual({ value: 'answered' })
+    expect(await handler(page({ url: 'https://elsewhere.example/' }))).toEqual({
+      error: expect.stringContaining('Only the app'),
+    })
+  })
+
   it("answers the app's page only, not another site or a frame inside it", async () => {
     updates.downloadUpdate.mockResolvedValue('0.1.0-dev.7')
 

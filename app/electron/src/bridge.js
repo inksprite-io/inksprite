@@ -3,7 +3,8 @@
  * servers, sign-ins in the system browser, links opened outside the app,
  * windows, updates, the settings file a script left, the library its
  * projects are kept in, exports to a folder the writer chooses, PDFs saved
- * as the page prints, and Python for the model to run code in. `preload.cjs` is the page's end of it, and
+ * as the page prints, Python for the model to run code in, and the other apps let
+ * into the writer's projects. `preload.cjs` is the page's end of it, and
  * `src/platform/` in the page is what calls it.
  *
  * Only the app's own page is answered: each call is checked for where it came
@@ -22,6 +23,7 @@ import { exportFolders } from './exporting.js'
 import { savePdf } from './printing.js'
 import { bringForward } from './windows.js'
 import { PythonSessions } from './sandbox.js'
+import { handleApps } from './apps.js'
 
 /** Statuses whose response has no body. */
 const NO_BODY = new Set([101, 103, 204, 205, 304])
@@ -270,6 +272,20 @@ export function handleBridge(origin, { openWindow }) {
     return python.run(session, code, { timeoutMs, project: entries, filename })
   })
   on('python:stop', (_, session) => python.stop(session))
+
+  // Other apps on this computer, working in the projects ticked for them
+  // (`apps.js`, and `src/apps/` in the page): what one asks is handed to a
+  // window on the app's own page, the one in front first.
+  handleApps({
+    handle,
+    on,
+    pages: () => {
+      const front = BrowserWindow.getFocusedWindow()
+      return [...(front ? [front] : []), ...BrowserWindow.getAllWindows().filter(w => w !== front)]
+        .map(window => window.webContents)
+        .filter(page => !page.isDestroyed() && originOf(page.getURL()) === origin)
+    },
+  })
 }
 
 /**

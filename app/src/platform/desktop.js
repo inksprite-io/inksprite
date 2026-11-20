@@ -63,6 +63,58 @@
  *   page it loads.
  * @property {DesktopPdf} [pdf] - The page as it prints, saved as a PDF.
  *   Missing from a desktop app older than the page it loads.
+ * @property {DesktopApps} [apps] - Other apps on this computer let into the
+ *   writer's projects. Missing from a desktop app older than the page it
+ *   loads.
+ */
+
+/**
+ * One app's way into the writer's projects (`app/electron/src/apps.js`).
+ *
+ * @typedef {Object} AppConnection
+ * @property {string} id
+ * @property {string} name - What the writer calls it
+ * @property {string} token - What its requests carry
+ * @property {string[]} projects - The projects ticked for it, by their ids
+ * @property {'off'|'suggesting'|'editing'} edit - How it may change text
+ * @property {boolean} comment - Whether it may comment
+ * @property {number} created
+ */
+
+/**
+ * The connections, and whether their apps can get in.
+ *
+ * @typedef {Object} AppsState
+ * @property {number} port - The port apps reach inksprite on
+ * @property {AppConnection[]} connections
+ * @property {boolean} listening - Whether the port is listened on, which it
+ *   is only while there is a connection
+ * @property {string|null} problem - Why it isn't, though it should be
+ * @property {Record<string, number>} called - When each connection last asked
+ *   something, by its id, since the app started
+ */
+
+/**
+ * What a page says to an app's request: its answer, or that another window
+ * is to be asked, and why (`app/electron/src/appCalls.js`).
+ *
+ * @typedef {{response: object}|{pass: 'elsewhere'|'behind'|'unready'}} AppAnswer
+ */
+
+/**
+ * The connections other apps come in by (`app/electron/src/apps.js`), and
+ * the way this window answers what they ask.
+ *
+ * @typedef {Object} DesktopApps
+ * @property {() => Promise<AppsState>} list
+ * @property {(name: string) => Promise<AppConnection>} add - Make one, with a
+ *   token of its own and no project ticked
+ * @property {(id: string, patch: Partial<Pick<AppConnection, 'name'|'projects'|'edit'|'comment'>>) => Promise<AppConnection>} update
+ * @property {(id: string) => Promise<void>} remove
+ * @property {(port: number) => Promise<AppsState>} setPort
+ * @property {(answer: (connection: Omit<AppConnection, 'token'|'created'>, message: object, onStop: (stop: () => void) => void) => Promise<AppAnswer>) => void} answer -
+ *   Say what answers an app's request in this window. `onStop` takes what
+ *   stops the request, should the app give up on it.
  */
 
 /**

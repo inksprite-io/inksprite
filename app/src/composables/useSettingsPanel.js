@@ -18,7 +18,7 @@ import { ref } from 'vue'
 /**
  * A part of a section: the project's sharing, or one of the parts Sync and
  * sharing and Connections are shown in.
- * @typedef {'sharing'|'account'|'people'|'devices'|'backup'|'providers'|'mcp'|'web'} SettingsPart
+ * @typedef {'sharing'|'account'|'people'|'devices'|'backup'|'providers'|'mcp'|'web'|'apps'} SettingsPart
  */
 
 const visible = ref(false)

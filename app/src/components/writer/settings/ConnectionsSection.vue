@@ -4,6 +4,8 @@
 
     <WebSearchConnection v-else-if="part === 'web' && webSearch" />
 
+    <ConnectedApps v-else-if="part === 'apps' && appsOffered()" />
+
     <div v-else class="flex flex-col gap-2" data-heading="mcp">
       <Teleport defer :to="heading" :disabled="!heading">
         <HeaderButton
@@ -430,6 +432,7 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import ToggleSwitch from 'primevue/toggleswitch'
 import WebSearchConnection from './WebSearchConnection.vue'
+import ConnectedApps from './ConnectedApps.vue'
 import AiConnections from '../connections/AiConnections.vue'
 import ConnectionCard from '../connections/ConnectionCard.vue'
 import { useSectionHeading } from '@/components/common/sectionHeading.js'
@@ -438,6 +441,7 @@ import CardItem from '@/components/common/CardItem.vue'
 import HeaderButton from '../layout/HeaderButton.vue'
 import { useMcpServers } from '@/composables/useMcpServers.js'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { appsOffered } from '@/apps/index.js'
 import { isWebAddress, nameFromUrl, parseServerConfig } from '@/mcp/config.js'
 import { SIGN_IN_NEEDED } from '@/mcp/client.js'
 import { keyLeftOut, promptCommand, requiredArguments } from '@/mcp/servers.js'
@@ -448,12 +452,13 @@ import { keyLeftOut, promptCommand, requiredArguments } from '@/mcp/servers.js'
 
 /**
  * Settings → Connections, a part at a time: the AI's providers, the writer's
- * MCP servers, app-wide, and web search's services while its extension is
- * on. Each part's plus sits beside the heading.
+ * MCP servers, app-wide, web search's services while its extension is on,
+ * and in the desktop app the other apps let into the writer's projects. Each
+ * part's plus sits beside the heading.
  */
 
 defineProps({
-  /** Which part shows: `providers`, `mcp` or `web`. */
+  /** Which part shows: `providers`, `mcp`, `web` or `apps`. */
   part: { type: String, default: 'providers' },
 })
 

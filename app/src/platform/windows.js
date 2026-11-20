@@ -28,8 +28,9 @@ import { desktop, isDesktop } from './desktop.js'
 
 /**
  * What a window holds a project for: being open there, being read there for a
- * menu's action on it, or a job running there, by the job's id.
- * @typedef {'open'|'read'|`job:${string}`} Reason
+ * menu's action on it, a job running there, by the job's id, or a connected
+ * app's call running there (`apps/projects.js`).
+ * @typedef {'open'|'read'|`job:${string}`|`app:${number}`} Reason
  */
 
 /**

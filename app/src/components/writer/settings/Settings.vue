@@ -43,6 +43,7 @@ import { useAIConfig } from '@/composables/useAIConfig'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useCloudSync } from '@/composables/useCloudSync.js'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
+import { appsOffered } from '@/apps/index.js'
 import { sessionStorage } from '@/utils/sessionStorage'
 
 /**
@@ -125,8 +126,8 @@ const { account } = useCloudSync()
 
 /**
  * The sections shown a part at a time, and their parts: an account's people
- * and devices once signed in, and web search's services while its extension
- * is on.
+ * and devices once signed in, web search's services while its extension is
+ * on, and the apps let into the writer's projects, in the desktop app.
  * @type {import('vue').ComputedRef<Record<string, {id: string, label: string}[]>>}
  */
 const partsOf = computed(() => ({
@@ -144,6 +145,7 @@ const partsOf = computed(() => ({
     { id: 'providers', label: 'AI providers' },
     { id: 'mcp', label: 'MCP servers' },
     ...(webSearch.value ? [{ id: 'web', label: 'Web search' }] : []),
+    ...(appsOffered() ? [{ id: 'apps', label: 'Connected apps' }] : []),
   ],
 }))
 

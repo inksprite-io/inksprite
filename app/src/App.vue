@@ -40,6 +40,7 @@ import { useTheme } from './composables/useSystemSettings'
 import { useSkills } from './composables/useSkills'
 import { useUpdates } from './composables/useUpdates'
 import { useSaveBeforeClosing } from './composables/useSaveBeforeClosing'
+import { serveApps } from './apps/index.js'
 import { useLibraryMove } from './composables/useLibraryMove'
 import { useSettingsFileNotice } from './composables/useSettingsFile'
 import { projectsToMove } from './storage/open.js'
@@ -88,6 +89,10 @@ useUpdates()
 // In the desktop app, what the writer just did is saved before the window
 // closes or the app quits.
 useSaveBeforeClosing()
+
+// In the desktop app, this window answers what the apps the writer connected
+// ask of their projects.
+serveApps()
 
 // Another window replaced everything with a backup: this one reads it all
 // again, and drops what it had still to save, which was of what is gone.
