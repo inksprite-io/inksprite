@@ -4,12 +4,7 @@ import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import Tooltip from 'primevue/tooltip'
 import SearchPanel from '@/components/writer/search/SearchPanel.vue'
-import {
-  goneTo,
-  isSearchKey,
-  requestSearchField,
-  takeUpMatch,
-} from '@/composables/useProjectSearch.js'
+import { goneTo, isSearchKey, showSearch, takeUpMatch } from '@/composables/useProjectSearch.js'
 
 // A project of a folder with two chapters in it, and a note beside it.
 const { tree } = vi.hoisted(() => ({
@@ -172,7 +167,7 @@ describe('SearchPanel', () => {
   })
 
   it('puts the caret in its field when asked', async () => {
-    requestSearchField()
+    showSearch('story_1')
     const wrapper = mountPanel()
     await nextTick()
     expect(document.activeElement).toBe(wrapper.find('[data-search-query]').element)

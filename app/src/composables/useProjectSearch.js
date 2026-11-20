@@ -4,10 +4,12 @@
  * what they look for and how, what it finds in the documents as they are now,
  * and going to one of the matches.
  *
- * What was looked for is kept for each project while the app is open, since
- * the sidebar's list is made again each time it shows. What it finds follows
- * the documents: it is found again once the typing pauses, in the field or in
- * a document.
+ * The search shows in the outline's place, from the search button in the
+ * outline's header or Mod-Shift-F, until it is closed. Whether it is showing,
+ * and what was looked for, are kept for each project while the app is open,
+ * since the list is made again each time it shows. What it finds follows the
+ * documents: it is found again once the typing pauses, in the field or in a
+ * document.
  *
  * Going to a match is asked here and taken up by the view that shows its
  * document, as a comment is gone to (`useComments`): the editor, a plain
@@ -16,7 +18,7 @@
  * the document opens, so a view made for it finds it waiting, and is taken
  * once, so a tab come back to later stays where the writer left it.
  *
- * Mod-Shift-F shows the list with the caret in its field, looking for what
+ * Mod-Shift-F shows the search with the caret in its field, looking for what
  * is selected if that is a few words on one line.
  */
 
@@ -49,7 +51,13 @@ import { SIDEBAR_TABS } from '@/components/writer/layout/layout.js'
 /** How long the typing pauses before the search runs, in ms. */
 const DELAY = 150
 
-/** @typedef {{query: import('vue').Ref<string>, matchCase: import('vue').Ref<boolean>, wholeWord: import('vue').Ref<boolean>}} Kept */
+/**
+ * @typedef {Object} Kept
+ * @property {import('vue').Ref<boolean>} showing - Whether the search is showing, in the outline's place
+ * @property {import('vue').Ref<string>} query
+ * @property {import('vue').Ref<boolean>} matchCase
+ * @property {import('vue').Ref<boolean>} wholeWord
+ */
 
 /** Each project's search, while the app is open. @type {Map<string, Kept>} */
 const searches = new Map()
@@ -61,7 +69,7 @@ const searches = new Map()
 const keptFor = storyId => {
   let kept = searches.get(storyId)
   if (!kept) {
-    kept = { query: ref(''), matchCase: ref(false), wholeWord: ref(false) }
+    kept = { showing: ref(false), query: ref(''), matchCase: ref(false), wholeWord: ref(false) }
     searches.set(storyId, kept)
   }
   return kept
@@ -107,9 +115,33 @@ let focusTaken = 0
 /** The asks for the field, for the list to watch. */
 export const focusRequests = readonly(focusing)
 
-/** Ask for the caret in the search's field: from the rail, or Mod-Shift-F. */
-export const requestSearchField = () => {
+/**
+ * Whether a project's search is showing, in its outline's place.
+ *
+ * @param {string} storyId
+ * @returns {Readonly<import('vue').Ref<boolean>>}
+ */
+export const searchShowing = storyId => readonly(keptFor(storyId).showing)
+
+/**
+ * Show a project's search in its outline's place, with the caret in its
+ * field: from the outline's search button, or Mod-Shift-F.
+ *
+ * @param {string} storyId
+ */
+export const showSearch = storyId => {
+  keptFor(storyId).showing.value = true
   focusing.value++
+}
+
+/**
+ * Close a project's search, which shows its outline again. What was looked
+ * for is kept for the next time.
+ *
+ * @param {string} storyId
+ */
+export const hideSearch = storyId => {
+  keptFor(storyId).showing.value = false
 }
 
 /**
@@ -234,8 +266,8 @@ export function isSearchKey(event) {
 
 /**
  * Take Mod-Shift-F anywhere in the writer, for as long as the component
- * calling this is mounted: the writer's frame. It shows the search, out of
- * focus mode, with the caret in its field.
+ * calling this is mounted: the writer's frame. It shows the search, where
+ * the outline shows and out of focus mode, with the caret in its field.
  *
  * @param {() => string|null|undefined} storyId - The project open
  */
@@ -252,8 +284,8 @@ export function useProjectSearchKey(storyId) {
     const words = selectedWords()
     if (words) keptFor(id).query.value = words
     focusMode.leave()
-    sidebarTab.show(SIDEBAR_TABS.SEARCH)
-    requestSearchField()
+    sidebarTab.show(SIDEBAR_TABS.OUTLINE)
+    showSearch(id)
   }
 
   onMounted(() => window.addEventListener('keydown', onKeyDown))

@@ -10,7 +10,6 @@
       :actions="tabActions"
       @activate="chatTabs.open"
       @close="chatTabs.close"
-      @keep="chatTabs.keep"
     >
       <template v-if="showBack || editorShowing !== null" #start>
         <HeaderButton
@@ -43,7 +42,9 @@
     </TabStrip>
     <!-- Nothing until the chats have loaded, when the unstarted chat would
          only flash before the saved one took over. Keyed on the chat, so a
-         tab brought forward is a chat of its own. -->
+         tab brought forward is a chat of its own. One sent in is in the
+         strip from then on: the unstarted chat shown for want of anything
+         open is not until it is used. -->
     <Chat
       v-if="ready && activeId"
       ref="chat"
@@ -52,7 +53,7 @@
       :chat-id="activeId"
       class="flex-1 min-h-0 w-full"
       @open-chat="showChat"
-      @sent="chatTabs.keep"
+      @sent="chatTabs.open"
     />
   </div>
 </template>
@@ -139,14 +140,12 @@ const profileName = chatId =>
   )?.name
 
 const items = computed(() => {
-  const { open, preview } = chatTabs.tabs.value
-  return open.map(id => {
+  return chatTabs.tabs.value.open.map(id => {
     const title = shownChatTitle(chatOf(id)?.title)
     const profile = profileName(id)
     return {
       id,
       title,
-      preview: id === preview,
       mark: isWorking(id) ? 'busy' : chatTabs.isUnread(id) ? 'unread' : undefined,
       tooltip: profile ? `${title} · ${profile}` : title,
     }

@@ -19,7 +19,7 @@
 import { computed } from 'vue'
 import Button from 'primevue/button'
 import { useDocuments } from '@/composables/useDocuments'
-import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { useNewDocument } from '@/composables/useNewDocument.js'
 
 /**
  * The editor with nothing in it. For a project with no text document that is
@@ -38,13 +38,6 @@ const api = useDocuments(props.storyId)
 
 const isEmpty = computed(() => !api.firstTextDocument())
 
-/**
- * A document at the root, opened in the editor, with its rename waiting in the
- * tree — the same as the tree's own "New document", from the other side.
- */
-const createDocument = () => {
-  const created = api.createTextDocument(rootIdFor(props.storyId), '')
-  api.requestRename(created.id)
-  api.open(created.id)
-}
+/** The same New document as the plus in the editor's strip. */
+const createDocument = useNewDocument(props.storyId)
 </script>

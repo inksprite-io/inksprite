@@ -113,12 +113,11 @@ import { useEditorRequest } from '@/composables/useEditorRequest.js'
 import { useChatRequest } from '@/composables/useChatRequest.js'
 import { useChatTabs } from '@/composables/useChatTabs.js'
 import { useFocusMode, useFocusModeKeys } from '@/composables/useFocusMode.js'
-import { requestSearchField, useProjectSearchKey } from '@/composables/useProjectSearch.js'
+import { useProjectSearchKey } from '@/composables/useProjectSearch.js'
 import { usePrintKey } from '@/composables/usePrint.js'
 import {
   NO_PROJECT_LAYOUT,
   PANELS,
-  SIDEBAR_TABS,
   normalizeLayout,
   selectSidebarTab,
   keptWithoutAI,
@@ -231,15 +230,10 @@ const openDocument = documentId => {
 }
 
 /**
- * Pick a list on the rail. The search, picked to be shown, has the caret
- * put in its field.
+ * Pick a list on the rail.
  * @param {import('./layout/layout.js').SidebarTab} tab
  */
-const selectTab = tab => {
-  const next = selectSidebarTab(layout.value, tab)
-  if (tab === SIDEBAR_TABS.SEARCH && next.sidebar) requestSearchField()
-  setLayout(next)
-}
+const selectTab = tab => setLayout(selectSidebarTab(layout.value, tab))
 
 // A list asked for from deeper in the writer is shown, never toggled away as
 // a second click on the rail would: on a phone its tab, here the sidebar.
@@ -280,8 +274,8 @@ const activeChatId = computed(() => chatTabs.value?.activeChatId.value ?? null)
 
 /**
  * Show a chat, in a tab of its own beside the one showing, and the panel it
- * is in. One picked from the list is already open there, as a preview, and
- * is only brought forward.
+ * is in. One picked from the list is already open there, and is only
+ * brought forward.
  * @param {string} chatId
  */
 const openChat = chatId => {

@@ -54,26 +54,7 @@ describe('useChatTabs', () => {
       expect(api.activeChatId.value).toBe('chat_new')
     })
 
-    it('opens a chat from the list as a preview, which the next takes the place of', () => {
-      const api = useChatTabs('story_1')
-      api.open('chat_2', { preview: true })
-      api.open('chat_1', { preview: true })
-
-      expect(api.tabs.value.open).toEqual(['chat_3', 'chat_1'])
-      expect(api.tabs.value.preview).toBe('chat_1')
-      expect(view.openChatIds).toEqual(['chat_3', 'chat_1'])
-    })
-
-    it('keeps a preview sent in', () => {
-      const api = useChatTabs('story_1')
-      api.open('chat_2', { preview: true })
-      api.keep('chat_2')
-      api.open('chat_1', { preview: true })
-
-      expect(api.tabs.value.open).toEqual(['chat_3', 'chat_2', 'chat_1'])
-    })
-
-    it('opens anything else kept, beside the tab showing', () => {
+    it('opens each chat in a tab of its own, beside the tab showing', () => {
       const api = useChatTabs('story_1')
       api.open('chat_1')
       api.open('chat_3')
@@ -81,6 +62,22 @@ describe('useChatTabs', () => {
 
       expect(api.tabs.value.open).toEqual(['chat_3', 'chat_2', 'chat_1'])
       expect(api.tabs.value.preview).toBeNull()
+      expect(view.openChatIds).toEqual(['chat_3', 'chat_2', 'chat_1'])
+      expect(view.previewChatId).toBeNull()
+    })
+
+    it('keeps a tab left a preview from when a chat could be one', () => {
+      Object.assign(view, {
+        openChatIds: ['chat_3', 'chat_2'],
+        lastChatId: 'chat_2',
+        previewChatId: 'chat_2',
+      })
+      const api = useChatTabs('story_1')
+      expect(api.tabs.value.preview).toBeNull()
+
+      api.open('chat_1')
+      expect(api.tabs.value.open).toEqual(['chat_3', 'chat_2', 'chat_1'])
+      expect(view.previewChatId).toBeNull()
     })
   })
 
@@ -103,7 +100,7 @@ describe('useChatTabs', () => {
       // The chat it became, under the same id, and a new unstarted one behind it.
       haveChats('chat_new', 'chat_3', 'chat_2', 'chat_1')
       unstartedId.value = 'chat_newer'
-      api.keep('chat_new')
+      api.open('chat_new')
 
       expect(api.tabs.value.open).toEqual(['chat_3', 'chat_new'])
       expect(api.activeChatId.value).toBe('chat_new')
@@ -117,14 +114,14 @@ describe('useChatTabs', () => {
       expect(view.openChatIds).toEqual([])
 
       // Opening a chat from the list leaves no blank tab behind.
-      api.open('chat_1', { preview: true })
+      api.open('chat_1')
       expect(api.tabs.value.open).toEqual(['chat_1'])
     })
 
     it('is written in once sent in', () => {
       const api = useChatTabs('story_1')
       api.close('chat_3')
-      api.keep('chat_new')
+      api.open('chat_new')
 
       expect(view.openChatIds).toEqual(['chat_new'])
     })

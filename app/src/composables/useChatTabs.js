@@ -1,16 +1,15 @@
 /**
  * @module composables/useChatTabs
  * @description The chat panel's tabs in a project: which chats are open, in
- * strip order, which is showing, which is only being looked at, the order
- * they were shown in, and which the model finished in while they weren't
- * showing. Kept in the project's view beside the editor's tabs, under the
- * same rules (`utils/tabs.js`), so a project reopens on its chats.
+ * strip order, which is showing, the order they were shown in, and which the
+ * model finished in while they weren't showing. Kept in the project's view
+ * beside the editor's tabs, under the same rules (`utils/tabs.js`), so a
+ * project reopens on its chats.
  *
- * A chat opened from the chat list is a preview, as a document from the
- * outline is: the next one takes its tab, until the writer keeps it by
- * sending in it or double-clicking it. Anything else opens a kept tab beside
- * the one showing: a new chat, a fork, a chat started on a card. Closing the
- * tab showing goes back to the one shown before it.
+ * A chat opens in a tab of its own beside the one showing, and stays until
+ * it is closed: one picked from the chat list, a new chat, a fork, a chat
+ * started on a card. No chat is a preview, as a document from the outline
+ * is. Closing the tab showing goes back to the one shown before it.
  *
  * The strip is never empty. With nothing open it shows the unstarted chat,
  * which is written into the view only once it is used, so opening a chat
@@ -34,7 +33,6 @@ import {
   NO_TABS,
   closeTab,
   dropTabs,
-  keepTab,
   normalizeTabs,
   openTab,
   tabsOf,
@@ -47,10 +45,10 @@ import {
  * @typedef {Object} ChatTabsApi
  * @property {import('vue').ComputedRef<Tabs>} tabs - What the strip shows
  * @property {import('vue').ComputedRef<string|null>} activeChatId - The chat showing
- * @property {(chatId: string, options?: {preview?: boolean}) => void} open - Show a
- *   chat: a preview from the chat list, otherwise a kept tab beside the one showing
+ * @property {(chatId: string) => void} open - Show a chat, in a tab beside the one
+ *   showing unless it has one. The unstarted chat shown for want of anything
+ *   open is written into the strip by it, as when it is sent in.
  * @property {() => void} openNew - Show the unstarted chat
- * @property {(chatId: string) => void} keep - Keep a tab: one sent in, or double-clicked
  * @property {(chatId: string) => void} close
  * @property {(chatId: string) => void} closeOthers - Close every tab but this one
  * @property {(chatId: string) => boolean} isUnread - Whether the model finished in
@@ -113,12 +111,13 @@ function createChatTabs(storyId) {
   /**
    * The tabs as kept, less any whose chat has gone. A project whose chats
    * were never in tabs opens on its latest chat, as the panel did before it
-   * had them. Before the chats are loaded they are taken as stored.
+   * had them. Before the chats are loaded they are taken as stored. A tab
+   * left a preview, from when a chat's could be one, is a tab like the rest.
    * @type {import('vue').ComputedRef<Tabs>}
    */
   const stored = computed(() => {
     const kept = view()
-    const tabs = tabsOf(kept, CHAT_TABS)
+    const tabs = { ...tabsOf(kept, CHAT_TABS), preview: null }
     if (!chatsApi.ready.value) return tabs
     const latest = chatsApi.chats.value[0]
     if (!Array.isArray(kept?.[CHAT_TABS.open]) && latest) return openTab(NO_TABS, latest.id)
@@ -138,17 +137,9 @@ function createChatTabs(storyId) {
   }
 
   /** @type {ChatTabsApi['open']} */
-  const open = (chatId, { preview = false } = {}) =>
-    write(openTab(stored.value, chatId, { preview, beside: !preview }))
+  const open = chatId => write(openTab(stored.value, chatId, { beside: true }))
 
   const openNew = () => open(chatsApi.unstartedChat.value.id)
-
-  /** @type {ChatTabsApi['keep']} */
-  const keep = chatId => {
-    // The unstarted chat shown for want of anything open is written in now.
-    if (!stored.value.open.includes(chatId)) open(chatId)
-    else write(keepTab(stored.value, chatId))
-  }
 
   /** @type {ChatTabsApi['close']} */
   const close = chatId => write(closeTab(stored.value, chatId))
@@ -187,5 +178,5 @@ function createChatTabs(storyId) {
     { immediate: true }
   )
 
-  return { tabs, activeChatId, open, openNew, keep, close, closeOthers, isUnread, markUnread }
+  return { tabs, activeChatId, open, openNew, close, closeOthers, isUnread, markUnread }
 }

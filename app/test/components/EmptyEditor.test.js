@@ -8,13 +8,11 @@ const { mockApi } = vi.hoisted(() => ({
   mockApi: {
     ready: { value: true },
     firstTextDocument: vi.fn(() => null),
-    createTextDocument: vi.fn(() => ({ id: 'doc_new' })),
-    requestRename: vi.fn(),
-    open: vi.fn(),
   },
 }))
 
 vi.mock('@/composables/useDocuments', () => ({ useDocuments: () => mockApi }))
+vi.mock('@/composables/useNewDocument.js', () => ({ useNewDocument: () => vi.fn() }))
 
 describe('EmptyEditor', () => {
   beforeEach(() => {
@@ -37,15 +35,6 @@ describe('EmptyEditor', () => {
     const wrapper = mountEmpty()
     expect(wrapper.text()).toContain('Nothing open')
     expect(wrapper.find('button').exists()).toBe(true)
-  })
-
-  it('creates the document at the root, asks the tree to name it, and opens it', async () => {
-    const wrapper = mountEmpty()
-    await wrapper.find('button').trigger('click')
-
-    expect(mockApi.createTextDocument).toHaveBeenCalledWith('root_story_1', '')
-    expect(mockApi.requestRename).toHaveBeenCalledWith('doc_new')
-    expect(mockApi.open).toHaveBeenCalledWith('doc_new')
   })
 
   it('shows nothing until the tree has loaded', () => {

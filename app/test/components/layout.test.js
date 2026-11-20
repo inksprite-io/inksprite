@@ -41,6 +41,10 @@ describe('normalizeLayout', () => {
   it('brings a project left on the old project list back on the outline', () => {
     expect(normalizeLayout({ sidebarTab: 'projects' }).sidebarTab).toBe(SIDEBAR_TABS.OUTLINE)
   })
+
+  it('brings a project left on the search, a list of its own once, back on the outline', () => {
+    expect(normalizeLayout({ sidebarTab: 'search' }).sidebarTab).toBe(SIDEBAR_TABS.OUTLINE)
+  })
 })
 
 describe('selectSidebarTab', () => {

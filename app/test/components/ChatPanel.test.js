@@ -164,7 +164,7 @@ describe('ChatPanel', () => {
     expect(shown(wrapper)).toBe(remaining.id)
   })
 
-  it('opens a fork beside the chat it came from, and keeps a tab sent in', async () => {
+  it('opens a fork beside the chat it came from', async () => {
     const one = store.createChat('story_1', 'One')
     forking.to = store.createChat('story_1', 'One - forked').id
     const other = store.createChat('story_1', 'Other')
@@ -173,13 +173,7 @@ describe('ChatPanel', () => {
     one.created += 1000
     const wrapper = await mountPanel()
     const tabs = useChatTabs('story_1')
-    tabs.open(one.id)
-    tabs.open(other.id, { preview: true })
-    await flushPromises()
-
-    await wrapper.find('[data-send]').trigger('click')
-    expect(tabs.tabs.value.preview).toBeNull()
-
+    tabs.open(other.id)
     tabs.open(one.id)
     await flushPromises()
     await wrapper.find('[data-fork]').trigger('click')

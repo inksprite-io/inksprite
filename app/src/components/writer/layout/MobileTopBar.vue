@@ -87,7 +87,6 @@ import PenIcon from '@/components/icons/PenIcon.vue'
 import StoryboardIcon from '@/components/icons/StoryboardIcon.vue'
 import ChatBubbleIcon from '@/components/icons/ChatBubbleIcon.vue'
 import CommentIcon from '@/components/icons/CommentIcon.vue'
-import SearchIcon from '@/components/icons/SearchIcon.vue'
 import SettingsIcon from '@/components/icons/SettingsIcon.vue'
 import SpeakerIcon from '@/components/icons/SpeakerIcon.vue'
 import InProcessIcon from '@/components/icons/InProcessIcon.vue'
@@ -100,9 +99,9 @@ import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 /**
  * The phone's tab bar: the writing, the outline and the chat, one view at a
  * time, and a menu of everything else — the card library while roleplay is
- * on, the search, the narration, the comments, the jobs toast while there are jobs, and
+ * on, the narration, the comments, the jobs toast while there are jobs, and
  * the settings. With the AI switched off, the chat, the narration and the
- * cards are not there.
+ * cards are not there. The search is the outline's, from its header.
  *
  * @typedef {Object} Props
  * @property {string} activeMobileTab
@@ -143,13 +142,12 @@ const CHAT = { id: 'chat', label: 'Chat', icon: ChatBubbleIcon, needsStory: true
 
 const tabs = computed(() => (aiEnabled.value ? [WRITE, OUTLINE, CHAT] : [WRITE, OUTLINE]))
 
-const SEARCH = { id: 'search', label: 'Search', icon: SearchIcon, needsStory: true }
 const NARRATION = { id: 'narration', label: 'Narration', icon: SpeakerIcon, needsStory: true }
 const COMMENTS = { id: 'comments', label: 'Comments', icon: CommentIcon, needsStory: true }
 const SETTINGS = { id: 'settings', label: 'Settings', icon: SettingsIcon, needsStory: false }
 
 /** The views in the menu. */
-const MENU_TABS = [SEARCH, NARRATION, COMMENTS, SETTINGS]
+const MENU_TABS = [NARRATION, COMMENTS, SETTINGS]
 
 /** Whether the view showing is one of the menu's. */
 const inMenu = computed(() => MENU_TABS.some(tab => tab.id === props.activeMobileTab))
@@ -179,7 +177,6 @@ const items = computed(() => [
         },
       ]
     : []),
-  viewItem(SEARCH),
   ...(aiEnabled.value ? [viewItem(NARRATION)] : []),
   viewItem(COMMENTS),
   ...(jobsStore.hasJobs

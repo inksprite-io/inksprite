@@ -59,12 +59,7 @@ describe('MobileTopBar', () => {
       'More',
     ])
     expect(buttons.every(button => button.text() === '')).toBe(true)
-    expect(items(wrapper).map(entry => entry.label)).toEqual([
-      'Search',
-      'Narration',
-      'Comments',
-      'Settings',
-    ])
+    expect(items(wrapper).map(entry => entry.label)).toEqual(['Narration', 'Comments', 'Settings'])
     expect(wrapper.find('[data-tab="write"]').attributes('aria-pressed')).toBe('true')
     expect(wrapper.find('[data-tab="chat"]').attributes('aria-pressed')).toBe('false')
   })
@@ -78,7 +73,7 @@ describe('MobileTopBar', () => {
       'Outline',
       'More',
     ])
-    expect(items(wrapper).map(entry => entry.label)).toEqual(['Search', 'Comments', 'Settings'])
+    expect(items(wrapper).map(entry => entry.label)).toEqual(['Comments', 'Settings'])
   })
 
   it('has the card library first in the menu while roleplay is on, which opens it', async () => {
@@ -86,7 +81,6 @@ describe('MobileTopBar', () => {
     const wrapper = mountBar({ hasStory: true })
     expect(items(wrapper).map(entry => entry.label)).toEqual([
       'Character cards',
-      'Search',
       'Narration',
       'Comments',
       'Settings',
@@ -102,7 +96,6 @@ describe('MobileTopBar', () => {
     const job = await addJob('One')
     await wrapper.vm.$nextTick()
     expect(items(wrapper).map(entry => entry.label)).toEqual([
-      'Search',
       'Narration',
       'Comments',
       'Jobs',

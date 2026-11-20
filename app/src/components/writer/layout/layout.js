@@ -2,8 +2,9 @@
  * @module components/writer/layout/layout
  * @description The writer's panel arrangement: which of the sidebar, the editor
  * and the chat are showing, and which list the sidebar is on — the outline,
- * the search, the chats, the narration of the open document, or the
- * project's comments.
+ * the chats, the narration of the open document, or the project's comments.
+ * The search across the project shows in the outline's place, and is not a
+ * list of its own (`useProjectSearch`).
  * It is kept in each project's view rather than app-wide, so each project
  * reopens the way it was left: an adventure chat-only, a novel with the
  * editor beside its chat.
@@ -28,7 +29,6 @@ export const PANELS = Object.freeze({
 
 export const SIDEBAR_TABS = Object.freeze({
   OUTLINE: /** @type {'outline'} */ ('outline'),
-  SEARCH: /** @type {'search'} */ ('search'),
   CHATS: /** @type {'chats'} */ ('chats'),
   NARRATION: /** @type {'narration'} */ ('narration'),
   COMMENTS: /** @type {'comments'} */ ('comments'),

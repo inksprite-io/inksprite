@@ -105,14 +105,6 @@ describe('ChatHistory', () => {
     const card = (wrapper, id) =>
       wrapper.findAllComponents({ name: 'ChatHistoryCard' }).find(c => c.props('chatId') === id)
 
-    it('opens a chat picked from it as a preview, and says which', async () => {
-      const wrapper = mountHistory()
-      card(wrapper, 'chat_2').vm.$emit('select', 'chat_2')
-
-      expect(tabs.open).toHaveBeenCalledWith('chat_2', { preview: true })
-      expect(wrapper.emitted('select-chat')).toEqual([['chat_2']])
-    })
-
     it('opens the unstarted chat on New chat', async () => {
       const wrapper = mountHistory()
       await wrapper.find('[aria-label="New chat"]').trigger('click')

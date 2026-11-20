@@ -14,6 +14,13 @@
       <template #start>
         <ProjectMenu :story-id="storyId" :project-items="projectMenuItems" />
       </template>
+      <!-- The search across the project, which shows in the outline's place. -->
+      <HeaderButton
+        icon="pi pi-search"
+        label="Search"
+        data-action="search"
+        @click="showSearch(storyId)"
+      />
       <HeaderButton
         icon="pi pi-upload"
         label="Import"
@@ -120,6 +127,7 @@ import PanelHeader from '../layout/PanelHeader.vue'
 import ProjectMenu from '../projects/ProjectMenu.vue'
 import TrashDialog from '../projects/TrashDialog.vue'
 import { useProjectActions } from '@/composables/useProjectActions.js'
+import { showSearch } from '@/composables/useProjectSearch.js'
 import { useTrash } from '@/composables/useTrash.js'
 import { useCardChat } from '@/composables/useCardChat'
 import { useBulkImport, describeImport } from '@/composables/useBulkImport'

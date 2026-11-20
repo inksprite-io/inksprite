@@ -1,12 +1,15 @@
 <template>
   <div class="w-full h-full flex flex-col">
-    <PanelHeader title="Search" />
+    <PanelHeader title="Search">
+      <HeaderButton icon="pi pi-times" label="Close search" data-action="close" @click="close" />
+    </PanelHeader>
 
     <!-- Keys stay here: Enter goes to the next match, Shift-Enter to the one
-         before, as in a document's find. -->
+         before, and Escape closes the search, as in a document's find. -->
     <div
       role="search"
       class="flex-none flex items-center gap-1 px-2 py-1.5 border-b border-surface-200 dark:border-surface-700"
+      @keydown.esc.stop.prevent="close"
     >
       <InputText
         ref="field"
@@ -144,20 +147,27 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import InputText from 'primevue/inputtext'
 import ScrollPanel from 'primevue/scrollpanel'
+import HeaderButton from '../layout/HeaderButton.vue'
 import PanelHeader from '../layout/PanelHeader.vue'
 import { useDocuments } from '@/composables/useDocuments'
-import { focusRequests, takeSearchField, useProjectSearch } from '@/composables/useProjectSearch.js'
+import {
+  focusRequests,
+  hideSearch,
+  takeSearchField,
+  useProjectSearch,
+} from '@/composables/useProjectSearch.js'
 import { useScreenSize } from '@/composables/useScreenSize'
 import { LINE_LIMIT } from '@/editor/projectSearch.js'
 import { patternFor } from '@/editor/search.js'
 
 /**
- * The search across the project (`useProjectSearch`): the field, matching
- * case and whole words as a document's find can, and what it finds, by
- * document in the outline's order, each match the line it is on. Picking a
- * match opens its document on it, with the document's find open on the
- * query; picking a document opens it on its first. Enter in the field goes
- * to the match after the one last picked, through every document.
+ * The search across the project (`useProjectSearch`), which shows in the
+ * outline's place until it is closed: the field, matching case and whole
+ * words as a document's find can, and what it finds, by document in the
+ * outline's order, each match the line it is on. Picking a match opens its
+ * document on it, with the document's find open on the query; picking a
+ * document opens it on its first. Enter in the field goes to the match after
+ * the one last picked, through every document.
  *
  * @typedef {Object} Props
  * @property {string} storyId
@@ -173,6 +183,9 @@ const emit = defineEmits(['open-document'])
 const api = useDocuments(props.storyId)
 const { query, matchCase, wholeWord, found, current, goTo } = useProjectSearch(props.storyId)
 const { isMobile } = useScreenSize()
+
+/** Close the search, which shows the outline again. */
+const close = () => hideSearch(props.storyId)
 
 // iOS zooms the page in on a field whose text is smaller than 16px, and does
 // not zoom back out, so on a phone the field keeps the full size.
@@ -307,7 +320,8 @@ const focusField = () => {
   element?.select()
 }
 
-// The rail and Mod-Shift-F ask for the field, from wherever the writer is.
+// The outline's search button and Mod-Shift-F ask for the field, from
+// wherever the writer is.
 const takeField = () => {
   if (takeSearchField()) nextTick(focusField)
 }

@@ -25,7 +25,7 @@
  * @property {boolean} sidebar - Whether the left sidebar is showing
  * @property {boolean} editor - Whether the editor is showing
  * @property {boolean} chat - Whether the chat is showing. Never false while `editor` is.
- * @property {'outline'|'search'|'chats'|'narration'|'comments'} sidebarTab - Which list the sidebar is on
+ * @property {'outline'|'chats'|'narration'|'comments'} sidebarTab - Which list the sidebar is on
  */
 
 /**
@@ -84,8 +84,8 @@
  * @property {string[]} [openChatIds] - The chats open in the chat panel, in tab order.
  *   Absent means the project's chats were never in tabs; see `useChatTabs`.
  * @property {string|null} [lastChatId] - The chat panel's tab showing
- * @property {string|null} [previewChatId] - The chat only being looked at, whose tab
- *   the next one opened from the chat list takes
+ * @property {string|null} [previewChatId] - Always null: a chat's tab was a preview
+ *   once, as a document's can be, and every one is kept now
  * @property {string[]} [shownChatIds] - The open chats as they were last shown, the
  *   one showing first
  * @property {string[]} [unreadChatIds] - Chats the model finished in while they weren't

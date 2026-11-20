@@ -161,12 +161,11 @@ const handleNewChat = () => {
 }
 
 /**
- * Open a chat picked from the list, in the tab only being looked at, as a
- * document picked from the outline is.
+ * Open a chat picked from the list, in a tab of its own.
  * @param {string} chatId - The ID of the selected chat
  */
 const handleChatSelect = chatId => {
-  chatTabs.open(chatId, { preview: true })
+  chatTabs.open(chatId)
   emit('select-chat', chatId)
 }
 

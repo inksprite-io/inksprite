@@ -12,7 +12,7 @@
       @close="api.closeTab"
       @keep="api.keep"
     >
-      <template v-if="chatShowing !== null || findable || focusable" #end>
+      <template #end>
         <!-- A document linked to a Google Doc syncs with it from here. -->
         <HeaderButton
           v-if="syncable"
@@ -21,6 +21,13 @@
           :loading="driveSync.isSyncing(activeId)"
           data-action="sync"
           @click="driveSync.sync(activeId)"
+        />
+        <!-- The outline's New document, as the chat's strip has New chat. -->
+        <HeaderButton
+          icon="pi pi-plus"
+          label="New document"
+          data-action="new-document"
+          @click="newDocument"
         />
         <!-- The way to the find where there is no key for it, as on a phone. -->
         <HeaderButton
@@ -119,6 +126,7 @@ import { useVersionsPanel } from '@/composables/useVersions.js'
 import { useDriveSync } from '@/composables/useDriveSync.js'
 import { useFileView } from '@/composables/useFileView.js'
 import { useFocusMode } from '@/composables/useFocusMode.js'
+import { useNewDocument } from '@/composables/useNewDocument.js'
 import { useScreenSize } from '@/composables/useScreenSize.js'
 import { usePlainText } from '@/composables/usePlainText.js'
 import { usePrint } from '@/composables/usePrint.js'
@@ -171,6 +179,7 @@ const { showsText, fileViewItem } = useFileView(props.storyId)
 const { focused, enter: enterFocus } = useFocusMode()
 const { printable, exportPdf } = usePrint(() => props.storyId)
 const driveSync = useDriveSync(props.storyId)
+const newDocument = useNewDocument(props.storyId)
 const { isMobile } = useScreenSize()
 
 /** How far down the screen the text starts in focus mode. */

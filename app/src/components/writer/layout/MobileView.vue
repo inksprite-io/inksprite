@@ -10,18 +10,14 @@
       class="h-full bg-surface-100 dark:bg-surface-800"
     >
       <!-- The chat is the one the chat tab has open, which is what a
-           document is hidden from here. -->
-      <DocumentTree
+           document is hidden from here. The search is here too, in the
+           outline's place: picking a match goes to it in the writing view. -->
+      <OutlinePanel
         :story-id="storyId"
         :document-id="documentId"
         :chat-id="chatId"
-        @open="openDocument"
+        @open-document="openDocument"
       />
-    </div>
-
-    <!-- Search: picking a match goes to it in the writing view. -->
-    <div v-else-if="activeMobileTab === 'search'" class="h-full bg-surface-100 dark:bg-surface-800">
-      <SearchPanel :story-id="storyId" :document-id="documentId" @open-document="openDocument" />
     </div>
 
     <!-- Chat: the one open, as beside the editor, with the list behind it -->
@@ -60,11 +56,10 @@
 import { ref } from 'vue'
 import EditorPanel from './EditorPanel.vue'
 import ChatPanel from './ChatPanel.vue'
-import DocumentTree from '../tree/DocumentTree.vue'
+import OutlinePanel from '../tree/OutlinePanel.vue'
 import ChatHistory from '../chats/ChatHistory.vue'
 import NarrationPanel from '../narration/NarrationPanel.vue'
 import CommentsPanel from '../comments/CommentsPanel.vue'
-import SearchPanel from '../search/SearchPanel.vue'
 import Settings from '../settings/Settings.vue'
 import { useDocuments } from '@/composables/useDocuments'
 
