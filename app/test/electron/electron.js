@@ -6,6 +6,7 @@
 import { vi } from 'vitest'
 
 export const app = {
+  name: 'inksprite',
   isPackaged: false,
   getPath: vi.fn(),
   getLocaleCountryCode: vi.fn(() => ''),

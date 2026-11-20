@@ -3,10 +3,14 @@ import {
   CHAT_TABS,
   NO_TABS,
   closeTab,
+  closeTabs,
   dropTabs,
   keepTab,
+  lastClosed,
   normalizeTabs,
   openTab,
+  tabAt,
+  tabBeside,
   tabsOf,
   tabNames,
   tabsPatch,
@@ -14,13 +18,20 @@ import {
 
 /**
  * A set of tabs. Its history is the one showing alone, as for tabs from
- * before the history was kept, unless given.
+ * before the history was kept, unless given, and none of it closed.
  */
-const tabs = (open, active = open[0] ?? null, preview = null, shown = active ? [active] : []) => ({
+const tabs = (
+  open,
+  active = open[0] ?? null,
+  preview = null,
+  shown = active ? [active] : [],
+  closed = []
+) => ({
   open,
   active,
   preview,
   shown,
+  closed,
 })
 
 describe('tabsOf', () => {
@@ -66,22 +77,24 @@ describe('tabsOf', () => {
 
 describe('tabsPatch', () => {
   it('writes the tabs back as story fields', () => {
-    expect(tabsPatch(tabs(['a', 'b'], 'b', 'a', ['b', 'a']))).toEqual({
+    expect(tabsPatch(tabs(['a', 'b'], 'b', 'a', ['b', 'a'], ['d', 'c']))).toEqual({
       openDocumentIds: ['a', 'b'],
       lastDocumentId: 'b',
       previewDocumentId: 'a',
       shownDocumentIds: ['b', 'a'],
+      closedDocumentIds: ['d', 'c'],
     })
     expect(tabsPatch(NO_TABS)).toEqual({
       openDocumentIds: [],
       lastDocumentId: null,
       previewDocumentId: null,
       shownDocumentIds: [],
+      closedDocumentIds: [],
     })
   })
 
   it('round-trips through a story', () => {
-    const set = tabs(['a', 'b', 'c'], 'c', null, ['c', 'a', 'b'])
+    const set = tabs(['a', 'b', 'c'], 'c', null, ['c', 'a', 'b'], ['e', 'd'])
     expect(tabsOf(tabsPatch(set))).toEqual(set)
   })
 })
@@ -95,14 +108,18 @@ describe("the chat panel's tabs", () => {
       lastChatId: 'chat_2',
       previewChatId: 'chat_1',
       shownChatIds: ['chat_2', 'chat_1'],
+      closedChatIds: ['chat_3'],
     }
     const set = tabsOf(view, CHAT_TABS)
-    expect(set).toEqual(tabs(['chat_1', 'chat_2'], 'chat_2', 'chat_1', ['chat_2', 'chat_1']))
+    expect(set).toEqual(
+      tabs(['chat_1', 'chat_2'], 'chat_2', 'chat_1', ['chat_2', 'chat_1'], ['chat_3'])
+    )
     expect(tabsPatch(set, CHAT_TABS)).toEqual({
       openChatIds: ['chat_1', 'chat_2'],
       lastChatId: 'chat_2',
       previewChatId: 'chat_1',
       shownChatIds: ['chat_2', 'chat_1'],
+      closedChatIds: ['chat_3'],
     })
   })
 })
@@ -136,7 +153,9 @@ describe('openTab', () => {
 
 describe('closeTab', () => {
   it('closes a tab that is not showing and leaves the rest', () => {
-    expect(closeTab(tabs(['a', 'b', 'c'], 'a'), 'b')).toEqual(tabs(['a', 'c'], 'a'))
+    expect(closeTab(tabs(['a', 'b', 'c'], 'a'), 'b')).toEqual(
+      tabs(['a', 'c'], 'a', null, ['a'], ['b'])
+    )
   })
 
   it('goes back to the tab shown before, down the whole history', () => {
@@ -154,7 +173,7 @@ describe('closeTab', () => {
       after.push(set.active)
     }
     expect(after).toEqual(['2', '3', '1', null])
-    expect(set).toEqual(NO_TABS)
+    expect(set).toEqual({ ...NO_TABS, closed: ['1', '3', '2', '4', '5'] })
   })
 
   it('goes back to a tab brought forward again, not where it was first opened', () => {
@@ -165,15 +184,19 @@ describe('closeTab', () => {
   })
 
   it('past the history, brings the neighbour to the right forward', () => {
-    expect(closeTab(tabs(['a', 'b', 'c'], 'b'), 'b')).toEqual(tabs(['a', 'c'], 'c'))
+    expect(closeTab(tabs(['a', 'b', 'c'], 'b'), 'b')).toEqual(
+      tabs(['a', 'c'], 'c', null, ['c'], ['b'])
+    )
   })
 
   it('past the history, falls back to the neighbour on the left at the end of the strip', () => {
-    expect(closeTab(tabs(['a', 'b', 'c'], 'c'), 'c')).toEqual(tabs(['a', 'b'], 'b'))
+    expect(closeTab(tabs(['a', 'b', 'c'], 'c'), 'c')).toEqual(
+      tabs(['a', 'b'], 'b', null, ['b'], ['c'])
+    )
   })
 
   it('leaves nothing showing when the last tab goes', () => {
-    expect(closeTab(tabs(['a']), 'a')).toEqual(NO_TABS)
+    expect(closeTab(tabs(['a']), 'a')).toEqual({ ...NO_TABS, closed: ['a'] })
   })
 
   it('changes nothing for a document that is not open', () => {
@@ -255,7 +278,7 @@ describe('previews', () => {
     set = openTab(set, 'b', { preview: true })
     set = openTab(set, 'c', { preview: true })
     expect(set.shown).toEqual(['c', 'a'])
-    expect(closeTab(set, 'c')).toEqual(tabs(['a'], 'a'))
+    expect(closeTab(set, 'c')).toEqual(tabs(['a'], 'a', null, ['a'], ['c']))
   })
 
   it('opens a kept document beside the preview, leaving it a preview', () => {
@@ -278,8 +301,97 @@ describe('previews', () => {
   })
 
   it('forgets the preview when its tab closes', () => {
-    expect(closeTab(tabs(['a', 'b'], 'a', 'b'), 'b')).toEqual(tabs(['a'], 'a'))
-    expect(closeTab(tabs(['a', 'b'], 'a', 'b'), 'a')).toEqual(tabs(['b'], 'b', 'b'))
+    expect(closeTab(tabs(['a', 'b'], 'a', 'b'), 'b')).toEqual(tabs(['a'], 'a', null, ['a'], ['b']))
+    expect(closeTab(tabs(['a', 'b'], 'a', 'b'), 'a')).toEqual(tabs(['b'], 'b', 'b', ['b'], ['a']))
+  })
+})
+
+describe('closed tabs', () => {
+  it('remembers the tabs the writer closed, the one closed last first', () => {
+    let set = ['a', 'b', 'c'].reduce((before, id) => openTab(before, id), NO_TABS)
+    set = closeTab(set, 'a')
+    set = closeTab(set, 'c')
+    expect(set.closed).toEqual(['c', 'a'])
+    expect(lastClosed(set, () => true)).toBe('c')
+  })
+
+  it('closes several at once, each remembered', () => {
+    const set = closeTabs(tabs(['a', 'b', 'c'], 'b'), ['a', 'c'])
+    expect(set.open).toEqual(['b'])
+    expect(set.closed).toEqual(['c', 'a'])
+  })
+
+  it('forgets one opened again, however it was opened', () => {
+    const set = closeTab(closeTab(tabs(['a', 'b', 'c'], 'a'), 'b'), 'c')
+    expect(openTab(set, 'c').closed).toEqual(['b'])
+    expect(openTab(set, 'b', { preview: true }).closed).toEqual(['c'])
+  })
+
+  it('does not remember a preview another took the place of', () => {
+    let set = openTab(NO_TABS, 'a', { preview: true })
+    set = openTab(set, 'b', { preview: true })
+    expect(set.closed).toEqual([])
+  })
+
+  it('does not remember a tab whose document was deleted', () => {
+    expect(dropTabs(tabs(['a', 'b'], 'a'), ['b']).closed).toEqual([])
+    expect(normalizeTabs(tabs(['a', 'b'], 'a'), id => id !== 'a').closed).toEqual([])
+  })
+
+  it('passes over one that can no longer be shown for the one closed before it', () => {
+    const set = tabs(['a'], 'a', null, ['a'], ['gone', 'b', 'c'])
+    expect(lastClosed(set, id => id !== 'gone')).toBe('b')
+    expect(lastClosed(set, () => false)).toBeNull()
+    expect(lastClosed(NO_TABS, () => true)).toBeNull()
+  })
+
+  it('keeps only the last twenty', () => {
+    const ids = Array.from({ length: 25 }, (_, i) => `t${i}`)
+    const set = closeTabs(tabs(ids, 't0'), ids)
+    expect(set.closed).toHaveLength(20)
+    expect(set.closed[0]).toBe('t24')
+    expect(set.closed.at(-1)).toBe('t5')
+  })
+
+  it('reads none of them as closed that is open, and each once', () => {
+    const set = tabsOf({
+      openDocumentIds: ['a'],
+      lastDocumentId: 'a',
+      closedDocumentIds: ['b', 'a', 'b', 'c'],
+    })
+    expect(set.closed).toEqual(['b', 'c'])
+  })
+})
+
+describe('tabBeside', () => {
+  it('is the next tab along the strip, or the one before', () => {
+    const set = tabs(['a', 'b', 'c'], 'b')
+    expect(tabBeside(set, 1)).toBe('c')
+    expect(tabBeside(set, -1)).toBe('a')
+  })
+
+  it('goes round the ends of the strip', () => {
+    expect(tabBeside(tabs(['a', 'b', 'c'], 'c'), 1)).toBe('a')
+    expect(tabBeside(tabs(['a', 'b', 'c'], 'a'), -1)).toBe('c')
+  })
+
+  it('is nothing with one tab, or none', () => {
+    expect(tabBeside(tabs(['a']), 1)).toBeNull()
+    expect(tabBeside(NO_TABS, -1)).toBeNull()
+  })
+})
+
+describe('tabAt', () => {
+  it('is the tab at a place in the strip, counted from 1', () => {
+    const set = tabs(['a', 'b', 'c'], 'a')
+    expect(tabAt(set, 1)).toBe('a')
+    expect(tabAt(set, 3)).toBe('c')
+    expect(tabAt(set, 4)).toBeNull()
+  })
+
+  it('takes 9 for the last tab, however many there are', () => {
+    expect(tabAt(tabs(['a', 'b', 'c'], 'a'), 9)).toBe('c')
+    expect(tabAt(NO_TABS, 9)).toBeNull()
   })
 })
 

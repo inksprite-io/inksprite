@@ -123,15 +123,6 @@ describe('useProjectActions', () => {
     expect(itemsFor('other')[2].id).toBe('root_other')
   })
 
-  it('puts the caller’s items above the delete', () => {
-    const { itemsFor } = useProjectActions()
-    const trash = { label: 'Trash' }
-    expect(labels(itemsFor('other', { current: true, beforeDelete: [trash] })).slice(-2)).toEqual([
-      'Trash',
-      'Remove',
-    ])
-  })
-
   it('offers sharing and keeping here while signed in, and syncing again when kept here', () => {
     const { itemsFor } = useProjectActions()
     cloud.account.value = { name: 'writer' }
@@ -164,14 +155,12 @@ describe('useProjectActions', () => {
     ])
   })
 
-  it('offers only the settings of a project not saved yet, and the caller’s items', () => {
+  it('offers only the settings of a project not saved yet', () => {
     const { itemsFor } = useProjectActions()
     cloud.account.value = { name: 'writer' }
     windows.desktop = true
     stores.fresh = 'mine'
-    expect(labels(itemsFor('mine', { current: true, beforeDelete: [{ label: 'Trash' }] }))).toEqual(
-      ['Project settings', 'Trash']
-    )
+    expect(labels(itemsFor('mine', { current: true }))).toEqual(['Project settings'])
   })
 
   it('offers only its folder for a project open in another window', () => {

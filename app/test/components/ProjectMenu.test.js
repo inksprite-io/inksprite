@@ -6,7 +6,7 @@ import PrimeVue from 'primevue/config'
 import TieredMenu from 'primevue/tieredmenu'
 import ProjectMenu from '@/components/writer/projects/ProjectMenu.vue'
 import NewProjectDialog from '@/components/writer/projects/NewProjectDialog.vue'
-import ProjectsDialog from '@/components/writer/projects/ProjectsDialog.vue'
+import { useProjectsDialog } from '@/composables/useProjectsDialog.js'
 import { LONG_PRESS_MS } from '@/composables/useLongPress.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
@@ -75,6 +75,10 @@ const actions = vi.hoisted(() => ({
   itemsFor: vi.fn(storyId => [{ label: `Actions on ${storyId}` }]),
 }))
 vi.mock('@/composables/useProjectActions.js', () => ({ useProjectActions: () => actions }))
+// The trash, which has tests of its own: how much is in it says whether the
+// menu offers it. The menu's item for it is owed its tests.
+const trash = vi.hoisted(() => ({ count: { value: 0 } }))
+vi.mock('@/composables/useTrash.js', () => ({ useTrash: () => trash }))
 const platform = vi.hoisted(() => ({ desktop: false }))
 vi.mock('@/platform/desktop.js', async importOriginal => ({
   ...(await importOriginal()),
@@ -112,7 +116,7 @@ describe('ProjectMenu', () => {
       global: {
         plugins: [router, PrimeVue],
         directives: { tooltip: {} },
-        stubs: { NewProjectDialog: true, ProjectsDialog: true },
+        stubs: { NewProjectDialog: true, TrashDialog: true },
       },
     })
     await flushPromises()
@@ -226,11 +230,12 @@ describe('ProjectMenu', () => {
     const { wrapper } = await mountMenu('')
     expect(titles(wrapper)).toEqual([0, 1, 2, 3, 4, 5, 6, 7].map(at => `Project ${at}`))
 
-    const table = wrapper.findComponent(ProjectsDialog)
-    expect(table.props('visible')).toBe(false)
+    // The table is the writer's frame's, opened from here.
+    const table = useProjectsDialog()
+    table.visible.value = false
     pick(wrapper, 'Projects…')
     await flushPromises()
-    expect(table.props('visible')).toBe(true)
+    expect(table.visible.value).toBe(true)
   })
 
   it('marks the project open', async () => {
@@ -444,7 +449,7 @@ describe('ProjectMenu', () => {
           directives: { tooltip: {} },
           stubs: {
             NewProjectDialog: true,
-            ProjectsDialog: true,
+            TrashDialog: true,
             ContextMenu: {
               name: 'ContextMenu',
               props: ['model'],
@@ -482,7 +487,7 @@ describe('ProjectMenu', () => {
 
     it('offers the outline’s items on the project open', async () => {
       const mine = await storiesStore.createStory('Mine')
-      const own = [{ label: 'Trash' }]
+      const own = [{ label: 'Project settings' }]
       const wrapper = await mountDrawn(mine.id, own)
 
       await row(wrapper, 'Mine').trigger('contextmenu')
@@ -511,17 +516,6 @@ describe('ProjectMenu', () => {
       expect(show).not.toHaveBeenCalled()
     })
 
-    it('offers it for a project right-clicked in the table', async () => {
-      const wrapper = await mountDrawn('')
-      const event = { pageX: 1, pageY: 2 }
-
-      wrapper.findComponent(ProjectsDialog).vm.$emit('project-menu', event, 'story_x')
-      await flushPromises()
-
-      expect(actions.itemsFor).toHaveBeenCalledWith('story_x')
-      expect(show).toHaveBeenCalledWith(event)
-    })
-
     it('gives the focus back to the menu when a project’s menu shuts', async () => {
       const wrapper = await mountDrawn('')
       const list = document.createElement('ul')
@@ -537,17 +531,6 @@ describe('ProjectMenu', () => {
       wrapper.findComponent({ name: 'ContextMenu' }).vm.$emit('hide')
       expect(document.activeElement).toBe(list)
       list.remove()
-    })
-
-    it('gives the focus back to the table when it opened from there', async () => {
-      const focusSearch = vi.fn()
-      const wrapper = await mountDrawn('')
-      wrapper.findComponent(ProjectsDialog).vm.focusSearch = focusSearch
-      await wrapper.findComponent(ProjectsDialog).vm.$emit('update:visible', true)
-
-      wrapper.findComponent({ name: 'ContextMenu' }).vm.$emit('hide')
-
-      expect(focusSearch).toHaveBeenCalledTimes(1)
     })
 
     it('opens under a finger held on a project, where the finger is', async () => {

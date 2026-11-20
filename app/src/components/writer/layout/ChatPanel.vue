@@ -1,5 +1,8 @@
 <template>
-  <div class="h-full w-full min-w-0 flex flex-col bg-surface-0 dark:bg-surface-850">
+  <div
+    class="h-full w-full min-w-0 flex flex-col bg-surface-0 dark:bg-surface-850"
+    data-panel="chat"
+  >
     <!-- The chats open, as the editor's documents are. Before them, the
          editor's toggle beside an editor, or on a phone the way back to the
          list behind the panel; after them, finding in the chat showing, a
@@ -78,7 +81,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue'
 import Chat from '../chats/Chat.vue'
 import HeaderButton from './HeaderButton.vue'
 import PanelToggle from './PanelToggle.vue'
@@ -192,6 +195,16 @@ const openTerminal = async () => {
     toast.error('The terminal couldn’t be opened.')
   }
 }
+
+// The keys asked for in the tab showing, which a key brought forward
+// (`useMenuCommands`), once it is the one in the panel: the caret in a
+// chat's message box, or a terminal taking them.
+watch(chatTabs.focusAsked, async () => {
+  await nextTick()
+  const id = activeId.value
+  if (isTerminalId(id)) frames.get(id)?.focus()
+  else chat.value?.focusMessage()
+})
 
 /**
  * A tab's chat: one of the project's, or the unstarted one's settings.

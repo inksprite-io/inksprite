@@ -58,6 +58,7 @@ import {
   closeTab as closed,
   dropTabs,
   keepTab,
+  lastClosed,
   normalizeTabs,
   openTab,
   tabsOf,
@@ -147,9 +148,23 @@ export const useDocuments = storyId => {
   }
 
   /**
+   * Whether a tab has something to show: a document still in the tree, text
+   * or a file, or the text of a chat or a skill still there.
+   * @param {string} id
+   * @returns {boolean}
+   */
+  const canShow = id => {
+    const chatTab = chatTabOf(id)
+    if (chatTab) return hasChat(chatTab.chatId)
+    const skillId = skillTabOf(id)
+    if (skillId) return hasSkill(skillId)
+    const type = documentsStore.getDocument(id)?.type
+    return type === 'text' || type === 'file'
+  }
+
+  /**
    * The editor's tabs, as the project's view remembers them and the tree allows: only
-   * a document still in the tree with something to show — text, or a file —
-   * or the text of a chat or a skill still there can be open, so anything else has been
+   * what has something to show can be open, so anything else has been
    * dropped by the time they are read. Before the tree is loaded they are
    * taken as stored.
    * @type {import('vue').ComputedRef<Tabs>}
@@ -157,14 +172,7 @@ export const useDocuments = storyId => {
   const tabs = computed(() => {
     const stored = tabsOf(projectViewsStore.getView(storyId))
     if (!ready.value) return stored
-    return normalizeTabs(stored, id => {
-      const chatTab = chatTabOf(id)
-      if (chatTab) return hasChat(chatTab.chatId)
-      const skillId = skillTabOf(id)
-      if (skillId) return hasSkill(skillId)
-      const type = documentsStore.getDocument(id)?.type
-      return type === 'text' || type === 'file'
-    })
+    return normalizeTabs(stored, canShow)
   })
 
   /**
@@ -256,6 +264,15 @@ export const useDocuments = storyId => {
     unasked = ''
     editor.close(documentId)
     writeTabs(closed(tabs.value, documentId))
+  }
+
+  /**
+   * Open again the tab closed last, if its document is still there to show,
+   * or else the one closed before it. Nothing with none.
+   */
+  const reopenTab = () => {
+    const documentId = lastClosed(tabs.value, canShow)
+    if (documentId) open(documentId)
   }
 
   /**
@@ -1117,6 +1134,7 @@ export const useDocuments = storyId => {
     focus,
     takesCaret,
     closeTab,
+    reopenTab,
     releaseTabs,
     get,
     editableTitle,

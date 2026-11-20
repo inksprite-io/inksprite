@@ -81,6 +81,8 @@
  * @property {string[]} [shownDocumentIds] - The open documents as they were last
  *   shown, the active one first: where closing a tab goes back to. Absent means
  *   only the active one is known; see `utils/tabs.js`.
+ * @property {string[]} [closedDocumentIds] - The editor's tabs closed and not opened
+ *   since, the one closed last first: what reopening a tab brings back
  * @property {string[]} [openChatIds] - The chats open in the chat panel, in tab order.
  *   Absent means the project's chats were never in tabs; see `useChatTabs`.
  * @property {string|null} [lastChatId] - The chat panel's tab showing
@@ -88,6 +90,8 @@
  *   once, as a document's can be, and every one is kept now
  * @property {string[]} [shownChatIds] - The open chats as they were last shown, the
  *   one showing first
+ * @property {string[]} [closedChatIds] - The chat panel's tabs closed and not opened
+ *   since, the one closed last first
  * @property {string[]} [unreadChatIds] - Chats the model finished in while they weren't
  *   showing, until they are
  * @property {StoryLayout} [layout] - How the writer left the panels. Absent means the

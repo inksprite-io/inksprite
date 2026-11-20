@@ -1,5 +1,8 @@
 <template>
-  <main class="h-full w-full min-w-0 flex flex-col bg-surface-0 dark:bg-surface-850">
+  <main
+    class="h-full w-full min-w-0 flex flex-col bg-surface-0 dark:bg-surface-850"
+    data-panel="editor"
+  >
     <!-- The strip is the panel's header. Beside the chat it is always there,
          since the chat's toggle lives at its end; alone, as on a phone, it is
          there only while something is open; and in focus mode, never. -->

@@ -37,7 +37,6 @@ const keptOffSync = story => Boolean(story?.syncOff || story?.keptElsewhere)
 /**
  * @typedef {Object} ItemsOptions
  * @property {boolean} [current] - It is the project open in this window
- * @property {Array<Object>} [beforeDelete] - Items of the caller's to go above Remove
  */
 
 /**
@@ -191,7 +190,7 @@ export function useProjectActions() {
    * @param {ItemsOptions} [options]
    * @returns {Array<Object>}
    */
-  const itemsFor = (storyId, { current = false, beforeDelete = [] } = {}) => {
+  const itemsFor = (storyId, { current = false } = {}) => {
     // In the desktop app, the project's folder.
     const reveal = revealItem(rootIdFor(storyId))
     if (!current && projects.elsewhere.value.has(storyId)) return reveal ? [reveal] : []
@@ -205,7 +204,6 @@ export function useProjectActions() {
           icon: 'pi pi-cog',
           command: () => showSettings(storyId, current),
         },
-        ...beforeDelete,
       ]
     }
 
@@ -251,7 +249,6 @@ export function useProjectActions() {
                   ]),
             ]
         : []),
-      ...beforeDelete,
       { label: 'Remove', icon: 'pi pi-trash', command: () => remove(storyId, current) },
     ]
   }

@@ -57,12 +57,7 @@
       @change="importChosen"
     />
     <NewProjectDialog v-model:visible="showCreateDialog" @create="create" />
-    <ProjectsDialog
-      ref="projectsDialog"
-      v-model:visible="showProjects"
-      :story-id="storyId"
-      @project-menu="showProjectMenu"
-    />
+    <TrashDialog v-model:visible="showTrash" :story-id="storyId" />
   </div>
 </template>
 
@@ -72,13 +67,15 @@ import ContextMenu from 'primevue/contextmenu'
 import TieredMenu from 'primevue/tieredmenu'
 import HeaderButton from '../layout/HeaderButton.vue'
 import NewProjectDialog from './NewProjectDialog.vue'
-import ProjectsDialog from './ProjectsDialog.vue'
+import TrashDialog from './TrashDialog.vue'
 import { useHoverSubmenus } from '@/composables/useHoverSubmenus.js'
 import { useLongPress } from '@/composables/useLongPress.js'
 import { useProjectActions } from '@/composables/useProjectActions.js'
+import { useProjectsDialog } from '@/composables/useProjectsDialog.js'
 import { useProjects } from '@/composables/useProjects'
 import { useReactiveTime } from '@/composables/useReactiveTime'
 import { useToast } from '@/composables/useToast'
+import { useTrash } from '@/composables/useTrash.js'
 import { sharing } from '@/cloud/people.js'
 import { recentProjects } from '@/utils/projectList.js'
 import { isDesktop } from '@/platform/desktop.js'
@@ -88,14 +85,15 @@ import { isDesktop } from '@/platform/desktop.js'
  * those edited last, the one open checked and each with when it was last
  * edited, or that it is open in another window; Projects… for all of them
  * in a table; a new one or one imported from a file; in the desktop app a new
- * window; then what the outline does to the one open. While someone's
+ * window; the trash, while anything is in it; then what the outline does to
+ * the one open. While someone's
  * invitation to a project waits, a dot on the button says so, and Projects…,
  * whose table has it at the top, says how many.
  *
  * Picked with Command or Ctrl held, a project opens in a new window (a new
  * tab in a browser). One open in another window is shown there. Right-clicked
- * or held under a finger, in either list, a project has its own menu: the
- * outline's for the one open, and the same for another, without opening it.
+ * or held under a finger, a recent project has its own menu: the outline's
+ * for the one open, and the same for another, without opening it.
  *
  * @typedef {Object} Props
  * @property {string} storyId - The project open
@@ -119,7 +117,11 @@ const menu = ref(null)
 /** @type {import('vue').Ref<HTMLInputElement|null>} */
 const fileInput = ref(null)
 const showCreateDialog = ref(false)
-const showProjects = ref(false)
+const projectsDialog = useProjectsDialog()
+// The trash holds what was deleted from this project, and the projects
+// deleted: it is opened from here, and from nowhere else.
+const trash = useTrash(props.storyId)
+const showTrash = ref(false)
 const isImporting = ref(false)
 
 const hoverSubmenus = useHoverSubmenus(menu)
@@ -140,17 +142,13 @@ const showProjectMenu = (event, storyId) => {
   projectMenu.value?.show(event)
 }
 
-/** @type {import('vue').Ref<any>} */
-const projectsDialog = ref(null)
-
 /**
  * A project's menu shut gives the focus back to the list it was opened from,
  * for the keys to go on working there: the next Escape shuts that too. An item
  * that opens something takes the focus on from here.
  */
 const returnFocus = () => {
-  if (showProjects.value) projectsDialog.value?.focusSearch?.()
-  else if (menu.value?.visible) menu.value.menubar?.focus()
+  if (menu.value?.visible) menu.value.menubar?.focus()
 }
 
 /** The project a finger went down on. */
@@ -212,9 +210,7 @@ const items = computed(() => [
         : invitations.value.length === 1
           ? '1 invitation'
           : `${invitations.value.length} invitations`,
-    command: () => {
-      showProjects.value = true
-    },
+    command: () => projectsDialog.open(),
   },
   {
     label: 'New project…',
@@ -226,6 +222,17 @@ const items = computed(() => [
   { label: 'Import project…', icon: 'pi pi-upload', command: () => fileInput.value?.click() },
   ...(isDesktop()
     ? [{ label: 'New window', icon: 'pi pi-clone', command: () => projects.openInNewWindow() }]
+    : []),
+  ...(trash.count.value > 0
+    ? [
+        {
+          label: 'Open trash…',
+          icon: 'pi pi-trash',
+          command: () => {
+            showTrash.value = true
+          },
+        },
+      ]
     : []),
   ...(props.projectItems.length > 0 ? [{ separator: true }, ...props.projectItems] : []),
 ])

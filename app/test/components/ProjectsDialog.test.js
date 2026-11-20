@@ -5,7 +5,6 @@ import { setActivePinia, createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import ProjectsDialog from '@/components/writer/projects/ProjectsDialog.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
-import { LONG_PRESS_MS } from '@/composables/useLongPress.js'
 import { sharing } from '@/cloud/people.js'
 
 const projects = vi.hoisted(() => ({
@@ -26,6 +25,10 @@ const blocking = vi.hoisted(() => ({ block: vi.fn(async () => {}) }))
 vi.mock('@/composables/useBlocking.js', () => ({ useBlocking: () => blocking }))
 const toast = vi.hoisted(() => ({ error: vi.fn() }))
 vi.mock('@/composables/useToast.js', () => ({ useToast: () => toast }))
+// A project's own menu, which the table shows for a row, is owed its tests.
+vi.mock('@/composables/useProjectActions.js', () => ({
+  useProjectActions: () => ({ itemsFor: () => [] }),
+}))
 
 const Dialog = {
   name: 'Dialog',
@@ -177,51 +180,6 @@ describe('ProjectsDialog', () => {
     expect(away.text()).toContain('Open in another window')
     expect(away.find('i').classes()).toContain('pi-clone')
     expect(wrapper.find('[data-project="a"]').text()).not.toContain('Open in another window')
-  })
-
-  it('asks for a project’s own menu when one is right-clicked', async () => {
-    const wrapper = await mountDialog()
-
-    await wrapper.find('[data-project="c"]').trigger('contextmenu')
-
-    const [[event, storyId]] = wrapper.emitted('project-menu')
-    expect(event.type).toBe('contextmenu')
-    expect(storyId).toBe('c')
-    expect(projects.pick).not.toHaveBeenCalled()
-  })
-
-  it('asks for it under a finger held on a project, where the finger is', async () => {
-    const wrapper = await mountDialog()
-    vi.useFakeTimers()
-    try {
-      await wrapper
-        .find('[data-project="a"]')
-        .trigger('touchstart', { touches: [{ clientX: 30, clientY: 40 }] })
-      expect(wrapper.emitted('project-menu')).toBeUndefined()
-
-      vi.advanceTimersByTime(LONG_PRESS_MS)
-
-      const [[event, storyId]] = wrapper.emitted('project-menu')
-      expect(event).toMatchObject({ pageX: 30, pageY: 40 })
-      expect(storyId).toBe('a')
-    } finally {
-      vi.useRealTimers()
-    }
-  })
-
-  it('can have the caret put back in the search', async () => {
-    const wrapper = await mountDialog()
-    const mask = document.createElement('div')
-    const input = document.createElement('input')
-    input.setAttribute('data-project-search', '')
-    mask.append(input)
-    document.body.append(mask)
-    wrapper.findComponent({ name: 'Dialog' }).vm.mask = mask
-
-    wrapper.vm.focusSearch()
-
-    expect(document.activeElement).toBe(input)
-    mask.remove()
   })
 
   describe('from the keyboard', () => {

@@ -9,6 +9,9 @@
  * `composables/useProjectSearch`'s, and printing's is
  * `composables/usePrint`'s; this is the list a person reads, in the order
  * they would look for things, and its test holds it to those.
+ *
+ * In the desktop app the list ends with the menu's keys for tabs and
+ * windows (`app/electron/src/menu.js`), which a browser keeps for its own.
  */
 
 const isMac = /Mac|iP(hone|ad|od)/.test(
@@ -88,9 +91,34 @@ export const SHORTCUTS = [
   },
 ]
 
+/**
+ * The desktop app's keys for tabs and windows, which are its menu's: listed
+ * here because Windows and Linux keep the menu bar out of sight.
+ *
+ * @param {{ai: boolean}} having - Whether the AI is on, and so the chat there
+ * @returns {ShortcutGroup}
+ */
+export const menuShortcuts = ({ ai }) => ({
+  title: 'Tabs and windows',
+  shortcuts: [
+    { action: 'New document', keys: 'Mod-n' },
+    ...(ai ? [{ action: 'New chat', keys: 'Mod-t' }] : []),
+    { action: 'Close tab', keys: 'Mod-w' },
+    { action: 'Reopen closed tab', keys: 'Mod-Shift-t' },
+    { action: 'Next tab', keys: 'Ctrl-Tab' },
+    { action: 'Previous tab', keys: 'Ctrl-Shift-Tab' },
+    { action: 'Tab 1 to 9', keys: 'Mod-1' },
+    { action: 'Projects', keys: 'Mod-o' },
+    { action: 'Settings', keys: 'Mod-,' },
+    { action: 'New window', keys: 'Mod-Shift-n' },
+    { action: 'Close window', keys: 'Mod-Shift-w' },
+  ],
+})
+
 /** What each part of a binding is called, on a Mac and off one. */
 const NAMES = {
   Mod: ['⌘', 'Ctrl'],
+  Ctrl: ['⌃', 'Ctrl'],
   Shift: ['⇧', 'Shift'],
   Alt: ['⌥', 'Alt'],
   Enter: ['↵', 'Enter'],

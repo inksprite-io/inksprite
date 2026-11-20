@@ -160,6 +160,69 @@ describe('useChatTabs', () => {
     })
   })
 
+  describe('reopening', () => {
+    it('shows the chat closed last again, beside the tab showing', () => {
+      const api = useChatTabs('story_1')
+      api.open('chat_2')
+      api.open('chat_1')
+      api.close('chat_2')
+      api.close('chat_1')
+      expect(api.tabs.value.open).toEqual(['chat_3'])
+
+      api.reopen()
+      expect(api.tabs.value.open).toEqual(['chat_3', 'chat_1'])
+      expect(api.activeChatId.value).toBe('chat_1')
+
+      api.reopen()
+      expect(api.tabs.value.open).toEqual(['chat_3', 'chat_1', 'chat_2'])
+      expect(view.closedChatIds).toEqual([])
+    })
+
+    it('brings back each of the tabs Close others closed', () => {
+      const api = useChatTabs('story_1')
+      api.open('chat_2')
+      api.open('chat_1')
+      api.closeOthers('chat_1')
+
+      api.reopen()
+      api.reopen()
+      expect([...api.tabs.value.open].sort()).toEqual(['chat_1', 'chat_2', 'chat_3'])
+    })
+
+    it('passes over a chat not started, which has nothing to bring back', () => {
+      const api = useChatTabs('story_1')
+      api.open('chat_1')
+      api.close('chat_1')
+      api.openNew()
+      api.close('chat_new')
+
+      api.reopen()
+      expect(api.activeChatId.value).toBe('chat_1')
+    })
+
+    it('does nothing with no tab closed, nor for a chat deleted since', () => {
+      const api = useChatTabs('story_1')
+      api.reopen()
+      expect(api.tabs.value.open).toEqual(['chat_3'])
+
+      api.open('chat_1')
+      api.close('chat_1')
+      haveChats('chat_3', 'chat_2')
+      api.reopen()
+      expect(api.tabs.value.open).toEqual(['chat_3'])
+    })
+  })
+
+  describe('the caret', () => {
+    it('counts each time it is asked for, for the panel to watch', () => {
+      const api = useChatTabs('story_1')
+      const before = api.focusAsked.value
+      api.focus()
+      api.focus()
+      expect(api.focusAsked.value).toBe(before + 2)
+    })
+  })
+
   describe('unread', () => {
     it('marks a chat the model stops working in while another tab shows', () => {
       const api = useChatTabs('story_1')
@@ -279,6 +342,29 @@ describe('useChatTabs', () => {
 
       expect(native.close.mock.calls).toEqual([['terminal:1']])
       expect(api.tabs.value.open).toEqual(['terminal:2'])
+    })
+
+    it('does not bring a closed terminal back, whose shell has ended, but the chat closed before it', async () => {
+      const api = useChatTabs('story_1')
+      api.open('chat_1')
+      await api.openTerminal()
+      api.close('chat_1')
+      api.close('terminal:1')
+      expect(view.closedChatIds).toEqual(['chat_1'])
+
+      api.reopen()
+      expect(api.activeId.value).toBe('chat_1')
+    })
+
+    it('remembers the chats Close others closed, and not the terminals', async () => {
+      const api = useChatTabs('story_1')
+      api.open('chat_1')
+      await api.openTerminal()
+      await api.openTerminal()
+      api.closeOthers('terminal:2')
+
+      expect(api.tabs.value.open).toEqual(['terminal:2'])
+      expect([...view.closedChatIds].sort()).toEqual(['chat_1', 'chat_3'])
     })
 
     it('gives a terminal of the window a tab in a project that has none for it', async () => {

@@ -54,6 +54,9 @@
  *   file a script left in the app's data folder, or null when there is none
  * @property {(save: () => Promise<void>) => void} beforeClosing - What to do
  *   before the window closes or the app quits, which waits for it a while
+ * @property {(listener: ((command: string, detail?: number) => void)|null) => void} [onMenuCommand] -
+ *   What to do when the menu asks something of the page, or null for nothing.
+ *   Missing from a desktop app older than the page it loads.
  * @property {DesktopLibrary} library - The folder the projects are kept in
  * @property {DesktopPython} [python] - Python for the model to run code in,
  *   a session for each chat. Missing from a desktop app older than the page

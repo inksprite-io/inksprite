@@ -9,7 +9,7 @@
     @update:visible="$emit('update:visible', $event)"
   >
     <div class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-      <section v-for="group in SHORTCUTS" :key="group.title" data-shortcut-group>
+      <section v-for="group in groups" :key="group.title" data-shortcut-group>
         <h3
           class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-surface-500 dark:text-surface-400"
         >
@@ -36,11 +36,15 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import Dialog from 'primevue/dialog'
-import { SHORTCUTS, keyLabel } from '@/editor/shortcuts.js'
+import { useApplicationState } from '@/composables/useApplicationState.js'
+import { SHORTCUTS, keyLabel, menuShortcuts } from '@/editor/shortcuts.js'
+import { hasMenuCommands } from '@/platform/menu.js'
 
 /**
- * The editor's keys and typed shortcuts, listed. Opened with Mod-/ in the
+ * The editor's keys and typed shortcuts, listed, and in the desktop app its
+ * menu's keys for tabs and windows after them. Opened with Mod-/ in the
  * editor, or from a tab's menu.
  *
  * @typedef {Object} Props
@@ -51,4 +55,10 @@ defineProps({
 })
 
 defineEmits(['update:visible'])
+
+const { aiEnabled } = useApplicationState()
+
+const groups = computed(() =>
+  hasMenuCommands() ? [...SHORTCUTS, menuShortcuts({ ai: aiEnabled.value })] : SHORTCUTS
+)
 </script>

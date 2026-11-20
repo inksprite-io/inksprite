@@ -54,6 +54,10 @@
       <SettingsDialog v-model:visible="settingsVisible" :story-id="currentStoryId" />
     </div>
 
+    <!-- Every project in a table, from the outline's menu or the desktop
+         app's File menu. -->
+    <ProjectsDialog v-model:visible="projectsVisible" :story-id="currentStoryId" />
+
     <!-- App-wide, over whichever layout is showing; a card picked in it goes
          into the project open. -->
     <CardLibraryDialog :story-id="currentStoryId" />
@@ -105,9 +109,12 @@ import MobileView from './layout/MobileView.vue'
 import DesktopView from './layout/DesktopView.vue'
 import SettingsDialog from './settings/SettingsDialog.vue'
 import CardLibraryDialog from './cards/CardLibraryDialog.vue'
+import ProjectsDialog from './projects/ProjectsDialog.vue'
 import VersionsDialog from './editor/VersionsDialog.vue'
 import PictureViewer from './editor/PictureViewer.vue'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
+import { useProjectsDialog } from '@/composables/useProjectsDialog.js'
+import { useMenuCommands } from '@/composables/useMenuCommands.js'
 import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { useEditorRequest } from '@/composables/useEditorRequest.js'
 import { useChatRequest } from '@/composables/useChatRequest.js'
@@ -120,6 +127,7 @@ import {
   PANELS,
   normalizeLayout,
   selectSidebarTab,
+  shownLayout,
   keptWithoutAI,
   togglePanel as toggled,
   withoutAI,
@@ -127,7 +135,7 @@ import {
 
 const route = useRoute()
 const router = useRouter()
-const { isMobile } = useScreenSize()
+const { isMobile, isNarrow } = useScreenSize()
 const storiesStore = useStoriesStore()
 const projectViewsStore = useProjectViewsStore()
 const appState = useApplicationState()
@@ -245,13 +253,17 @@ watch(sidebarTab.requested, () => {
   else setLayout({ ...layout.value, sidebar: true, sidebarTab: tab })
 })
 
-// The editor asked for from deeper in the writer, having had a tab opened in
-// it: on a phone its tab, here its panel.
-const editorRequest = useEditorRequest()
-watch(editorRequest.requested, () => {
-  if (!editorRequest.take()) return
+/** Show the editor, where it is hidden: on a phone its tab, here its panel. */
+const showEditor = () => {
   if (isMobile.value) activeMobileTab.value = 'write'
   else showPanel(PANELS.EDITOR)
+}
+
+// The editor asked for from deeper in the writer, having had a tab opened in
+// it.
+const editorRequest = useEditorRequest()
+watch(editorRequest.requested, () => {
+  if (editorRequest.take()) showEditor()
 })
 
 // Shared with anything that opens the settings from inside the writer. On a
@@ -282,6 +294,27 @@ const openChat = chatId => {
   chatTabs.value?.open(chatId)
   showPanel(PANELS.CHAT)
 }
+
+/**
+ * Show the chat, where it is hidden: on a phone its tab, here its panel, and
+ * in a narrow window, where it folds away while the sidebar is open, by
+ * closing the sidebar, as the chat's own toggle does there.
+ */
+const showChat = () => {
+  if (isMobile.value) {
+    activeMobileTab.value = 'chat'
+    return
+  }
+  const on = { ...layout.value, chat: true }
+  const next = shownLayout(on, isNarrow.value).chat ? on : { ...on, sidebar: false }
+  if (!layout.value.chat || next.sidebar !== layout.value.sidebar) setLayout(next)
+}
+
+// In the desktop app, the File and Window menus' keys: a new document or
+// chat, the tab the writer is in closed, reopened or stepped from, the
+// projects and the settings.
+const { visible: projectsVisible } = useProjectsDialog()
+useMenuCommands({ storyId: () => currentStoryId.value, showEditor, showChat })
 
 // Needed to handle OAuth messages
 const aiProvidersStore = useAIProvidersStore()

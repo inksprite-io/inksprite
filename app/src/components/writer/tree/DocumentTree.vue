@@ -89,7 +89,6 @@
       @change="readChosenFolder"
     />
 
-    <TrashDialog v-model:visible="showTrash" :story-id="storyId" />
     <RepositoryDialog
       ref="repositoryDialog"
       v-model:visible="showRepositoryDialog"
@@ -125,10 +124,8 @@ import { importItems } from './importItems.js'
 import HeaderButton from '../layout/HeaderButton.vue'
 import PanelHeader from '../layout/PanelHeader.vue'
 import ProjectMenu from '../projects/ProjectMenu.vue'
-import TrashDialog from '../projects/TrashDialog.vue'
 import { useProjectActions } from '@/composables/useProjectActions.js'
 import { showSearch } from '@/composables/useProjectSearch.js'
-import { useTrash } from '@/composables/useTrash.js'
 import { useCardChat } from '@/composables/useCardChat'
 import { useBulkImport, describeImport } from '@/composables/useBulkImport'
 import { useCardImport, NotACardError } from '@/composables/useCardImport'
@@ -185,8 +182,6 @@ const openRootMenu = event => {
 
 const isDragging = ref(false)
 
-const trash = useTrash(props.storyId)
-const showTrash = ref(false)
 const projectActions = useProjectActions()
 
 const cards = useCardImport(props.storyId)
@@ -617,23 +612,7 @@ const importMenuItems = computed(() => {
 const openDocument = documentId => emit('open', documentId)
 
 /** What can be done to the project: on the root's menu, and under Projects in the header. */
-const projectMenuItems = computed(() =>
-  projectActions.itemsFor(props.storyId, {
-    current: true,
-    beforeDelete:
-      trash.count.value > 0
-        ? [
-            {
-              label: 'Trash',
-              icon: 'pi pi-trash',
-              command: () => {
-                showTrash.value = true
-              },
-            },
-          ]
-        : [],
-  })
-)
+const projectMenuItems = computed(() => projectActions.itemsFor(props.storyId, { current: true }))
 
 const history = useTreeHistory(props.storyId)
 /** @type {import('vue').Ref<HTMLElement|null>} */

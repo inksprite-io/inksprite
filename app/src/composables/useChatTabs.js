@@ -9,7 +9,8 @@
  * A chat opens in a tab of its own beside the one showing, and stays until
  * it is closed: one picked from the chat list, a new chat, a fork, a chat
  * started on a card. No chat is a preview, as a document from the outline
- * is. Closing the tab showing goes back to the one shown before it.
+ * is. Closing the tab showing goes back to the one shown before it, and the
+ * chat closed last can be opened again.
  *
  * The strip is never empty. With nothing open it shows the unstarted chat,
  * which is written into the view only once it is used, so opening a chat
@@ -29,7 +30,7 @@
  * One instance per project, made in a scope of its own like `useAIChat`, so
  * the watch that clears what is read outlives the view that first asked.
  */
-import { computed, effectScope, watch } from 'vue'
+import { computed, effectScope, ref, watch } from 'vue'
 import { useChats } from './useChats.js'
 import { onStoppedWorking } from './useChatActivity.js'
 import { onTerminalEnded, useTerminals } from './useTerminals.js'
@@ -39,7 +40,9 @@ import {
   CHAT_TABS,
   NO_TABS,
   closeTab,
+  closeTabs,
   dropTabs,
+  lastClosed,
   normalizeTabs,
   openTab,
   tabsOf,
@@ -64,7 +67,14 @@ import {
  *   shell is ended with it.
  * @property {(chatId: string) => void} shut - Close a tab and no more, as for
  *   a terminal whose shell has ended
+ * @property {() => void} reopen - Show again the chat whose tab was closed
+ *   last, if it is still one of the project's
  * @property {(chatId: string) => void} closeOthers - Close every tab but this one
+ * @property {() => void} focus - Put the caret in the message box of the chat
+ *   showing, or the keys in the terminal showing, once the panel has it on
+ *   screen
+ * @property {import('vue').Ref<number>} focusAsked - Counts each time the caret is
+ *   asked for, for the panel to watch
  * @property {(chatId: string) => boolean} isUnread - Whether the model finished in
  *   it while it wasn't showing
  * @property {(chatId: string) => void} markUnread - Mark it, unless it is showing
@@ -187,8 +197,14 @@ function createChatTabs(storyId) {
 
   const openTerminal = async () => open(await terminals.create())
 
-  /** @type {ChatTabsApi['shut']} */
-  const shut = chatId => write(closeTab(stored.value, chatId))
+  /**
+   * A chat's tab is the one closed last, for reopening. A terminal's is not
+   * remembered: its shell has ended, and there is nothing of it to open
+   * again.
+   * @type {ChatTabsApi['shut']}
+   */
+  const shut = chatId =>
+    write(isTerminalId(chatId) ? dropTabs(stored.value, [chatId]) : closeTab(stored.value, chatId))
 
   /** @type {ChatTabsApi['close']} */
   const close = chatId => {
@@ -196,12 +212,34 @@ function createChatTabs(storyId) {
     if (isTerminalId(chatId)) terminals.close(chatId)
   }
 
+  /**
+   * A chat not started has nothing to bring back, and is passed over.
+   * @type {ChatTabsApi['reopen']}
+   */
+  const reopen = () => {
+    const chatId = lastClosed(stored.value, id => Boolean(chatsApi.getChatById(id)))
+    if (chatId) open(chatId)
+  }
+
   /** @type {ChatTabsApi['closeOthers']} */
   const closeOthers = chatId => {
     const showing = openTab(stored.value, chatId)
     const others = showing.open.filter(id => id !== chatId)
-    write(dropTabs(showing, others))
+    const chats = others.filter(id => !isTerminalId(id))
+    write(dropTabs(closeTabs(showing, chats), others.filter(isTerminalId)))
     for (const id of others) if (isTerminalId(id)) terminals.close(id)
+  }
+
+  /**
+   * The message box and the terminals are the panel's, which watches for
+   * this: a key that brings a tab forward asks, where a click would have
+   * left the pointer over it.
+   */
+  const focusAsked = ref(0)
+
+  /** @type {ChatTabsApi['focus']} */
+  const focus = () => {
+    focusAsked.value++
   }
 
   /** The chats marked unread, as kept. @returns {string[]} */
@@ -236,7 +274,10 @@ function createChatTabs(storyId) {
     openTerminal,
     close,
     shut,
+    reopen,
     closeOthers,
+    focus,
+    focusAsked,
     isUnread,
     markUnread,
   }

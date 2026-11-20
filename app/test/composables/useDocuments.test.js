@@ -84,6 +84,7 @@ const rememberView = fields => {
   delete mockView.openDocumentIds
   delete mockView.previewDocumentId
   delete mockView.shownDocumentIds
+  delete mockView.closedDocumentIds
   Object.assign(mockView, { lastDocumentId: null }, fields)
 }
 vi.mock('@/stores/projectViewsStore.js', () => ({
@@ -542,7 +543,7 @@ describe('useDocuments', () => {
     })
 
     it('start empty for a project never opened', () => {
-      expect(api.tabs.value).toEqual({ open: [], active: null, preview: null, shown: [] })
+      expect(api.tabs.value).toMatchObject({ open: [], active: null, preview: null, shown: [] })
       expect(api.activeDocumentId.value).toBe('')
     })
 
@@ -561,13 +562,16 @@ describe('useDocuments', () => {
       api.open('doc_1')
       api.open('doc_2')
 
-      expect(mockUpdateView).toHaveBeenLastCalledWith('story_1', {
-        openDocumentIds: ['doc_1', 'doc_2'],
-        lastDocumentId: 'doc_2',
-        previewDocumentId: null,
-        shownDocumentIds: ['doc_2', 'doc_1'],
-      })
-      expect(api.tabs.value).toEqual({
+      expect(mockUpdateView).toHaveBeenLastCalledWith(
+        'story_1',
+        expect.objectContaining({
+          openDocumentIds: ['doc_1', 'doc_2'],
+          lastDocumentId: 'doc_2',
+          previewDocumentId: null,
+          shownDocumentIds: ['doc_2', 'doc_1'],
+        })
+      )
+      expect(api.tabs.value).toMatchObject({
         open: ['doc_1', 'doc_2'],
         active: 'doc_2',
         preview: null,
@@ -581,7 +585,7 @@ describe('useDocuments', () => {
       api.open('doc_2')
       api.open('doc_1')
 
-      expect(api.tabs.value).toEqual({
+      expect(api.tabs.value).toMatchObject({
         open: ['doc_1', 'doc_2'],
         active: 'doc_1',
         preview: null,
@@ -599,7 +603,7 @@ describe('useDocuments', () => {
         api.open('doc_1')
         api.open('chat:chat_1:prompt')
 
-        expect(api.tabs.value).toEqual({
+        expect(api.tabs.value).toMatchObject({
           open: ['doc_1', 'chat:chat_1:prompt'],
           active: 'chat:chat_1:prompt',
           preview: null,
@@ -613,7 +617,7 @@ describe('useDocuments', () => {
           lastDocumentId: 'chat:chat_gone:prompt',
         })
 
-        expect(api.tabs.value).toEqual({
+        expect(api.tabs.value).toMatchObject({
           open: ['chat:chat_1:note', 'chat:chat_new:prompt'],
           active: 'chat:chat_1:note',
           preview: null,
@@ -659,7 +663,7 @@ describe('useDocuments', () => {
 
     it('gives a view from before tabs one, its last document', () => {
       rememberView({ lastDocumentId: 'doc_2' })
-      expect(api.tabs.value).toEqual({
+      expect(api.tabs.value).toMatchObject({
         open: ['doc_2'],
         active: 'doc_2',
         preview: null,
@@ -672,7 +676,7 @@ describe('useDocuments', () => {
         openDocumentIds: ['doc_1', 'manuscript_story_1', 'doc_gone'],
         lastDocumentId: 'doc_gone',
       })
-      expect(api.tabs.value).toEqual({
+      expect(api.tabs.value).toMatchObject({
         open: ['doc_1'],
         active: 'doc_1',
         preview: null,
@@ -691,13 +695,54 @@ describe('useDocuments', () => {
 
       expect(mockEditor.close).toHaveBeenCalledWith('doc_2')
       // Not doc_3, beside it in the strip.
-      expect(api.tabs.value).toEqual({
+      expect(api.tabs.value).toMatchObject({
         open: ['doc_1', 'doc_3'],
         active: 'doc_1',
         preview: null,
         shown: ['doc_1', 'doc_3'],
       })
       expect(mockView.shownDocumentIds).toEqual(['doc_1', 'doc_3'])
+    })
+
+    it('opens the tab closed last again, and then the one closed before it', () => {
+      api.open('doc_1')
+      api.open('doc_2')
+      api.open('doc_3')
+      api.closeTab('doc_1')
+      api.closeTab('doc_3')
+      expect(mockView.closedDocumentIds).toEqual(['doc_3', 'doc_1'])
+
+      api.reopenTab()
+      expect(api.tabs.value.open).toEqual(['doc_2', 'doc_3'])
+      expect(api.tabs.value.active).toBe('doc_3')
+
+      api.reopenTab()
+      expect(api.tabs.value.open).toEqual(['doc_2', 'doc_3', 'doc_1'])
+      expect(api.tabs.value.active).toBe('doc_1')
+      expect(mockView.closedDocumentIds).toEqual([])
+    })
+
+    it('reopens nothing with no tab closed, nor one deleted since it was', () => {
+      api.open('doc_1')
+      api.reopenTab()
+      expect(api.tabs.value.open).toEqual(['doc_1'])
+
+      api.open('doc_2')
+      api.open('doc_3')
+      api.closeTab('doc_2')
+      api.closeTab('doc_3')
+      api.remove('doc_3')
+
+      api.reopenTab()
+      expect(api.tabs.value.open).toEqual(['doc_1', 'doc_2'])
+    })
+
+    it('does not reopen a tab that went because its document was deleted', () => {
+      api.open('doc_1')
+      api.open('doc_2')
+      api.remove('doc_2')
+
+      expect(api.tabs.value.closed).toEqual([])
     })
 
     it('opens a preview in the preview tab, letting go of what was there', () => {
@@ -707,7 +752,7 @@ describe('useDocuments', () => {
 
       expect(mockEditor.close).toHaveBeenCalledWith('doc_2')
       expect(mockEditor.close).not.toHaveBeenCalledWith('doc_1')
-      expect(api.tabs.value).toEqual({
+      expect(api.tabs.value).toMatchObject({
         open: ['doc_1', 'doc_3'],
         active: 'doc_3',
         preview: 'doc_3',
@@ -721,7 +766,7 @@ describe('useDocuments', () => {
       api.open('doc_2', { preview: true })
 
       expect(mockEditor.close).not.toHaveBeenCalled()
-      expect(api.tabs.value).toEqual({
+      expect(api.tabs.value).toMatchObject({
         open: ['doc_1', 'doc_2'],
         active: 'doc_2',
         preview: 'doc_2',
@@ -742,7 +787,7 @@ describe('useDocuments', () => {
       api.open('doc_1')
       api.closeTab('doc_1')
 
-      expect(api.tabs.value).toEqual({ open: [], active: null, preview: null, shown: [] })
+      expect(api.tabs.value).toMatchObject({ open: [], active: null, preview: null, shown: [] })
       expect(mockView.openDocumentIds).toEqual([])
       expect(mockView.lastDocumentId).toBeNull()
     })
@@ -757,7 +802,7 @@ describe('useDocuments', () => {
       expect(mockEditor.close).toHaveBeenCalledWith('doc_1')
       expect(mockEditor.close).toHaveBeenCalledWith('doc_2')
       expect(mockUpdateView).not.toHaveBeenCalled()
-      expect(api.tabs.value).toEqual({
+      expect(api.tabs.value).toMatchObject({
         open: ['doc_1', 'doc_2'],
         active: 'doc_2',
         preview: null,
@@ -774,7 +819,7 @@ describe('useDocuments', () => {
       api.remove('doc_2')
 
       expect(mockEditor.discard).toHaveBeenCalledWith('doc_2')
-      expect(api.tabs.value).toEqual({
+      expect(api.tabs.value).toMatchObject({
         open: ['doc_1', 'doc_3'],
         active: 'doc_3',
         preview: null,
@@ -792,7 +837,7 @@ describe('useDocuments', () => {
 
       expect(mockEditor.discard).toHaveBeenCalledWith('doc_1')
       expect(mockEditor.discard).toHaveBeenCalledWith('doc_2')
-      expect(api.tabs.value).toEqual({ open: [], active: null, preview: null, shown: [] })
+      expect(api.tabs.value).toMatchObject({ open: [], active: null, preview: null, shown: [] })
       expect(mockUpdateView).toHaveBeenCalledTimes(1)
     })
 
@@ -803,7 +848,7 @@ describe('useDocuments', () => {
       api.remove('doc_3')
 
       expect(mockUpdateView).not.toHaveBeenCalled()
-      expect(api.tabs.value).toEqual({
+      expect(api.tabs.value).toMatchObject({
         open: ['doc_1'],
         active: 'doc_1',
         preview: null,

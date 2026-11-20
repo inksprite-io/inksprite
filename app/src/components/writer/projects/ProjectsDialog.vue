@@ -119,7 +119,7 @@
               :data-project="row.id"
               @click="pick(row, $event)"
               @mousemove="chosenId = row.id"
-              @contextmenu="$emit('project-menu', $event, row.id)"
+              @contextmenu="showProjectMenu($event, row.id)"
               @touchstart.passive="pressOn($event, row.id)"
               @touchmove.passive="press.touchmove"
               @touchend="press.touchend"
@@ -179,6 +179,7 @@
       </div>
     </div>
     <ContextMenu ref="invitationMenu" :model="invitationItems" />
+    <ContextMenu ref="projectMenu" :model="projectItems" @hide="focusSearch" />
   </Dialog>
 </template>
 
@@ -194,6 +195,7 @@ import { useApplicationState } from '@/composables/useApplicationState'
 import { useBlocking } from '@/composables/useBlocking.js'
 import { useCloudSync } from '@/composables/useCloudSync.js'
 import { useLongPress } from '@/composables/useLongPress.js'
+import { useProjectActions } from '@/composables/useProjectActions.js'
 import { useProjects } from '@/composables/useProjects'
 import { useReactiveTime } from '@/composables/useReactiveTime'
 import { useToast } from '@/composables/useToast.js'
@@ -205,7 +207,8 @@ import { projectsNamed, sortProjects } from '@/utils/projectList.js'
  * and with Command or Ctrl held opens it in a new window. The caret stays in
  * the search, where the arrows and Enter pick from the table. The order
  * chosen is kept for next time. Right-clicked or held under a finger, a
- * project asks for its own menu. Once any project is shared, each says whose
+ * project has its own menu: what can be done to it, without opening it. Once
+ * any project is shared, each says whose
  * it is and who else is in it; and the invitations waiting come first,
  * greyed, each accepted or rejected on its row, or blocked from its menu.
  *
@@ -218,7 +221,7 @@ const props = defineProps({
   storyId: { type: String, default: '' },
 })
 
-const emit = defineEmits(['update:visible', 'project-menu'])
+const emit = defineEmits(['update:visible'])
 
 /** @typedef {import('@/utils/projectList.js').ProjectOrder} ProjectOrder */
 /** @typedef {import('@/utils/projectList.js').ProjectRow & {open: boolean, away: boolean, owner: string, people: string}} Row */
@@ -400,12 +403,27 @@ const pressOnInvitation = (event, invitation) => {
   invitationPress.touchstart(event)
 }
 
+const projectActions = useProjectActions()
+/** @type {import('vue').Ref<any>} */
+const projectMenu = ref(null)
+/** @type {import('vue').Ref<Array<Object>>} */
+const projectItems = ref([])
+
+/**
+ * Open a project's own menu where the pointer is.
+ * @param {Event|{pageX: number, pageY: number, stopPropagation: () => void, preventDefault: () => void}} event
+ * @param {string} storyId
+ */
+const showProjectMenu = (event, storyId) => {
+  projectItems.value = projectActions.itemsFor(storyId, { current: storyId === props.storyId })
+  projectMenu.value?.show(event)
+}
+
 /** The project a finger went down on. */
 let pressedOn = ''
 
 const press = useLongPress(({ x, y }) =>
-  emit(
-    'project-menu',
+  showProjectMenu(
     {
       pageX: x + window.scrollX,
       pageY: y + window.scrollY,
@@ -515,13 +533,15 @@ const move = by => {
   )
 }
 
-/** Put the caret back in the search, where the keys work. */
+/**
+ * Put the caret back in the search, where the keys work: a project's menu
+ * shut gives the focus back for the next Escape to shut the table too. An
+ * item that opens something takes the focus on from here.
+ */
 const focusSearch = () =>
   /** @type {HTMLElement|null|undefined} */ (
     dialog.value?.mask?.querySelector('[data-project-search]')
   )?.focus()
-
-defineExpose({ focusSearch })
 
 /** @param {KeyboardEvent} event */
 const onSearchKey = event => {

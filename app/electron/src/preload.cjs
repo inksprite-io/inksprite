@@ -106,6 +106,15 @@ ipcRenderer.on('window:save', async () => {
 })
 
 /**
+ * What the page does when the menu asks something of it: a new document,
+ * the tab the writer is in closed (`menu.js`).
+ * @type {((command: string, detail?: number) => void)|null}
+ */
+let onMenuCommand = null
+
+ipcRenderer.on('menu:command', (_, command, detail) => onMenuCommand?.(command, detail))
+
+/**
  * What the page does when a terminal of its own is named by the program in
  * it, rings, or ends (`terminals.js`).
  * @type {((id: string, event: object) => void)|null}
@@ -162,6 +171,10 @@ const desktop = {
 
   beforeClosing: save => {
     beforeClosing = save
+  },
+
+  onMenuCommand: listener => {
+    onMenuCommand = listener
   },
 
   python: {

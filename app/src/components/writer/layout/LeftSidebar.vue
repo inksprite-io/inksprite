@@ -1,5 +1,11 @@
 <template>
-  <div class="h-full w-full overflow-hidden bg-surface-100 dark:bg-surface-800">
+  <!-- A key that acts on a tab goes by where the writer is (`useWriterPanel`):
+       the lists here pick things for the editor, but for the chats, which
+       pick them for the chat. -->
+  <div
+    class="h-full w-full overflow-hidden bg-surface-100 dark:bg-surface-800"
+    :data-panel-for="tab === SIDEBAR_TABS.CHATS ? 'chat' : 'editor'"
+  >
     <OutlinePanel
       v-if="tab === SIDEBAR_TABS.OUTLINE"
       :story-id="storyId"
