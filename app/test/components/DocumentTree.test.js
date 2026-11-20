@@ -12,6 +12,7 @@ import DocumentTree from '../../src/components/writer/tree/DocumentTree.vue'
 import { useDocuments, clearDocumentInstances } from '../../src/composables/useDocuments'
 import { useDocumentsStore } from '../../src/stores/documentsStore'
 import { useTreeHistory } from '../../src/composables/useTreeHistory.js'
+import { hideSearch, searchShowing } from '../../src/composables/useProjectSearch.js'
 import { clearChatsInstances } from '../../src/composables/useChats'
 import { useApplicationState } from '../../src/composables/useApplicationState'
 
@@ -512,6 +513,20 @@ describe('DocumentTree header', () => {
     await choose(input, [chosen('a.md'), chosen('b.md')])
 
     expect(importMany.mock.calls[0][1].parentId).toBe(api.root.value.id)
+  })
+
+  it('opens the search across the project from its Search button', async () => {
+    const wrapper = mountTree()
+    await flushPromises()
+    const showing = searchShowing('story_1')
+    expect(showing.value).toBe(false)
+
+    const button = wrapper.find('[data-action="search"]')
+    expect(button.attributes('aria-label')).toBe('Search')
+    await button.trigger('click')
+
+    expect(showing.value).toBe(true)
+    hideSearch('story_1')
   })
 
   it('starts a document at the top of the project, open and waiting for its name', async () => {

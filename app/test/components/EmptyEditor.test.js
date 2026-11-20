@@ -4,15 +4,22 @@ import { ref } from 'vue'
 import PrimeVue from 'primevue/config'
 import EmptyEditor from '@/components/writer/editor/EmptyEditor.vue'
 
-const { mockApi } = vi.hoisted(() => ({
+const { mockApi, newDocument, forStory } = vi.hoisted(() => ({
   mockApi: {
     ready: { value: true },
     firstTextDocument: vi.fn(() => null),
   },
+  newDocument: vi.fn(),
+  forStory: vi.fn(),
 }))
 
 vi.mock('@/composables/useDocuments', () => ({ useDocuments: () => mockApi }))
-vi.mock('@/composables/useNewDocument.js', () => ({ useNewDocument: () => vi.fn() }))
+vi.mock('@/composables/useNewDocument.js', () => ({
+  useNewDocument: storyId => {
+    forStory(storyId)
+    return newDocument
+  },
+}))
 
 describe('EmptyEditor', () => {
   beforeEach(() => {
@@ -35,6 +42,15 @@ describe('EmptyEditor', () => {
     const wrapper = mountEmpty()
     expect(wrapper.text()).toContain('Nothing open')
     expect(wrapper.find('button').exists()).toBe(true)
+  })
+
+  it('makes a document in its project on New document, as the editor’s strip does', async () => {
+    const wrapper = mountEmpty()
+    expect(wrapper.find('button').text()).toBe('New document')
+    await wrapper.find('button').trigger('click')
+
+    expect(forStory).toHaveBeenCalledWith('story_1')
+    expect(newDocument).toHaveBeenCalledTimes(1)
   })
 
   it('shows nothing until the tree has loaded', () => {

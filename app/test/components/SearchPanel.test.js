@@ -4,7 +4,13 @@ import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import Tooltip from 'primevue/tooltip'
 import SearchPanel from '@/components/writer/search/SearchPanel.vue'
-import { goneTo, isSearchKey, showSearch, takeUpMatch } from '@/composables/useProjectSearch.js'
+import {
+  goneTo,
+  isSearchKey,
+  searchShowing,
+  showSearch,
+  takeUpMatch,
+} from '@/composables/useProjectSearch.js'
 
 // A project of a folder with two chapters in it, and a note beside it.
 const { tree } = vi.hoisted(() => ({
@@ -164,6 +170,22 @@ describe('SearchPanel', () => {
     await search(wrapper, 'gate')
     await wrapper.find('[data-search-document="one"] [data-action="collapse"]').trigger('click')
     expect(listed(wrapper)[0]).toEqual({ id: 'one', lines: [] })
+  })
+
+  it('closes on its Close search button, and on Escape in its field', async () => {
+    const wrapper = mountPanel()
+    const storyId = wrapper.props('storyId')
+    const showing = searchShowing(storyId)
+
+    showSearch(storyId)
+    const close = wrapper.find('[data-action="close"]')
+    expect(close.attributes('aria-label')).toBe('Close search')
+    await close.trigger('click')
+    expect(showing.value).toBe(false)
+
+    showSearch(storyId)
+    await wrapper.find('[data-search-query]').trigger('keydown', { key: 'Escape' })
+    expect(showing.value).toBe(false)
   })
 
   it('puts the caret in its field when asked', async () => {

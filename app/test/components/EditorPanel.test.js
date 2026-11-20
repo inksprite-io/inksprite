@@ -35,7 +35,8 @@ const { mockApi, toastAction } = await vi.hoisted(async () => {
   }
 })
 vi.mock('@/composables/useDocuments', () => ({ useDocuments: () => mockApi }))
-vi.mock('@/composables/useNewDocument.js', () => ({ useNewDocument: () => vi.fn() }))
+const newDocument = vi.hoisted(() => vi.fn())
+vi.mock('@/composables/useNewDocument.js', () => ({ useNewDocument: () => newDocument }))
 const isMobile = ref(false)
 vi.mock('@/composables/useScreenSize.js', () => ({
   useScreenSize: () => ({ isMobile, isNarrow: ref(false) }),
@@ -237,6 +238,18 @@ describe('EditorPanel', () => {
 
     await wrapper.find('[data-action="sync"]').trigger('click')
     expect(mockSync.sync).toHaveBeenCalledWith('doc_1')
+  })
+
+  it('makes a new document from the plus in its strip, with a document open or none', async () => {
+    const wrapper = mountPanel({ open: ['doc_1'], active: 'doc_1' })
+    const plus = wrapper.find('[data-action="new-document"]')
+    expect(plus.attributes('aria-label')).toBe('New document')
+    await plus.trigger('click')
+    expect(newDocument).toHaveBeenCalledTimes(1)
+
+    const empty = mountPanel({ open: [], active: null }, { chatShowing: true })
+    await empty.find('[data-action="new-document"]').trigger('click')
+    expect(newDocument).toHaveBeenCalledTimes(2)
   })
 
   it('offers no Sync on a document with no Doc, and spins while one syncs', () => {

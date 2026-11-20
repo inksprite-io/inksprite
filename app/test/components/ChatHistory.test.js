@@ -113,6 +113,15 @@ describe('ChatHistory', () => {
       expect(wrapper.emitted('select-chat')).toEqual([['chat_unstarted']])
     })
 
+    it('opens a chat picked from the list in a tab of its own', async () => {
+      const wrapper = mountHistory()
+      card(wrapper, 'chat_2').vm.$emit('select', 'chat_2')
+
+      // Nothing more than the chat: no preview for the next pick to replace.
+      expect(tabs.open.mock.calls).toEqual([['chat_2']])
+      expect(wrapper.emitted('select-chat')).toEqual([['chat_2']])
+    })
+
     it('marks the chat showing, one the model is working in, and one unread', () => {
       tabs.working = new Set(['chat_2'])
       tabs.unread = new Set(['chat_3'])

@@ -1,6 +1,6 @@
 ---
 title: The Editor
-description: Write and format documents in inksprite's editor, with Markdown as you type, tables, links, pictures, formulas, find and replace, spelling and grammar, a plain text editor, and earlier versions to go back to.
+description: Write and format documents in inksprite's editor, with Markdown as you type, tables, links, pictures, formulas, find and replace, a search across the project, spelling and grammar, a plain text editor, and earlier versions to go back to.
 ---
 
 import Screenshot from '../../components/Screenshot.astro';
@@ -15,6 +15,8 @@ double-click the document or its tab, to keep it open.
 
 - Close a tab with its **×**, or click it with the middle button.
 - Drag a tab to reorder the tabs.
+- **New document**, the plus at the right end of the tabs, starts a document
+  at the top of the project.
 - Right-click a tab for **Copy link**, **Edit in plain text editor**,
   **Versions…**, **Export as PDF…** and **Keyboard shortcuts**.
 - Each project remembers its tabs, and a tab you come back to is where you
@@ -219,6 +221,22 @@ capitals of each match: *she* over *He* is *She*.
 <Screenshot name="editor-find" alt="Find and replace, with every match marked" />
 
 <kbd>Esc</kbd> closes the bar, with the caret on the match you were on.
+
+## Search the project
+
+Press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>F</kbd> (<kbd>Ctrl</kbd> <kbd>Shift</kbd>
+<kbd>F</kbd> on Windows and Linux), or click the magnifier at the top of the
+outline, to look through every document in the project. The search takes the
+outline's place.
+
+Type what to find. Each document that has it is listed with its matches, a
+line each, and **Aa** and **Whole words** work as they do in a document.
+Click a match to open its document there, with find and replace open on what
+you searched for. A match in a PDF opens its page. <kbd>Enter</kbd> goes to
+the next match and <kbd>Shift</kbd> <kbd>Enter</kbd> to the one before,
+through every document.
+
+<kbd>Esc</kbd>, or the **×** at the top, brings the outline back.
 
 ## The right-click menu
 

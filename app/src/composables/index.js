@@ -7,9 +7,9 @@
  * ### AI
  * - **useAIChat** - A chat turn: context, request, tool calls, and streaming into a message; one per chat, so a reply outlives the view showing it; `askInThread` asks its model something at the end of the conversation in place of a turn (a summary)
  * - **useChatActivity** - Which chats the model is working in, app-wide, and word when it stops
- * - **useChatTabs** - A project's chat tabs: open, showing, the history closing goes back through, the chat
- *   closed last opened again, one put at another place, the caret asked for in the one showing, and
- *   unread chats
+ * - **useChatTabs** - A project's chat tabs, each kept until it is closed: open, showing, the history closing
+ *   goes back through, the chat closed last opened again, one put at another place, the caret asked for in
+ *   the one showing, and unread chats
  * - **useChatPlaces** - Where the writer was in each chat they left, for its tab coming back
  * - **useAIConfig** - AI configuration (provider + model)
  * - **useConnections** - The AI connections the writer has: which are theirs, how each answered last, and adding, checking and removing one
@@ -81,7 +81,8 @@
  * - **useLastOpened** - Keeps which project the writer was last in, which the app opens on
  * - **useProjectActions** - What can be done to a project, as menu items, the open one or another
  * - **useHoverSubmenus** - A TieredMenu's submenus opening on hover, once the pointer rests
- * - **useProjectSearch** - The search across a project: what is looked for, what it finds, going to a match, and Command-Shift-F
+ * - **useProjectSearch** - The search across a project: shown in the outline's place and hidden again, what is looked for, what it finds, going to a match, and Command-Shift-F
+ * - **useNewDocument** - New document from the editor: a text document at the top of the project, opened, and named in the outline where the outline is on screen
  * - **useChatFind** - Finding in a chat, most of which is not in the page: counted in the messages, gone to and highlighted in the page
  * - **useTheme** - The page in the writer's theme, following the system's while that is the one chosen (`useSystemSettings.js`)
  * - **useUpdates** - In the desktop app, an update downloaded as soon as there is one, and a toast to restart into it; in a browser, a toast to reload into a new build

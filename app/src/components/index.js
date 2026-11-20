@@ -42,7 +42,12 @@
  *     change is a card among them, accepted or rejected there. Mod-Z there
  *     takes back what was done to one
  *   - `tree/` - The document tree and its nodes. Its header's Import and New
- *     document act on the project's top, as the root's menu does
+ *     document act on the project's top, as the root's menu does, and its
+ *     Search opens the search across the project. `OutlinePanel` is the tree
+ *     as the sidebar and a phone show it, hidden while the search is in its
+ *     place
+ *   - `search/` - `SearchPanel`, the search across the project: its field,
+ *     and what it finds by document, each match opening its document on it
  *   - `chats/` - A chat, its list, and its settings
  *   - `narration/` - The document in the editor read aloud: `NarrationPanel`
  *     in the sidebar, with the document's blocks (`NarrationScript`: who
