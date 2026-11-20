@@ -209,6 +209,9 @@ describe('toolsFor', () => {
     expect(said.list_documents).not.toContain('the user left')
     // A project starts with no folders.
     expect(said.create_folder).toContain('the folders the project has are usually the right ones')
+    // Settling a suggestion is nobody's but the user's, said where suggestions are.
+    expect(said.read_document).toContain('Only the user accepts or rejects a suggestion')
+    expect(said.list_comments).toContain('Only the writer accepts or rejects a suggestion')
   })
 })
 
