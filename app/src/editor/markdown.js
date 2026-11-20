@@ -398,7 +398,7 @@ class LinearSerializer extends MarkdownSerializer {
  */
 
 /** Characters a dollar is written as until it is settled: the private use area's. */
-const DOLLAR_MARKS = ['\uE000', '\uF8FF']
+export const DOLLAR_MARKS = ['\uE000', '\uF8FF']
 
 /**
  * The text's dollars, written as marks, made dollars again: each escaped

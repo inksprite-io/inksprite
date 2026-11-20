@@ -469,10 +469,13 @@ function putBack(before, standing, laid, ids) {
 }
 
 /**
+ * A document of these blocks: of none, the one empty paragraph an empty
+ * document holds.
+ *
  * @param {Node[]} blocks
  * @returns {Node}
  */
-function docOf(blocks) {
+export function docOf(blocks) {
   return schema.nodes.doc.create(
     null,
     blocks.length > 0 ? blocks : [schema.nodes.paragraph.create()]
@@ -530,11 +533,33 @@ export function settling(doc, id, accepted) {
  * @returns {Transform}
  */
 export function seeing(doc, accepted) {
-  /** @param {Mark} mark */
-  const goes = mark =>
-    isSuggestion(mark) && (mark.type === schema.marks.deletion) === accepted.includes(mark.attrs.id)
-  return dropping(doc, goes, isSuggestion)
+  return dropping(doc, goneFor(accepted), isSuggestion)
 }
+
+/**
+ * One of a document's blocks as `seeing` shows it to a reader, or null where
+ * nothing of it is left. A document seen is its blocks seen, each alone and
+ * those left kept, so a long one can be seen a block at a time.
+ *
+ * @param {Node} block
+ * @param {string[]} accepted
+ * @returns {Node|null}
+ */
+export function blockSeen(block, accepted) {
+  const goes = goneFor(accepted)
+  if (!goneIn(block, 0, true, goes)) return null
+  return dropping(docOf([block]), goes, isSuggestion).doc.firstChild
+}
+
+/**
+ * Which marks take what they are on out of a reader's sight: an insertion
+ * not accepted, and a deletion accepted.
+ *
+ * @param {string[]} accepted
+ * @returns {(mark: Mark) => boolean}
+ */
+const goneFor = accepted => mark =>
+  isSuggestion(mark) && (mark.type === schema.marks.deletion) === accepted.includes(mark.attrs.id)
 
 /**
  * What a suggestion takes out and what it puts in, as text: the pieces of

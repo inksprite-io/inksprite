@@ -16,10 +16,10 @@
  */
 
 import { passageInText, readableText } from '@/editor/comments.js'
-import { holdsSuggestions, seenMarkdown } from '@/editor/suggestionText.js'
-import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
-import { seeing, suggestionsIn } from '@/editor/suggestions.js'
-import { diffEdit } from '@/utils/edits.js'
+import { holdsSuggestions, readingOf, seenMarkdown } from '@/editor/suggestionText.js'
+import { parseMarkdown } from '@/editor/markdown.js'
+import { suggestionsIn } from '@/editor/suggestions.js'
+import { placedEdit } from '@/utils/edits.js'
 import { substitute } from '@/cards/macros.js'
 import { isMine, nameOf } from '@/cloud/people.js'
 
@@ -177,15 +177,13 @@ const WORDY = /[\p{L}\p{N}_'’]/u
  * the words on either side share letters ("rope" to "wire" differ as "rop"
  * and "wir").
  *
- * @param {{old: string, new: string}} pair
- * @param {string} before - The text `pair.old` is found in, once
- * @returns {{old: string, new: string}}
+ * @param {{old: string, new: string, at: number}} pair - With where it starts
+ * @param {string} before - The text `pair.old` is in, there
+ * @returns {{old: string, new: string, at: number}}
  */
 function wholeWords(pair, before) {
-  const at = before.indexOf(pair.old)
-  if (at < 0) return pair
-  let left = at
-  let right = at + pair.old.length
+  let left = pair.at
+  let right = pair.at + pair.old.length
   const wordy = (/** @type {string|undefined} */ char) => Boolean(char) && WORDY.test(char ?? '')
   // An end is in a word when a letter is on both sides of it, in either text.
   if (wordy(pair.old[0]) || wordy(pair.new[0])) {
@@ -194,8 +192,11 @@ function wholeWords(pair, before) {
   if (wordy(pair.old.at(-1)) || wordy(pair.new.at(-1))) {
     while (right < before.length && wordy(before[right])) right++
   }
-  const [lead, trail] = [before.slice(left, at), before.slice(at + pair.old.length, right)]
-  return { old: `${lead}${pair.old}${trail}`, new: `${lead}${pair.new}${trail}` }
+  const [lead, trail] = [
+    before.slice(left, pair.at),
+    before.slice(pair.at + pair.old.length, right),
+  ]
+  return { old: `${lead}${pair.old}${trail}`, new: `${lead}${pair.new}${trail}`, at: left }
 }
 
 /**
@@ -225,32 +226,29 @@ export function suggestionsAsRead(stored, names, chatId = null) {
   if (waiting.length === 0) return none
 
   const own = ownSuggestions(threads, chatId).filter(id => waiting.includes(id))
-  /** The text with these suggestions made and every other not, as a read gives it. */
-  const textWith = (/** @type {string[]} */ made) =>
-    readableText(serializeMarkdown(seeing(doc, made).doc), undefined).text
-  const text = textWith(own)
+  const { text, turned } = readingOf(doc, own)
   const named = (/** @type {string} */ words) => (names ? substitute(words, names) : words)
 
   /** @type {PlacedSuggestion[]} */
   const placed = []
   for (const id of waiting.slice(0, SUGGESTIONS_MOST)) {
     const mine = own.includes(id)
-    const [before, after] = mine
-      ? [textWith(own.filter(each => each !== id)), text]
-      : [text, textWith([...own, id])]
-    const least = diffEdit(before, after)
+    const other = turned(id)
+    const [before, after] = mine ? [other.text, text] : [text, other.text]
+    const least = placedEdit(before, after, other)
     if (!least) continue
     const pair = wholeWords(least, before)
+    // The two texts are the same up to the pair, so it starts at the one
+    // place in both, and so in the reader's, whichever of them that is.
     const here = mine ? pair.new : pair.old
-    const at = Math.max(0, text.indexOf(here))
     placed.push({
       id,
       thread: threads[id],
       own: mine,
       from: named(pair.old),
       to: named(pair.new),
-      start: named(text.slice(0, at)).length,
-      end: named(text.slice(0, at + here.length)).length,
+      start: named(text.slice(0, pair.at)).length,
+      end: named(text.slice(0, pair.at + here.length)).length,
     })
   }
   return {

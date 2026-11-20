@@ -5,7 +5,9 @@ import { parseMarkdown, serializeMarkdown } from '../../src/editor/markdown.js'
 import { schema } from '../../src/editor/schema.js'
 import {
   acceptSuggestion,
+  blockSeen,
   changeOf,
+  docOf,
   piecesOf,
   rejectSuggestion,
   seeing,
@@ -438,6 +440,26 @@ describe('where suggestions are', () => {
     expect(serializeMarkdown(seeing(doc, [ID]).doc)).toBe('A **warm** and dry night.')
     expect(serializeMarkdown(seeing(doc, ['s2bbbb']).doc)).toBe('A cold night.\n\n---')
   })
+
+  it('shows one block as a reader sees it, and nothing of one that is gone', () => {
+    const doc = parseMarkdown(markdown)
+    const [words, rule] = [doc.child(0), doc.child(1)]
+    expect(serializeMarkdown(docOf([blockSeen(words, [ID])]))).toBe('A **warm** and dry night.')
+    expect(serializeMarkdown(docOf([blockSeen(words, [])]))).toBe('A cold night.')
+    expect(blockSeen(rule, [])).toBeNull()
+    expect(blockSeen(rule, ['s2bbbb']).type.name).toBe('horizontal_rule')
+    expect(blockSeen(rule, ['s2bbbb']).marks).toEqual([])
+    // A paragraph whose words are all taken out goes with them.
+    const out = parseMarkdown(`{--All of it.--}{>>${ID}<<}`).child(0)
+    expect(blockSeen(out, [ID])).toBeNull()
+    expect(blockSeen(out, []).textContent).toBe('All of it.')
+  })
+
+  it('makes a document of the blocks left, and an empty one of none', () => {
+    const doc = parseMarkdown(markdown)
+    expect(docOf([doc.child(0)]).childCount).toBe(1)
+    expect(docOf([]).eq(parseMarkdown(''))).toBe(true)
+  })
 })
 
 describe('accepting and rejecting', () => {
@@ -607,6 +629,24 @@ describe('suggestChange, edited at random', { timeout: 30_000 }, () => {
       for (const each of [made.doc, read]) {
         expect(uncommented(acceptAll(each, all)), label).toBe(uncommented(parseMarkdown(markdown)))
         expect(serializeMarkdown(rejectAll(each, all)), label).toBe(serializeMarkdown(before))
+      }
+    }
+  })
+
+  it('sees a document as its blocks seen, each alone', () => {
+    const next = random(67)
+    const fresh = ids()
+    const before = parseMarkdown(SAMPLE)
+    for (let round = 0; round < 300; round++) {
+      const theirs = suggestChange(before, parseMarkdown(edited(SAMPLE, next)), 'sother', [], fresh)
+      const mine = suggestChange(theirs.doc, parseMarkdown(edited(SAMPLE, next)), ID, [], fresh)
+      const pending = mine.doc
+      const label = `round ${round}:\n${serializeMarkdown(pending)}`
+      const all = [...theirs.ids, ...mine.ids]
+      for (const accepted of [[], all, mine.ids, all.filter(() => next() < 0.5)]) {
+        const blocks = []
+        pending.forEach(block => blocks.push(blockSeen(block, accepted)))
+        expect(docOf(blocks.filter(Boolean)).eq(seeing(pending, accepted).doc), label).toBe(true)
       }
     }
   })

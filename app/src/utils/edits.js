@@ -29,6 +29,46 @@ const CONTEXT_STEP = 20
 const occurrences = (text, needle) => (needle ? text.split(needle).length - 1 : 0)
 
 /**
+ * Whether `needle` is in `text` once, as `occurrences` counts: nowhere again
+ * past where it is first found.
+ * @param {string} text
+ * @param {string} needle
+ * @returns {boolean}
+ */
+const once = (text, needle) => {
+  if (!needle) return false
+  const at = text.indexOf(needle)
+  return at !== -1 && text.indexOf(needle, at + needle.length) === -1
+}
+
+/**
+ * The least count from 0 to `most` that is enough, or `most` when none below
+ * it is. For a question that stays yes once it is yes: it is asked of 0, 1,
+ * 2, 4, 8 and on, then of the counts between the last no and the first yes,
+ * so a count in the thousands is found in a couple of dozen askings rather
+ * than thousands. `most` is taken without asking.
+ *
+ * @param {number} most
+ * @param {(count: number) => boolean} enough
+ * @returns {number}
+ */
+export function leastEnough(most, enough) {
+  if (most <= 0 || enough(0)) return 0
+  let short = 0
+  let reach = 1
+  while (reach < most && !enough(reach)) {
+    short = reach
+    reach = Math.min(most, reach * 2)
+  }
+  while (reach - short > 1) {
+    const middle = short + Math.floor((reach - short) / 2)
+    if (enough(middle)) reach = middle
+    else short = middle
+  }
+  return reach
+}
+
+/**
  * The smallest pair that turns `before` into `after`: the text between the
  * longest shared prefix and suffix, on each side.
  *
@@ -43,12 +83,35 @@ const occurrences = (text, needle) => (needle ? text.split(needle).length - 1 : 
  * @returns {{old: string, new: string}|null} Null when nothing changed
  */
 export function diffEdit(before, after) {
-  if (before === after) return null
+  const placed = placedEdit(before, after)
+  return placed && { old: placed.old, new: placed.new }
+}
+
+/**
+ * The pair `diffEdit` gives, and where it starts: the same place in both
+ * texts, since all before it is the same in both.
+ *
+ * A caller that made one text from the other by changing a stretch of it
+ * knows how much the two share at each end, and says so in `same`: at least
+ * that much is not compared again, which keeps the comparing to the stretch
+ * in a long text.
+ *
+ * @param {string} before
+ * @param {string} after
+ * @param {{start?: number, end?: number}} [same] - How many characters the
+ *   two are known to share at the start, and at the end
+ * @returns {{old: string, new: string, at: number}|null} Null when nothing changed
+ */
+export function placedEdit(before, after, same = {}) {
+  const [start, end] = [same.start ?? 0, same.end ?? 0]
+  if (before.slice(start, before.length - end) === after.slice(start, after.length - end)) {
+    return null
+  }
 
   const max = Math.min(before.length, after.length)
-  let prefix = 0
+  let prefix = Math.min(start, max)
   while (prefix < max && before[prefix] === after[prefix]) prefix++
-  let suffix = 0
+  let suffix = Math.min(end, max - prefix)
   while (
     suffix < max - prefix &&
     before[before.length - 1 - suffix] === after[after.length - 1 - suffix]
@@ -56,19 +119,46 @@ export function diffEdit(before, after) {
     suffix++
   }
 
-  let pad = 0
-  for (;;) {
-    const p = Math.max(0, prefix - pad)
-    const s = Math.max(0, suffix - pad)
-    const pair = { old: before.slice(p, before.length - s), new: after.slice(p, after.length - s) }
-    const findable =
-      pair.new !== '' &&
-      occurrences(after, pair.new) === 1 &&
-      pair.old !== '' &&
-      occurrences(before, pair.old) === 1
-    if (findable || (p === 0 && s === 0)) return pair
-    pad += CONTEXT_STEP
+  /** The pair with so many characters of context taken in on each side. */
+  const padded = (/** @type {number} */ pad) => {
+    const at = Math.max(0, prefix - pad)
+    const cut = Math.max(0, suffix - pad)
+    return {
+      old: before.slice(at, before.length - cut),
+      new: after.slice(at, after.length - cut),
+      at,
+    }
   }
+  /**
+   * Whether one side of the pair is found once in its text, with so many
+   * steps of context. More context never loses that and less never gains
+   * it, so a side is searched for only where it has not answered already.
+   *
+   * @param {string} text
+   * @param {'old'|'new'} side
+   * @returns {(count: number) => boolean}
+   */
+  const foundOnce = (text, side) => {
+    let yes = Infinity
+    let no = -1
+    return count => {
+      if (count >= yes) return true
+      if (count <= no) return false
+      const found = once(text, padded(count * CONTEXT_STEP)[side])
+      if (found) yes = count
+      else no = count
+      return found
+    }
+  }
+  const [newOnce, oldOnce] = [foundOnce(after, 'new'), foundOnce(before, 'old')]
+  // The least context that finds both is searched for, not stepped up to:
+  // in a text that repeats itself, stepping reads the whole text at every
+  // step. A side with nothing in it is not looked for.
+  const steps = leastEnough(Math.ceil(Math.max(prefix, suffix) / CONTEXT_STEP), count => {
+    const pair = padded(count * CONTEXT_STEP)
+    return pair.new !== '' && pair.old !== '' && newOnce(count) && oldOnce(count)
+  })
+  return padded(steps * CONTEXT_STEP)
 }
 
 /**

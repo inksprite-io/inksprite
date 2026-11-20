@@ -1,12 +1,25 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   diffEdit,
   diffAppend,
+  leastEnough,
   narrowEdit,
+  placedEdit,
   reverseEdit,
   applyEdit,
   keepDecisions,
 } from '../../src/utils/edits'
+
+/** How many times a text is searched, or cut up to be counted, while something runs. */
+const searches = run => {
+  const spies = [vi.spyOn(String.prototype, 'indexOf'), vi.spyOn(String.prototype, 'split')]
+  try {
+    run()
+    return spies.reduce((count, spy) => count + spy.mock.calls.length, 0)
+  } finally {
+    for (const spy of spies) spy.mockRestore()
+  }
+}
 
 describe('diffEdit', () => {
   it('cuts the pair to what changed', () => {
@@ -51,6 +64,98 @@ describe('diffEdit', () => {
     const pair = diffEdit(before, after)
     expect(before.split(pair.old).length - 1).toBe(1)
     expect(before.replace(pair.old, pair.new)).toBe(after)
+  })
+
+  it('takes in context, in a text that repeats itself, until the pair is too long to be there twice', () => {
+    // Two hundred letters, one changed in the middle. The letters around it
+    // are everywhere, so the pair grows by twenty a side until a second like
+    // it would not fit beside the first: 121 letters, after three steps.
+    const before = 'ab'.repeat(100)
+    const after = `${before.slice(0, 100)}X${before.slice(101)}`
+    const pair = diffEdit(before, after)
+    expect(pair).toEqual({ old: before.slice(40, 161), new: after.slice(40, 161) })
+    expect(before.split(pair.old).length - 1).toBe(1)
+    expect(before.split(pair.old.slice(20, -20)).length - 1).toBe(2)
+  })
+
+  it('searches a text that repeats itself a few dozen times, however long it is', () => {
+    // Stepped up to twenty letters at a time, the pair for a change near the
+    // start of a text of one sentence over and over is searched for at
+    // every step: hundreds of times in the shorter of these, and four times
+    // as many in the longer.
+    const change = sentences => {
+      const before = 'The tide came in and went out. '.repeat(sentences)
+      const after = before.replace('came', 'crept')
+      let pair
+      const count = searches(() => (pair = diffEdit(before, after)))
+      expect(before.split(pair.old).length - 1).toBe(1)
+      expect(pair.old.length).toBeGreaterThan(before.length / 2)
+      return count
+    }
+    const [shorter, longer] = [change(500), change(2000)]
+    expect(shorter).toBeLessThan(100)
+    expect(longer).toBeLessThan(shorter + 20)
+  })
+})
+
+describe('placedEdit', () => {
+  it('gives the pair with where it starts, the same place in both texts', () => {
+    expect(placedEdit('Snow fell on the road.', 'Rain lashed the road.')).toEqual({
+      old: 'Snow fell on',
+      new: 'Rain lashed',
+      at: 0,
+    })
+    const [before, after] = ['a road. a road. a road.', 'a road. a path. a road.']
+    const placed = placedEdit(before, after)
+    expect(placed).toEqual({ ...diffEdit(before, after), at: expect.any(Number) })
+    expect(before.slice(placed.at, placed.at + placed.old.length)).toBe(placed.old)
+    expect(after.slice(placed.at, placed.at + placed.new.length)).toBe(placed.new)
+    expect(placedEdit('same', 'same')).toBeNull()
+  })
+
+  it('gives the same pair told how much the two share, without comparing that again', () => {
+    const [head, tail] = ['The gate was shut. '.repeat(40), ' The end.'.repeat(40)]
+    const [before, after] = [`${head}Nobody came.${tail}`, `${head}Somebody came by.${tail}`]
+    const whole = placedEdit(before, after)
+    expect(whole).toEqual({ old: 'Nobody came', new: 'Somebody came by', at: head.length })
+    for (const same of [
+      { start: head.length, end: tail.length },
+      { start: head.length - 7 },
+      { end: 12 },
+    ]) {
+      expect(placedEdit(before, after, same)).toEqual(whole)
+    }
+    // What it is told they share it takes as said, the same or not.
+    expect(placedEdit(`x${before}`, `y${before}`, { start: 1 })).toBeNull()
+    const all = { start: head.length, end: tail.length }
+    expect(placedEdit(`${head}One.${tail}`, `${head}${tail}`, all)).toEqual(
+      placedEdit(`${head}One.${tail}`, `${head}${tail}`)
+    )
+  })
+})
+
+describe('leastEnough', () => {
+  it('finds the least count that is enough, and the most where none below it is', () => {
+    for (const most of [0, 1, 2, 5, 6, 100]) {
+      for (let least = 0; least <= most + 1; least++) {
+        expect(leastEnough(most, count => count >= least)).toBe(Math.min(least, most))
+      }
+    }
+  })
+
+  it('asks of few counts where there are many, and never of the most', () => {
+    const most = 100_000
+    for (const least of [0, 1, 2, 3, 77, 6350, most - 1, most, most + 1]) {
+      const asked = []
+      const found = leastEnough(most, count => {
+        asked.push(count)
+        return count >= least
+      })
+      expect(found).toBe(Math.min(least, most))
+      expect(asked.length).toBeLessThanOrEqual(2 * Math.ceil(Math.log2(most)) + 2)
+      expect(asked).not.toContain(most)
+      expect(new Set(asked).size).toBe(asked.length)
+    }
   })
 })
 
