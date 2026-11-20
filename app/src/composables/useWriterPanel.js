@@ -12,7 +12,9 @@
  * `data-panel-for`: the outline, whose documents open in the editor, and the
  * list of chats. Anywhere else, the rail or a menu, leaves the writer where
  * they were. A panel that is not on screen is never the one: its tabs can't
- * be seen to be closed.
+ * be seen to be closed. With neither on screen, as in a narrow window showing
+ * the outline or the settings, the writer is in no panel, and such a key
+ * does nothing.
  */
 
 /* global Element */
@@ -63,15 +65,16 @@ export function watchWriterPanel() {
 }
 
 /**
- * The panel the writer is in: the one last pressed or focused in, unless
- * only the other is on screen.
+ * The panel the writer is in: the one last pressed or focused in, or the
+ * other when only that is on screen.
  *
- * @returns {WriterPanel}
+ * @returns {WriterPanel|null} Null with neither on screen
  */
 export function writerPanel() {
+  if (onScreen(last)) return last
   /** @type {WriterPanel} */
   const other = last === 'chat' ? 'editor' : 'chat'
-  return !onScreen(last) && onScreen(other) ? other : last
+  return onScreen(other) ? other : null
 }
 
 /** Forget where the writer was (for testing). */

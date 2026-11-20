@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
@@ -6,6 +6,7 @@ import ChatPanel from '@/components/writer/layout/ChatPanel.vue'
 import { clearChatsInstances, useChats } from '@/composables/useChats'
 import { clearChatTabsInstances, useChatTabs } from '@/composables/useChatTabs.js'
 import { clearChatActivity, reportWorking } from '@/composables/useChatActivity.js'
+import { clearTerminals } from '@/composables/useTerminals.js'
 import { useChatsStore } from '@/stores/chatsStore'
 
 vi.mock('@/stores/db', () => {
@@ -42,10 +43,26 @@ const Chat = {
     '<div data-chat :data-id="chatId"><button data-fork @click="$emit(\'open-chat\', { chatId: forking.to, send: forking.send })" /><button data-send @click="$emit(\'sent\', chatId)" /></div>',
 }
 
+/** Which terminals' frames were given the keys, by their ids. */
+const framesFocused = []
+
+/** A terminal's frame: which terminal it is, and that it can take the keys. */
+const TerminalFrame = {
+  props: ['terminalId', 'active'],
+  setup: (props, { expose }) => {
+    expose({ focus: () => framesFocused.push(props.terminalId) })
+  },
+  template: '<div data-terminal-frame :data-id="terminalId" />',
+}
+
 const mountPanel = async (props = {}) => {
   const wrapper = mount(ChatPanel, {
     props: { storyId: 'story_1', ...props },
-    global: { plugins: [PrimeVue], directives: { tooltip: {} }, stubs: { Chat } },
+    global: {
+      plugins: [PrimeVue],
+      directives: { tooltip: {} },
+      stubs: { Chat, TerminalFrame },
+    },
   })
   await flushPromises()
   return wrapper
@@ -67,8 +84,14 @@ describe('ChatPanel', () => {
     openFind.mockClear()
     send.mockClear()
     focusMessage.mockClear()
+    framesFocused.length = 0
     forking.send = undefined
     store = useChatsStore()
+  })
+
+  afterEach(() => {
+    clearTerminals()
+    delete globalThis.__INKSPRITE_DESKTOP__
   })
 
   it('opens a project whose chats were never in tabs on its latest chat', async () => {
@@ -241,6 +264,53 @@ describe('ChatPanel', () => {
     expect(toggle.attributes('aria-label')).toBe('Expand chat')
     await toggle.trigger('click')
     expect(beside.emitted('toggle-editor')).toHaveLength(1)
+  })
+
+  it('says it is the chat panel, for a key that acts on the panel the writer is in', async () => {
+    const wrapper = await mountPanel()
+    expect(wrapper.attributes('data-panel')).toBe('chat')
+  })
+
+  it('puts the caret in the message box of the chat showing, when a key asks', async () => {
+    const one = store.createChat('story_1', 'One')
+    const two = store.createChat('story_1', 'Two')
+    const wrapper = await mountPanel()
+    const tabs = useChatTabs('story_1')
+    tabs.open(one.id)
+    tabs.open(two.id)
+    await flushPromises()
+    expect(focusMessage).not.toHaveBeenCalled()
+
+    tabs.open(one.id)
+    tabs.focus()
+    await flushPromises()
+
+    expect(shown(wrapper)).toBe(one.id)
+    expect(focusMessage).toHaveBeenCalledTimes(1)
+  })
+
+  it('gives a terminal the keys instead, when that is the tab showing', async () => {
+    globalThis.__INKSPRITE_DESKTOP__ = {
+      terminals: {
+        list: vi.fn(async () => []),
+        create: vi.fn(async () => 'terminal:1'),
+        close: vi.fn(),
+        onEvent: vi.fn(),
+      },
+    }
+    store.createChat('story_1', 'One')
+    const wrapper = await mountPanel()
+    const tabs = useChatTabs('story_1')
+    await tabs.openTerminal()
+    await flushPromises()
+    expect(wrapper.find('[data-terminal-frame]').attributes('data-id')).toBe('terminal:1')
+    framesFocused.length = 0
+
+    tabs.focus()
+    await flushPromises()
+
+    expect(framesFocused).toEqual(['terminal:1'])
+    expect(focusMessage).not.toHaveBeenCalled()
   })
 
   it('starts the strip with the way back to the list, where the list is behind it', async () => {

@@ -81,6 +81,14 @@ describe('useWriterPanel', () => {
     expect(writerPanel()).toBe('chat')
   })
 
+  it('is no panel when neither is on screen, as in a narrow window on the outline', () => {
+    const at = frame({ editor: false, chat: false })
+    expect(writerPanel()).toBeNull()
+
+    press(at('[data-message]'))
+    expect(writerPanel()).toBeNull()
+  })
+
   it('is the other panel when the one the writer was in is not on screen', () => {
     let at = frame({ chat: false })
     press(at('[data-message]'))

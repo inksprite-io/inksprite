@@ -40,7 +40,8 @@
  * - **chatTitle** - What a chat is called before it has a name, and a title the model wrote, made plain
  *
  * ### Editor
- * - **tabs** - The editor's tabs: open, close, and what a story remembers of them
+ * - **tabs** - A panel's tabs, the editor's or the chat's: open, close, reopen the one closed last, the
+ *   next one and the one at a place, and what a project remembers of them
  *
  * ### Browser
  * - **webkit** - Whether the page is running in WebKit, for what only WebKit does

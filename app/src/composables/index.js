@@ -7,7 +7,8 @@
  * ### AI
  * - **useAIChat** - A chat turn: context, request, tool calls, and streaming into a message; one per chat, so a reply outlives the view showing it; `askInThread` asks its model something at the end of the conversation in place of a turn (a summary)
  * - **useChatActivity** - Which chats the model is working in, app-wide, and word when it stops
- * - **useChatTabs** - A project's chat tabs: open, showing, previews, the history closing goes back through, and unread chats
+ * - **useChatTabs** - A project's chat tabs: open, showing, the history closing goes back through, the chat
+ *   closed last opened again, the caret asked for in the one showing, and unread chats
  * - **useChatPlaces** - Where the writer was in each chat they left, for its tab coming back
  * - **useAIConfig** - AI configuration (provider + model)
  * - **useConnections** - The AI connections the writer has: which are theirs, how each answered last, and adding, checking and removing one
@@ -23,7 +24,8 @@
  *
  * ### Data
  * - **useProjects** - Every project, and creating, importing, opening and deleting them
- * - **useDocuments** - A story's document tree, shaped for the tree UI, and the editor's tabs
+ * - **useDocuments** - A story's document tree, shaped for the tree UI, and the editor's tabs, the one
+ *   closed last opened again among them
  * - **useChats** - Chat session management
  * - **useChatSettings** - One chat's settings and profile, started or not
  * - **useChatPresets** - Giving every chat the model it runs on, so a pick on its profile, or a preset changed or deleted, never moves it
@@ -50,6 +52,7 @@
  * - **useNearScreen** - Which rows of a long list are on the screen or close to it, so only those are drawn in full
  * - **useNearTurns** - Which of a chat's turns are in the page: those near the screen, the newest two, and any with an editor open; plus the state a turn keeps while it is away
  * - **useSettingsPanel** - Opening the settings, on a section and a part of it, from anywhere in the writer
+ * - **useProjectsDialog** - Opening Projects…, the table of every project, from anywhere in the writer
  * - **useCardLibraryPanel** - Opening the card library, to browse or to pick a card for a folder, from anywhere in the writer
  * - **useSidebarTab** - Showing a sidebar list, such as the narration, from anywhere in the writer
  * - **useEditorRequest** - Showing the editor, having opened a tab in it, from anywhere in the writer
@@ -70,6 +73,9 @@
  * - **useTreeHistory** - Command-Z and Shift-Command-Z for what the writer does in the outline:
  *   making, renaming, moving and deleting documents
  * - **useFindKey** - Command-F (Control-F off a Mac) opens the find of the panel the writer is in
+ * - **useMenuCommands** - What the desktop app's menu asks of the writer, done: a new document or chat, the
+ *   tab the writer is in closed, reopened or stepped from, the projects and the settings
+ * - **useWriterPanel** - Which panel of tabs the writer is in, the editor or the chat, for a key that acts on a tab
  * - **useLastOpened** - Keeps which project the writer was last in, which the app opens on
  * - **useProjectActions** - What can be done to a project, as menu items, the open one or another
  * - **useHoverSubmenus** - A TieredMenu's submenus opening on hover, once the pointer rests
@@ -124,6 +130,9 @@ export { useToast } from './useToast.js'
 export { useScreenSize } from './useScreenSize.js'
 export { useKeyboardCover } from './useKeyboardCover.js'
 export { useSettingsPanel } from './useSettingsPanel.js'
+export { useProjectsDialog } from './useProjectsDialog.js'
+export { useMenuCommands } from './useMenuCommands.js'
+export { watchWriterPanel, writerPanel } from './useWriterPanel.js'
 export { useCardLibraryPanel } from './useCardLibraryPanel.js'
 export { useSidebarTab } from './useSidebarTab.js'
 export { useEditorRequest } from './useEditorRequest.js'

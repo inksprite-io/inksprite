@@ -244,6 +244,27 @@ describe('useMenuCommands', () => {
     })
   })
 
+  it('leaves the tabs alone with neither panel on screen, and still makes a document', () => {
+    have({ docs: strip(['a', 'b'], 'a'), chats: strip(['x', 'terminal:1'], 'terminal:1') })
+    panel.value = null
+
+    heard('closeTab')
+    heard('reopenTab')
+    heard('nextTab')
+    heard('previousTab')
+    heard('showTab', 2)
+
+    expect(documents.closeTab).not.toHaveBeenCalled()
+    expect(documents.reopenTab).not.toHaveBeenCalled()
+    expect(documents.open).not.toHaveBeenCalled()
+    expect(chatTabs.close).not.toHaveBeenCalled()
+    expect(chatTabs.reopen).not.toHaveBeenCalled()
+    expect(chatTabs.open).not.toHaveBeenCalled()
+
+    heard('newDocument')
+    expect(newDocument).toHaveBeenCalled()
+  })
+
   it('does nothing while a dialog is open', () => {
     have({ docs: strip(['a'], 'a') })
     const mask = document.createElement('div')

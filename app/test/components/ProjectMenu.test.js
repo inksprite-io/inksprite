@@ -76,7 +76,7 @@ const actions = vi.hoisted(() => ({
 }))
 vi.mock('@/composables/useProjectActions.js', () => ({ useProjectActions: () => actions }))
 // The trash, which has tests of its own: how much is in it says whether the
-// menu offers it. The menu's item for it is owed its tests.
+// menu offers it.
 const trash = vi.hoisted(() => ({ count: { value: 0 } }))
 vi.mock('@/composables/useTrash.js', () => ({ useTrash: () => trash }))
 const platform = vi.hoisted(() => ({ desktop: false }))
@@ -99,6 +99,7 @@ describe('ProjectMenu', () => {
     rows.chats = {}
     windows.elsewhere.clear()
     platform.desktop = false
+    trash.count.value = 0
     storiesStore = useStoriesStore()
     documentsStore = useDocumentsStore()
     router = createRouter({
@@ -236,6 +237,26 @@ describe('ProjectMenu', () => {
     pick(wrapper, 'Projects…')
     await flushPromises()
     expect(table.visible.value).toBe(true)
+  })
+
+  it('has no trash to open while nothing is in it', async () => {
+    const { wrapper } = await mountMenu('')
+    expect(shape(wrapper)).not.toContain('Open trash…')
+    expect(wrapper.findComponent({ name: 'TrashDialog' }).props('visible')).toBe(false)
+  })
+
+  it('opens the trash from above the project’s own items, while anything is in it', async () => {
+    const mine = await storiesStore.createStory('Mine')
+    trash.count.value = 2
+    const { wrapper } = await mountMenu(mine.id, [{ label: 'Project settings' }])
+
+    expect(shape(wrapper).slice(-3)).toEqual(['Open trash…', '—', 'Project settings'])
+    const dialog = wrapper.findComponent({ name: 'TrashDialog' })
+    expect(dialog.props('storyId')).toBe(mine.id)
+
+    pick(wrapper, 'Open trash…')
+    await flushPromises()
+    expect(dialog.props('visible')).toBe(true)
   })
 
   it('marks the project open', async () => {

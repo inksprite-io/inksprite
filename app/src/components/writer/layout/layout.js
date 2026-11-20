@@ -222,3 +222,19 @@ export function shownLayout(layout, narrow) {
   if (narrow && layout.sidebar && layout.editor && layout.chat) return { ...layout, chat: false }
   return layout
 }
+
+/**
+ * A layout with the chat showing, for something that has just been put in
+ * it. Hidden, it is switched on; folded away in a narrow window, it is shown
+ * the way its own toggle shows it there, by closing the sidebar. Showing
+ * already, the layout is the one given.
+ *
+ * @param {StoryLayout} layout
+ * @param {boolean} narrow - Whether the window is too narrow for all three
+ * @returns {StoryLayout}
+ */
+export function withChatShown(layout, narrow) {
+  if (shownLayout(layout, narrow).chat) return layout
+  const on = { ...layout, chat: true }
+  return shownLayout(on, narrow).chat ? on : { ...on, sidebar: false }
+}

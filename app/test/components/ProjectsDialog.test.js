@@ -5,6 +5,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import ProjectsDialog from '@/components/writer/projects/ProjectsDialog.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { LONG_PRESS_MS } from '@/composables/useLongPress.js'
 import { sharing } from '@/cloud/people.js'
 
 const projects = vi.hoisted(() => ({
@@ -25,10 +26,13 @@ const blocking = vi.hoisted(() => ({ block: vi.fn(async () => {}) }))
 vi.mock('@/composables/useBlocking.js', () => ({ useBlocking: () => blocking }))
 const toast = vi.hoisted(() => ({ error: vi.fn() }))
 vi.mock('@/composables/useToast.js', () => ({ useToast: () => toast }))
-// A project's own menu, which the table shows for a row, is owed its tests.
-vi.mock('@/composables/useProjectActions.js', () => ({
-  useProjectActions: () => ({ itemsFor: () => [] }),
+// What a project's menu offers, which has tests of its own.
+const actions = vi.hoisted(() => ({
+  itemsFor: vi.fn((storyId, { current } = {}) => [
+    { label: `${current ? 'This project' : 'Another project'}: ${storyId}` },
+  ]),
 }))
+vi.mock('@/composables/useProjectActions.js', () => ({ useProjectActions: () => actions }))
 
 const Dialog = {
   name: 'Dialog',
@@ -180,6 +184,62 @@ describe('ProjectsDialog', () => {
     expect(away.text()).toContain('Open in another window')
     expect(away.find('i').classes()).toContain('pi-clone')
     expect(wrapper.find('[data-project="a"]').text()).not.toContain('Open in another window')
+  })
+
+  describe('a project’s own menu', () => {
+    /** The menu for a project's row: the table's second, after an invitation's. */
+    const projectMenu = wrapper => wrapper.findAllComponents({ name: 'ContextMenu' })[1]
+
+    it('opens on a right-click, with what can be done to that project, without opening it', async () => {
+      const wrapper = await mountDialog()
+
+      await wrapper.find('[data-project="c"]').trigger('contextmenu')
+
+      expect(actions.itemsFor).toHaveBeenCalledWith('c', { current: false })
+      expect(projectMenu(wrapper).props('model')).toEqual([{ label: 'Another project: c' }])
+      expect(projects.pick).not.toHaveBeenCalled()
+    })
+
+    it('offers the open project what the outline offers it', async () => {
+      const wrapper = await mountDialog()
+
+      await wrapper.find('[data-project="b"]').trigger('contextmenu')
+
+      expect(actions.itemsFor).toHaveBeenCalledWith('b', { current: true })
+      expect(projectMenu(wrapper).props('model')).toEqual([{ label: 'This project: b' }])
+    })
+
+    it('opens under a finger held on a project', async () => {
+      const wrapper = await mountDialog()
+      vi.useFakeTimers()
+      try {
+        await wrapper
+          .find('[data-project="a"]')
+          .trigger('touchstart', { touches: [{ clientX: 30, clientY: 40 }] })
+        expect(actions.itemsFor).not.toHaveBeenCalled()
+
+        vi.advanceTimersByTime(LONG_PRESS_MS)
+
+        expect(actions.itemsFor).toHaveBeenCalledWith('a', { current: false })
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it('gives the caret back to the search when it shuts, where the keys work', async () => {
+      const wrapper = await mountDialog()
+      const mask = document.createElement('div')
+      const input = document.createElement('input')
+      input.setAttribute('data-project-search', '')
+      mask.append(input)
+      document.body.append(mask)
+      wrapper.findComponent({ name: 'Dialog' }).vm.mask = mask
+
+      projectMenu(wrapper).vm.$emit('hide')
+
+      expect(document.activeElement).toBe(input)
+      mask.remove()
+    })
   })
 
   describe('from the keyboard', () => {

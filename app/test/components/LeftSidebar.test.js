@@ -53,6 +53,14 @@ describe('LeftSidebar', () => {
     expect(comments.find('[data-narration]').exists()).toBe(false)
   })
 
+  it('says which panel its list picks things for: the chat for the chats, the editor for the rest', () => {
+    const picksFor = tab => mountSidebar({ tab }).attributes('data-panel-for')
+    expect(picksFor('outline')).toBe('editor')
+    expect(picksFor('narration')).toBe('editor')
+    expect(picksFor('comments')).toBe('editor')
+    expect(picksFor('chats')).toBe('chat')
+  })
+
   it('passes on what the writer picked', async () => {
     const outline = mountSidebar({ tab: 'outline' })
     await outline.find('[data-tree]').trigger('click')

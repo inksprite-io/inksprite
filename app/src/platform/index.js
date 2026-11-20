@@ -39,6 +39,8 @@
  *   a folder the writer chooses, rather than downloaded as a zip
  * - **printing** - In the desktop app, a document saved as a PDF where the
  *   writer says, rather than through the print dialog
+ * - **menu** - In the desktop app, what its menu asks of the page: the keys a
+ *   browser keeps for its own tabs, for the app's documents and chats
  *
  * Design: `.llm/desktop_design.md`.
  *
@@ -77,3 +79,4 @@ export {
 } from './terminal.js'
 export { canExportToFolder, chooseExportFolder, writeExportFolder } from './exportFolder.js'
 export { canSavePdf, savePdf } from './printing.js'
+export { hasMenuCommands, onMenuCommand } from './menu.js'

@@ -116,6 +116,18 @@ opens, and leaves it there; the page imports what changed since it last did,
 without asking (`src/composables/useSettingsFile.js` in the page). The design
 is `.llm/settings_import_design.md`.
 
+## The menu
+
+`src/menu.js` is the menu bar. Its File and Window menus have the keys a
+browser keeps for its own tabs, which the app has to itself in a window of its
+own: New Document, New Chat, Close Tab, Reopen Closed Tab, the tabs stepped
+through and gone to by number, Projects… and Settings…. Close Window is on
+Shift-Command-W, beside New Window's key, since a tab has Command-W. Each item
+sends the page of the window in front a `menu:command`, and the page does it
+(`src/platform/menu.js` and `src/composables/useMenuCommands.js` in the page),
+since only the page knows which panel the writer is in. Windows and Linux hide
+the bar until Alt is pressed, and the keys work all the same.
+
 The Web Inspector is in the View menu, and a right-click → Inspect Element
 opens it, in a release build as well: its console is where a failure the app
 doesn't show is logged, a chat title the provider refused among them.

@@ -127,9 +127,9 @@ import {
   PANELS,
   normalizeLayout,
   selectSidebarTab,
-  shownLayout,
   keptWithoutAI,
   togglePanel as toggled,
+  withChatShown,
   withoutAI,
 } from './layout/layout.js'
 
@@ -298,16 +298,15 @@ const openChat = chatId => {
 /**
  * Show the chat, where it is hidden: on a phone its tab, here its panel, and
  * in a narrow window, where it folds away while the sidebar is open, by
- * closing the sidebar, as the chat's own toggle does there.
+ * closing the sidebar (`withChatShown`).
  */
 const showChat = () => {
   if (isMobile.value) {
     activeMobileTab.value = 'chat'
     return
   }
-  const on = { ...layout.value, chat: true }
-  const next = shownLayout(on, isNarrow.value).chat ? on : { ...on, sidebar: false }
-  if (!layout.value.chat || next.sidebar !== layout.value.sidebar) setLayout(next)
+  const next = withChatShown(layout.value, isNarrow.value)
+  if (next !== layout.value) setLayout(next)
 }
 
 // In the desktop app, the File and Window menus' keys: a new document or

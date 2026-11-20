@@ -598,6 +598,15 @@ describe('DocumentTree project menu', () => {
     expect(wrapper.findComponent(ProjectMenu).props('projectItems')).toBe(own)
   })
 
+  it('leaves the trash to the Projects menu: it is not among the project’s own items', async () => {
+    const wrapper = mountTree()
+    await flushPromises()
+
+    const own = wrapper.findComponent({ name: 'DocumentNode' }).props('extraMenuItems')
+    expect(own.map(item => item.label).filter(label => /trash/i.test(label ?? ''))).toEqual([])
+    expect(wrapper.findComponent({ name: 'TrashDialog' }).exists()).toBe(false)
+  })
+
   it('moves the project to the trash with its jobs, and leaves it, saying so with an Undo', async () => {
     const wrapper = mountTree()
     await flushPromises()

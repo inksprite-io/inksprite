@@ -122,6 +122,11 @@ describe('EditorPanel', () => {
     mockSync.busy.clear()
   })
 
+  it('says it is the editor panel, for a key that acts on the panel the writer is in', () => {
+    const wrapper = mountPanel({ open: ['doc_1'], active: 'doc_1' })
+    expect(wrapper.attributes('data-panel')).toBe('editor')
+  })
+
   it('shows the strip and the editor on the tab showing', () => {
     const wrapper = mountPanel({ open: ['doc_1', 'doc_2'], active: 'doc_2' })
     expect(wrapper.findAll('[role="tab"]').map(t => t.text())).toEqual(['Untitled', 'Two'])

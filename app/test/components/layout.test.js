@@ -13,6 +13,7 @@ import {
   shownLayout,
   keptWithoutAI,
   togglePanel,
+  withChatShown,
   withoutAI,
 } from '@/components/writer/layout/layout.js'
 
@@ -203,5 +204,29 @@ describe('keptSizes', () => {
     expect(keptSizes([25, 'wide'], [20, 80])).toEqual([20, 80])
     expect(keptSizes([25, Number.NaN], [20, 80])).toEqual([20, 80])
     expect(keptSizes({ 0: 25, 1: 75 }, [20, 80])).toEqual([20, 80])
+  })
+})
+
+describe('withChatShown', () => {
+  const all = { ...DEFAULT_LAYOUT, sidebar: true, editor: true, chat: true }
+
+  it('is the layout given when the chat is showing already', () => {
+    expect(withChatShown(all, false)).toBe(all)
+    const noSidebar = { ...all, sidebar: false }
+    expect(withChatShown(noSidebar, true)).toBe(noSidebar)
+  })
+
+  it('switches a hidden chat on, and leaves the rest', () => {
+    expect(withChatShown({ ...all, chat: false }, false)).toEqual(all)
+  })
+
+  it('closes the sidebar in a narrow window, where the chat folds away beside it', () => {
+    expect(withChatShown(all, true)).toEqual({ ...all, sidebar: false })
+    expect(withChatShown({ ...all, chat: false }, true)).toEqual({ ...all, sidebar: false })
+  })
+
+  it('leaves the sidebar open in a narrow window with the editor hidden, where the chat fits', () => {
+    const noEditor = { ...all, editor: false, chat: false }
+    expect(withChatShown(noEditor, true)).toEqual({ ...noEditor, chat: true })
   })
 })

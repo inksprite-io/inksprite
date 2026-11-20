@@ -12,7 +12,8 @@
  *
  * While a dialog is open, none of it is done: what the key would change is
  * behind the dialog. And one that can't apply, a tab closed with none open,
- * a chat with the AI switched off, does nothing.
+ * a chat with the AI switched off, a tab's key with neither panel on screen,
+ * does nothing.
  */
 
 import { nextTick, onBeforeUnmount, onMounted } from 'vue'
@@ -59,12 +60,16 @@ export function useMenuCommands({ storyId, showEditor, showChat }) {
   const projects = useProjectsDialog()
 
   /**
-   * The tabs of the panel the writer is in.
+   * The tabs of the panel the writer is in, or null when they are in neither:
+   * a tab that can't be seen is not closed, least of all a terminal's, whose
+   * shell would end with it.
    * @param {string} project
-   * @returns {PanelTabs}
+   * @returns {PanelTabs|null}
    */
   const panelTabs = project => {
-    if (aiEnabled.value && writerPanel() === 'chat') {
+    const where = writerPanel()
+    if (!where) return null
+    if (aiEnabled.value && where === 'chat') {
       const chats = useChatTabs(project)
       /**
        * A tab brought forward by a key gets the keys, for the next thing
@@ -126,6 +131,7 @@ export function useMenuCommands({ storyId, showEditor, showChat }) {
     }
 
     const panel = panelTabs(project)
+    if (!panel) return
     const { active } = panel.tabs
     /** @param {string|null} id */
     const show = id => {
