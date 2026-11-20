@@ -115,8 +115,8 @@ let onMenuCommand = null
 ipcRenderer.on('menu:command', (_, command, detail) => onMenuCommand?.(command, detail))
 
 /**
- * What the page does when a terminal of its own is named by the program in
- * it, rings, or ends (`terminals.js`).
+ * What the page does when a terminal is made, named by the program in it,
+ * rings, is looked at, or ends, in whichever window (`terminals.js`).
  * @type {((id: string, event: object) => void)|null}
  */
 let terminalEvents = null
@@ -214,9 +214,10 @@ const desktop = {
   },
 
   terminals: {
-    create: () => call('terminal:create'),
+    create: project => call('terminal:create', project),
     list: () => call('terminal:list'),
     close: id => call('terminal:close', id),
+    seen: id => call('terminal:seen', id),
     onEvent(listener) {
       terminalEvents = listener
     },

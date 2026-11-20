@@ -14,6 +14,13 @@
  * with it, so the process is kept here with a copy of its screen, a terminal
  * without a window that reads all the shell prints. A frame that attaches is
  * sent the screen as it stands and then what comes after.
+ *
+ * A terminal is a project's, named by the page that makes it, and no
+ * window's: it runs on while its project isn't open anywhere, and is there
+ * in whichever window opens the project next. So every window's page is told
+ * what becomes of every terminal, and any of them may end one. It ends when
+ * a page says so (its tab closed, its project gone), when its shell does, and
+ * when the app quits.
  */
 
 import { app, protocol, shell } from 'electron'
@@ -240,17 +247,24 @@ export function sizeFrom(size) {
  */
 
 /**
- * What the page is told of a terminal of its own.
- *
- * @typedef {{type: 'title', title: string}|{type: 'bell'}|{type: 'exit', failed?: true}} TerminalEvent
+ * What the pages are told of a terminal: it was made in a project, the
+ * program in it named it, it rang, it was looked at since, or it is gone,
  * `failed` for a shell that never started.
+ *
+ * @typedef {{type: 'made', project: string}
+ *   | {type: 'title', title: string}
+ *   | {type: 'bell'}
+ *   | {type: 'seen'}
+ *   | {type: 'exit', failed?: true}} TerminalEvent
  */
 
 /**
  * @typedef {Object} Terminal
  * @property {string} id
- * @property {unknown} owner - The window's page it was made by
+ * @property {string} project - The project it was made in, as the page named it
  * @property {string} title
+ * @property {boolean} rang - Whether it rang its bell and hasn't been looked
+ *   at since
  * @property {Pty|null} pty - Null until a frame first attaches, and says how
  *   large it is
  * @property {Mirror|null} mirror
@@ -319,8 +333,11 @@ function headlessMirror({ cols, rows }) {
   }
 }
 
+/** The longest name of a project a terminal is made in. */
+const PROJECT_MOST = 200
+
 /**
- * The app's terminals, each its window's own.
+ * The app's terminals, each a project's.
  */
 export class Terminals {
   /** @type {Map<string, Terminal>} */
@@ -332,8 +349,8 @@ export class Terminals {
 
   /**
    * @param {Object} with
-   * @param {(owner: any, id: string, event: TerminalEvent) => void} with.tell -
-   *   Tells a terminal's page what became of it
+   * @param {(id: string, event: TerminalEvent) => void} with.tell - Tells the
+   *   pages what became of a terminal
    * @param {(size: {cols: number, rows: number}) => Pty} [with.start]
    * @param {(size: {cols: number, rows: number}) => Mirror} [with.mirror]
    * @param {(url: string) => unknown} [with.open] - Opens a link the writer
@@ -347,18 +364,23 @@ export class Terminals {
   }
 
   /**
-   * Make a terminal for a page. Its shell starts when a frame first shows
+   * Make a terminal in a project. Its shell starts when a frame first shows
    * it, and says how large it is.
    *
-   * @param {unknown} owner - The page
+   * @param {unknown} project - The project, by the name the page has for it,
+   *   which the pages are told again with its terminals
    * @returns {string} Its id
    */
-  create(owner) {
+  create(project) {
+    if (typeof project !== 'string' || !project || project.length > PROJECT_MOST) {
+      throw new Error('A terminal is made in a project, named by a string.')
+    }
     const id = `${TERMINAL_ID}${randomUUID()}`
     this.#terminals.set(id, {
       id,
-      owner,
+      project,
       title: '',
+      rang: false,
       pty: null,
       mirror: null,
       port: null,
@@ -367,36 +389,39 @@ export class Terminals {
       unmirrored: 0,
       held: false,
     })
+    this.#tell(id, { type: 'made', project })
     return id
   }
 
   /**
-   * A page's terminals, in the order they were made.
+   * Every terminal, in the order they were made.
    *
-   * @param {unknown} owner
-   * @returns {{id: string, title: string}[]}
+   * @returns {{id: string, project: string, title: string, rang: boolean}[]}
    */
-  list(owner) {
-    return [...this.#terminals.values()]
-      .filter(terminal => terminal.owner === owner)
-      .map(({ id, title }) => ({ id, title }))
+  list() {
+    return [...this.#terminals.values()].map(({ id, project, title, rang }) => ({
+      id,
+      project,
+      title,
+      rang,
+    }))
   }
 
   /**
    * Show a terminal in a frame: start its shell at the frame's size, if it
    * hasn't one, or send the frame the screen as it stands, and from then on
-   * what the shell prints. A frame that showed it before is let go. A
-   * terminal that isn't the page's is refused, and the frame told it is gone.
+   * what the shell prints. A frame that showed it before is let go, in
+   * whichever window it was. A frame that names no terminal there is, or no
+   * size, is told there is none.
    *
-   * @param {unknown} owner - The page the frame is in
    * @param {unknown} id
    * @param {Port} port
    * @param {unknown} size
    */
-  attach(owner, id, port, size) {
+  attach(id, port, size) {
     const terminal = typeof id === 'string' ? this.#terminals.get(id) : undefined
     const at = sizeFrom(size)
-    if (!terminal || terminal.owner !== owner || !at) {
+    if (!terminal || !at) {
       port.postMessage({ type: 'exit' })
       port.close()
       return
@@ -444,26 +469,33 @@ export class Terminals {
   }
 
   /**
-   * End a page's terminal: its shell is hung up on, as when a terminal's
-   * window is closed.
+   * End a terminal: its shell is hung up on, as when a terminal's window is
+   * closed, and the pages are told it is gone.
    *
-   * @param {unknown} owner
    * @param {unknown} id
    */
-  close(owner, id) {
+  close(id) {
     const terminal = typeof id === 'string' ? this.#terminals.get(id) : undefined
-    if (terminal?.owner === owner) this.#drop(terminal)
+    if (!terminal) return
+    this.#drop(terminal)
+    this.#tell(terminal.id, { type: 'exit' })
+  }
+
+  /** End every terminal, as the app quits. */
+  closeAll() {
+    for (const terminal of [...this.#terminals.values()]) this.#drop(terminal)
   }
 
   /**
-   * End every terminal, or every one of a page's.
+   * A terminal that rang has been looked at.
    *
-   * @param {unknown} [owner]
+   * @param {unknown} id
    */
-  closeAll(owner) {
-    for (const terminal of [...this.#terminals.values()]) {
-      if (owner === undefined || terminal.owner === owner) this.#drop(terminal)
-    }
+  seen(id) {
+    const terminal = typeof id === 'string' ? this.#terminals.get(id) : undefined
+    if (!terminal?.rang) return
+    terminal.rang = false
+    this.#tell(terminal.id, { type: 'seen' })
   }
 
   /**
@@ -496,9 +528,12 @@ export class Terminals {
     })
     mirror.onTitle(title => {
       terminal.title = String(title).slice(0, TITLE_MOST)
-      this.#tell(terminal.owner, terminal.id, { type: 'title', title: terminal.title })
+      this.#tell(terminal.id, { type: 'title', title: terminal.title })
     })
-    mirror.onBell(() => this.#tell(terminal.owner, terminal.id, { type: 'bell' }))
+    mirror.onBell(() => {
+      terminal.rang = true
+      this.#tell(terminal.id, { type: 'bell' })
+    })
     // A program that asks the terminal something (where the cursor is, what
     // it can do) is answered by the frame's, and with no frame by the copy.
     mirror.onAnswer(data => {
@@ -561,17 +596,16 @@ export class Terminals {
   }
 
   /**
-   * A terminal whose shell ended, or never started: its page is told, and it
-   * is gone.
+   * A terminal whose shell ended, or never started: the pages are told, and
+   * it is gone.
    *
    * @param {Terminal} terminal
    * @param {boolean} [failed] - Whether it never started
    */
   #ended(terminal, failed = false) {
-    const { owner, id } = terminal
     terminal.pty = null
     this.#drop(terminal)
-    this.#tell(owner, id, failed ? { type: 'exit', failed } : { type: 'exit' })
+    this.#tell(terminal.id, failed ? { type: 'exit', failed } : { type: 'exit' })
   }
 
   /**
@@ -620,13 +654,15 @@ export function fromTerminalFrame(event, pageOrigin) {
 }
 
 /**
- * Answer the page's calls for terminals, and the frame's.
+ * Answer the pages' calls for terminals, and the frame's.
  *
  * @param {Object} bridge
  * @param {(channel: string, answer: (event: Electron.IpcMainInvokeEvent, ...args: any[]) => any) => void} bridge.handle -
  *   Answers a call from the app's page (`bridge.js`)
  * @param {Electron.IpcMain} bridge.ipcMain
  * @param {string} bridge.origin - The app's page's
+ * @param {() => Electron.WebContents[]} bridge.pages - The app's windows'
+ *   pages, each told what becomes of every terminal
  * @param {Terminals} [bridge.terminals]
  * @returns {Terminals}
  */
@@ -634,26 +670,17 @@ export function handleTerminals({
   handle,
   ipcMain,
   origin,
+  pages,
   terminals = new Terminals({
-    tell: (owner, id, event) => {
-      if (!owner.isDestroyed()) owner.send('terminal:event', id, event)
+    tell: (id, event) => {
+      for (const page of pages()) page.send('terminal:event', id, event)
     },
   }),
 }) {
-  /** The pages whose closing is already waited for. @type {WeakSet<object>} */
-  const watched = new WeakSet()
-
-  handle('terminal:create', event => {
-    const page = event.sender
-    const id = terminals.create(page)
-    if (!watched.has(page)) {
-      watched.add(page)
-      page.once('destroyed', () => terminals.closeAll(page))
-    }
-    return id
-  })
-  handle('terminal:list', event => terminals.list(event.sender))
-  handle('terminal:close', (event, id) => terminals.close(event.sender, id))
+  handle('terminal:create', (_, project) => terminals.create(project))
+  handle('terminal:list', () => terminals.list())
+  handle('terminal:close', (_, id) => terminals.close(id))
+  handle('terminal:seen', (_, id) => terminals.seen(id))
 
   ipcMain.on('terminal:attach', (event, request) => {
     const [port] = event.ports
@@ -662,7 +689,7 @@ export function handleTerminals({
       port.close()
       return
     }
-    terminals.attach(event.sender, request?.id, port, request)
+    terminals.attach(request?.id, port, request)
   })
 
   app.on('will-quit', () => terminals.closeAll())

@@ -290,23 +290,22 @@ export function handleBridge(origin, { openWindow }) {
   })
   on('python:stop', (_, session) => python.stop(session))
 
-  // Terminals: the page makes and ends them, and a frame of another origin
-  // types in them (`terminals.js`).
-  handleTerminals({ handle, ipcMain, origin })
+  /** The windows on the app's own page, the one in front first. */
+  const pages = () => {
+    const front = BrowserWindow.getFocusedWindow()
+    return [...(front ? [front] : []), ...BrowserWindow.getAllWindows().filter(w => w !== front)]
+      .map(window => window.webContents)
+      .filter(page => !page.isDestroyed() && originOf(page.getURL()) === origin)
+  }
+
+  // Terminals: a page makes and ends them, every page is told what becomes of
+  // them, and a frame of another origin types in them (`terminals.js`).
+  handleTerminals({ handle, ipcMain, origin, pages })
 
   // Other apps on this computer, working in the projects ticked for them
   // (`apps.js`, and `src/apps/` in the page): what one asks is handed to a
   // window on the app's own page, the one in front first.
-  handleApps({
-    handle,
-    on,
-    pages: () => {
-      const front = BrowserWindow.getFocusedWindow()
-      return [...(front ? [front] : []), ...BrowserWindow.getAllWindows().filter(w => w !== front)]
-        .map(window => window.webContents)
-        .filter(page => !page.isDestroyed() && originOf(page.getURL()) === origin)
-    },
-  })
+  handleApps({ handle, on, pages })
 }
 
 /**

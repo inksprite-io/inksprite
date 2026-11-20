@@ -74,20 +74,29 @@
  */
 
 /**
- * What the page is told of a terminal of its own: the program in it named
- * it, it rang, or its shell ended, `failed` when it never started.
+ * What every window's page is told of a terminal: it was made in a project,
+ * the program in it named it, it rang, it was looked at since, or it is gone,
+ * `failed` when its shell never started.
  *
- * @typedef {{type: 'title', title: string}|{type: 'bell'}|{type: 'exit', failed?: true}} TerminalEvent
+ * @typedef {{type: 'made', project: string}
+ *   | {type: 'title', title: string}
+ *   | {type: 'bell'}
+ *   | {type: 'seen'}
+ *   | {type: 'exit', failed?: true}} TerminalEvent
  */
 
 /**
- * This window's terminals (`app/electron/src/terminals.js`). The page makes
- * and ends them; it is not what types in them.
+ * The app's terminals, each a project's (`app/electron/src/terminals.js`). A
+ * page makes and ends them; it is not what types in them.
  *
  * @typedef {Object} DesktopTerminals
- * @property {() => Promise<string>} create - Make one, and say its id
- * @property {() => Promise<{id: string, title: string}[]>} list
+ * @property {(project: string) => Promise<string>} create - Make one in a
+ *   project, and say its id
+ * @property {() => Promise<{id: string, project: string, title: string, rang: boolean}[]>} list -
+ *   Every one, in whichever project
  * @property {(id: string) => Promise<void>} close
+ * @property {(id: string) => Promise<void>} seen - One that rang has been
+ *   looked at
  * @property {(listener: (id: string, event: TerminalEvent) => void) => void} onEvent
  */
 

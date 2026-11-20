@@ -8,6 +8,7 @@ import {
   listTerminals,
   onTerminalEvent,
   terminalFrameUrl,
+  terminalSeen,
 } from '@/platform/terminal.js'
 
 afterEach(() => {
@@ -34,18 +35,23 @@ describe('isTerminalId', () => {
   })
 })
 
-describe('the window’s terminals', () => {
-  it('are made, listed and ended on the native side', async () => {
+describe('the terminals', () => {
+  it('are made in a project, listed, marked seen and ended on the native side', async () => {
+    const listed = [{ id: 'terminal:1', project: 'story_1', title: 'zsh', rang: true }]
     const terminals = {
       create: vi.fn().mockResolvedValue('terminal:1'),
-      list: vi.fn().mockResolvedValue([{ id: 'terminal:1', title: 'zsh' }]),
+      list: vi.fn().mockResolvedValue(listed),
       close: vi.fn().mockResolvedValue(undefined),
+      seen: vi.fn().mockResolvedValue(undefined),
       onEvent: vi.fn(),
     }
     globalThis.__INKSPRITE_DESKTOP__ = { terminals }
 
-    expect(await createTerminal()).toBe('terminal:1')
-    expect(await listTerminals()).toEqual([{ id: 'terminal:1', title: 'zsh' }])
+    expect(await createTerminal('story_1')).toBe('terminal:1')
+    expect(terminals.create).toHaveBeenCalledWith('story_1')
+    expect(await listTerminals()).toEqual(listed)
+    await terminalSeen('terminal:1')
+    expect(terminals.seen).toHaveBeenCalledWith('terminal:1')
     await closeTerminal('terminal:1')
     expect(terminals.close).toHaveBeenCalledWith('terminal:1')
   })
@@ -62,7 +68,7 @@ describe('the window’s terminals', () => {
   })
 
   it('are only in the desktop app', () => {
-    expect(() => createTerminal()).toThrow('Terminals are only in the desktop app.')
+    expect(() => createTerminal('story_1')).toThrow('Terminals are only in the desktop app.')
   })
 })
 

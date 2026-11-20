@@ -1,8 +1,8 @@
 /**
  * @module platform/terminal
  * @description In the desktop app, terminals: a shell of the writer's own in
- * a tab of the chat panel, the window's and not a project's. The page makes
- * one, lists its own and ends one;
+ * a tab of a project's chat panel. A page makes one in a project, lists those
+ * there are and ends one;
  * what is typed goes to the shell from a frame of another origin, which the
  * page sets in place and can't reach into, so nothing in the page can run a
  * command. See `app/electron/src/terminals.js` and `.llm/terminal_design.md`.
@@ -43,18 +43,28 @@ function terminals() {
 }
 
 /**
- * Make a terminal. Its shell starts when its frame shows it.
+ * Make a terminal in a project. Its shell starts when its frame shows it.
  *
+ * @param {string} project - The project's id
  * @returns {Promise<string>} Its id
  */
-export const createTerminal = () => terminals().create()
+export const createTerminal = project => terminals().create(project)
 
 /**
- * This window's terminals, which outlive a reload of the page.
+ * Every terminal there is, in whichever project: they outlive the window
+ * that made them, and a reload of the page.
  *
- * @returns {Promise<{id: string, title: string}[]>}
+ * @returns {Promise<{id: string, project: string, title: string, rang: boolean}[]>}
  */
 export const listTerminals = () => terminals().list()
+
+/**
+ * Say a terminal that rang has been looked at, which every window then knows.
+ *
+ * @param {string} id
+ * @returns {Promise<void>}
+ */
+export const terminalSeen = id => terminals().seen(id)
 
 /**
  * End a terminal, and what runs in it.
@@ -65,8 +75,9 @@ export const listTerminals = () => terminals().list()
 export const closeTerminal = id => terminals().close(id)
 
 /**
- * Say what hears of this window's terminals: one named by the program in it,
- * one that rang, one whose shell ended. There is one listener.
+ * Say what hears of the terminals, in whichever window they show: one made,
+ * one named by the program in it, one that rang or was looked at since, one
+ * that is gone. There is one listener.
  *
  * @param {(id: string, event: TerminalEvent) => void} listener
  */

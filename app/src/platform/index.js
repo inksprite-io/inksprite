@@ -73,6 +73,7 @@ export {
   listTerminals,
   onTerminalEvent,
   terminalFrameUrl,
+  terminalSeen,
 } from './terminal.js'
 export { canExportToFolder, chooseExportFolder, writeExportFolder } from './exportFolder.js'
 export { canSavePdf, savePdf } from './printing.js'

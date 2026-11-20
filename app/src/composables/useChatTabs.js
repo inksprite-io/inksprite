@@ -23,7 +23,7 @@
  * wait for the writer to allow a call has stopped working too.
  *
  * In the desktop app a tab may be a terminal instead (`useTerminals`), by an
- * id that says so. A terminal is the window's and not the project's, so it
+ * id that says so. A terminal is the project's, as a chat is, so it
  * has a tab in whichever project the window shows, for as long as its shell
  * runs: closing the tab ends the shell, and the shell ending closes the tab.
  *
@@ -36,6 +36,7 @@ import { onStoppedWorking } from './useChatActivity.js'
 import { onTerminalEnded, useTerminals } from './useTerminals.js'
 import { isTerminalId } from '@/platform/terminal.js'
 import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
+import { useSyncStore } from '@/stores/syncStore.js'
 import {
   CHAT_TABS,
   NO_TABS,
@@ -108,11 +109,11 @@ export function useChatTabs(storyId) {
     instances.set(storyId, instance)
   }
   // Any chat that stops working, in whichever project, is marked there. A
-  // terminal whose shell ended loses its tab in every project that has one.
+  // terminal that is gone loses its tab in its project.
   if (!stopListening) {
     const stops = [
       onStoppedWorking((inStory, chatId) => useChatTabs(inStory).markUnread(chatId)),
-      onTerminalEnded(id => instances.forEach(tabs => tabs.shut(id))),
+      onTerminalEnded((id, inStory) => instances.get(inStory)?.shut(id)),
     ]
     stopListening = () => stops.forEach(stop => stop())
   }
@@ -133,24 +134,24 @@ function createChatTabs(storyId) {
 
   /**
    * Whether a tab's chat is there to show: one of the project's, or the
-   * unstarted one. A terminal's tab is there while its shell runs in this
-   * window, and until the window's terminals are known is taken as stored.
+   * unstarted one. A terminal's tab is there while its shell runs, in this
+   * project, and until the terminals there are are known is taken as stored.
    * @param {string} chatId
    */
   const canShow = chatId =>
     isTerminalId(chatId)
-      ? !terminals.ready.value || terminals.has(chatId)
+      ? !terminals.ready.value || terminals.get(chatId)?.project === storyId
       : chatsApi.isUnstarted(chatId) || Boolean(chatsApi.getChatById(chatId))
 
   /**
-   * The tabs with a tab for each of the window's terminals that has none
-   * here, as one made while another project was open has none: a terminal
-   * with no tab would run where nothing shows it.
+   * The tabs with a tab for each of the project's terminals that has none,
+   * as one whose tab was lost with the view has none: a terminal with no tab
+   * would run where nothing shows it.
    * @param {Tabs} tabs
    * @returns {Tabs}
    */
   const withTerminals = tabs => {
-    const missing = terminals.ids().filter(id => !tabs.open.includes(id))
+    const missing = terminals.of(storyId).filter(id => !tabs.open.includes(id))
     return missing.length ? { ...tabs, open: [...tabs.open, ...missing] } : tabs
   }
 
@@ -195,7 +196,13 @@ function createChatTabs(storyId) {
 
   const openNew = () => open(chatsApi.unstartedChat.value.id)
 
-  const openTerminal = async () => open(await terminals.create())
+  const openTerminal = async () => {
+    const id = await terminals.create(storyId)
+    // A project not saved yet is saved by it, as by a chat: there would be
+    // no project to find the terminal in again.
+    useSyncStore().start(storyId)
+    open(id)
+  }
 
   /**
    * A chat's tab is the one closed last, for reopening. A terminal's is not

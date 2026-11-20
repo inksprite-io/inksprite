@@ -155,8 +155,10 @@ const activeId = computed(() => chatTabs.activeId.value)
 /** Whether a new terminal is offered: in the desktop app, with its extension on. */
 const terminalsOffered = computed(() => hasTerminal() && applicationState.terminal.value)
 
-/** The tabs that are terminals of this window's, in strip order. */
-const terminalIds = computed(() => chatTabs.tabs.value.open.filter(id => terminals.has(id)))
+/** The tabs that are terminals, in strip order. */
+const terminalIds = computed(() =>
+  chatTabs.tabs.value.open.filter(id => Boolean(terminals.get(id)))
+)
 
 /**
  * The terminals' frames, by their ids, to put the keys in.
@@ -281,8 +283,8 @@ watchEffect(() => {
 
 // A shell that never started closes its tab, and here is why it went.
 onBeforeUnmount(
-  onTerminalEnded((_id, failed) => {
-    if (failed) toast.error('The terminal couldn’t start.')
+  onTerminalEnded((_id, project, failed) => {
+    if (failed && project === props.storyId) toast.error('The terminal couldn’t start.')
   })
 )
 

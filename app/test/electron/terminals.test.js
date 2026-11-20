@@ -90,13 +90,13 @@ function fakePort() {
 }
 
 const SIZE = { cols: 80, rows: 24 }
-const page = { name: 'page' }
+const PROJECT = 'story_1'
 
 /** Terminals over fakes, with what they made and said. */
 function setup({ start } = {}) {
   const made = { ptys: [], mirrors: [], told: [], opened: [] }
   const terminals = new Terminals({
-    tell: (owner, id, event) => made.told.push({ owner, id, event }),
+    tell: (id, event) => made.told.push({ id, event }),
     start:
       start ??
       (size => {
@@ -115,12 +115,13 @@ function setup({ start } = {}) {
   return { terminals, made }
 }
 
-/** A terminal with its shell started, shown in a frame. */
+/** A terminal with its shell started, shown in a frame, and nothing told of it yet. */
 function started() {
   const { terminals, made } = setup()
-  const id = terminals.create(page)
+  const id = terminals.create(PROJECT)
   const port = fakePort()
-  terminals.attach(page, id, port, SIZE)
+  terminals.attach(id, port, SIZE)
+  made.told.length = 0
   return { terminals, made, id, port, pty: made.ptys[0], mirror: made.mirrors[0] }
 }
 
@@ -244,29 +245,38 @@ describe('sizeFrom', () => {
 })
 
 describe('Terminals', () => {
-  it('makes a terminal for a page, which lists only its own', () => {
-    const { terminals } = setup()
-    const other = { name: 'other' }
-    const id = terminals.create(page)
-    const second = terminals.create(page)
-    terminals.create(other)
+  it('makes a terminal in a project, tells the pages, and lists every one', () => {
+    const { terminals, made } = setup()
+    const id = terminals.create(PROJECT)
+    const second = terminals.create('story_2')
 
     expect(id.startsWith(TERMINAL_ID)).toBe(true)
     expect(second).not.toBe(id)
-    expect(terminals.list(page)).toEqual([
-      { id, title: '' },
-      { id: second, title: '' },
+    expect(terminals.list()).toEqual([
+      { id, project: PROJECT, title: '', rang: false },
+      { id: second, project: 'story_2', title: '', rang: false },
     ])
-    expect(terminals.list(other)).toHaveLength(1)
+    expect(made.told).toEqual([
+      { id, event: { type: 'made', project: PROJECT } },
+      { id: second, event: { type: 'made', project: 'story_2' } },
+    ])
+  })
+
+  it('makes none without a project to make it in', () => {
+    const { terminals } = setup()
+    for (const project of [undefined, null, '', 7, {}, 'p'.repeat(500)]) {
+      expect(() => terminals.create(project)).toThrow('A terminal is made in a project')
+    }
+    expect(terminals.list()).toEqual([])
   })
 
   it('starts the shell when a frame first shows it, at the frame’s size', () => {
     const { terminals, made } = setup()
-    const id = terminals.create(page)
+    const id = terminals.create(PROJECT)
     expect(made.ptys).toHaveLength(0)
 
     const port = fakePort()
-    terminals.attach(page, id, port, { cols: 100, rows: 30 })
+    terminals.attach(id, port, { cols: 100, rows: 30 })
 
     expect(made.ptys).toHaveLength(1)
     expect(made.ptys[0].size).toEqual({ cols: 100, rows: 30 })
@@ -329,20 +339,18 @@ describe('Terminals', () => {
     expect(made.opened).toEqual(['https://example.com/docs'])
   })
 
-  it('refuses a frame a terminal that isn’t its page’s, or a size that isn’t one', () => {
+  it('tells a frame there is none, for a terminal there isn’t or a size that isn’t one', () => {
     const { terminals, made } = setup()
-    const id = terminals.create(page)
+    const id = terminals.create(PROJECT)
 
-    const stranger = fakePort()
-    terminals.attach({ name: 'other' }, id, stranger, SIZE)
     const unknown = fakePort()
-    terminals.attach(page, `${TERMINAL_ID}nope`, unknown, SIZE)
+    terminals.attach(`${TERMINAL_ID}nope`, unknown, SIZE)
     const unsized = fakePort()
-    terminals.attach(page, id, unsized, { cols: 80 })
+    terminals.attach(id, unsized, { cols: 80 })
     const unnamed = fakePort()
-    terminals.attach(page, { id }, unnamed, SIZE)
+    terminals.attach({ id }, unnamed, SIZE)
 
-    for (const port of [stranger, unknown, unsized, unnamed]) {
+    for (const port of [unknown, unsized, unnamed]) {
       expect(port.sent).toEqual([{ type: 'exit' }])
       expect(port.closed).toBe(true)
     }
@@ -358,7 +366,7 @@ describe('Terminals', () => {
     expect(pty.killed).toBe(0)
     expect(mirror.read).toBe('still here')
     expect(port.sent).toEqual([])
-    expect(terminals.list(page)).toEqual([{ id, title: '' }])
+    expect(terminals.list().map(terminal => terminal.id)).toEqual([id])
   })
 
   it('sends a frame that shows it again the screen as it stands, then what came after', () => {
@@ -368,7 +376,7 @@ describe('Terminals', () => {
     pty.print(' unseen')
 
     const again = fakePort()
-    terminals.attach(page, id, again, { cols: 60, rows: 20 })
+    terminals.attach(id, again, { cols: 60, rows: 20 })
     // Nothing until all that was printed has been read into the copy.
     expect(again.sent).toEqual([])
     pty.print(' meanwhile')
@@ -386,7 +394,7 @@ describe('Terminals', () => {
   it('lets go of the frame that showed it when another does', () => {
     const { terminals, pty, mirror, port, id } = started()
     const next = fakePort()
-    terminals.attach(page, id, next, SIZE)
+    terminals.attach(id, next, SIZE)
     mirror.catchUp()
 
     expect(port.closed).toBe(true)
@@ -439,28 +447,40 @@ describe('Terminals', () => {
     expect(pty.resumed).toBe(1)
   })
 
-  it('tells the page what the program names its terminal, and when it rings', () => {
+  it('tells the pages what the program names its terminal', () => {
     const { made, mirror, terminals, id } = started()
     mirror.title('vim notes.md')
     mirror.title('t'.repeat(500))
-    mirror.bell()
 
-    expect(made.told.map(({ event }) => event.type)).toEqual(['title', 'title', 'bell'])
-    expect(made.told[0]).toEqual({
-      owner: page,
-      id,
-      event: { type: 'title', title: 'vim notes.md' },
-    })
+    expect(made.told[0]).toEqual({ id, event: { type: 'title', title: 'vim notes.md' } })
     expect(made.told[1].event.title).toHaveLength(200)
-    expect(terminals.list(page)[0].title).toHaveLength(200)
+    expect(terminals.list()[0].title).toHaveLength(200)
   })
 
-  it('is gone when its shell ends, and says so to its page and its frame', () => {
+  it('remembers that a terminal rang until a page says it was looked at', () => {
+    const { made, mirror, terminals, id } = started()
+    terminals.seen(id)
+    expect(made.told).toEqual([])
+
+    mirror.bell()
+    expect(terminals.list()[0].rang).toBe(true)
+    terminals.seen(id)
+    terminals.seen(id)
+    terminals.seen('terminal:nope')
+
+    expect(terminals.list()[0].rang).toBe(false)
+    expect(made.told).toEqual([
+      { id, event: { type: 'bell' } },
+      { id, event: { type: 'seen' } },
+    ])
+  })
+
+  it('is gone when its shell ends, and says so to the pages and its frame', () => {
     const { terminals, made, pty, mirror, port, id } = started()
     pty.exit()
 
-    expect(terminals.list(page)).toEqual([])
-    expect(made.told).toEqual([{ owner: page, id, event: { type: 'exit' } }])
+    expect(terminals.list()).toEqual([])
+    expect(made.told).toEqual([{ id, event: { type: 'exit' } }])
     expect(port.sent.at(-1)).toEqual({ type: 'exit' })
     expect(port.closed).toBe(true)
     expect(mirror.disposed).toBe(1)
@@ -474,53 +494,52 @@ describe('Terminals', () => {
         throw new Error('no such shell')
       },
     })
-    const id = terminals.create(page)
+    const id = terminals.create(PROJECT)
     const port = fakePort()
-    terminals.attach(page, id, port, SIZE)
+    terminals.attach(id, port, SIZE)
 
-    expect(made.told).toEqual([{ owner: page, id, event: { type: 'exit', failed: true } }])
-    expect(terminals.list(page)).toEqual([])
+    expect(made.told.at(-1)).toEqual({ id, event: { type: 'exit', failed: true } })
+    expect(terminals.list()).toEqual([])
     expect(port.closed).toBe(true)
     error.mockRestore()
   })
 
-  it('hangs up on the shell when its page ends it, without a word back', () => {
+  it('hangs up on the shell when a page ends it, and tells the pages once', () => {
     const { terminals, made, pty, mirror, port, id } = started()
-    terminals.close({ name: 'other' }, id)
+    terminals.close('terminal:nope')
     expect(pty.killed).toBe(0)
 
-    terminals.close(page, id)
+    terminals.close(id)
     expect(pty.killed).toBe(1)
     expect(mirror.disposed).toBe(1)
     expect(port.closed).toBe(true)
-    expect(terminals.list(page)).toEqual([])
+    expect(terminals.list()).toEqual([])
     // The shell's own end, coming after, is of a terminal already gone.
     pty.exit()
     pty.print('late')
-    expect(made.told).toEqual([])
+    terminals.close(id)
+    expect(made.told).toEqual([{ id, event: { type: 'exit' } }])
   })
 
   it('ends a terminal no frame ever showed', () => {
     const { terminals, made } = setup()
-    const id = terminals.create(page)
-    terminals.close(page, id)
-    expect(terminals.list(page)).toEqual([])
+    const id = terminals.create(PROJECT)
+    terminals.close(id)
+    expect(terminals.list()).toEqual([])
     expect(made.ptys).toHaveLength(0)
   })
 
-  it('ends every terminal of a page, or every one there is', () => {
+  it('ends every terminal as the app quits, with nobody left to tell', () => {
     const { terminals, made } = setup()
-    const other = { name: 'other' }
-    for (const owner of [page, page, other]) {
-      terminals.attach(owner, terminals.create(owner), fakePort(), SIZE)
+    for (const project of [PROJECT, PROJECT, 'story_2']) {
+      terminals.attach(terminals.create(project), fakePort(), SIZE)
     }
-
-    terminals.closeAll(page)
-    expect(made.ptys.map(pty => pty.killed)).toEqual([1, 1, 0])
-    expect(terminals.list(other)).toHaveLength(1)
+    made.told.length = 0
 
     terminals.closeAll()
     expect(made.ptys.map(pty => pty.killed)).toEqual([1, 1, 1])
+    expect(terminals.list()).toEqual([])
+    expect(made.told).toEqual([])
   })
 })
 
@@ -556,89 +575,87 @@ describe('handleTerminals', () => {
     vi.mocked(app.on).mockClear()
   })
 
-  /** The bridge's calls, answered over terminals of fakes. */
+  /** A window's page. */
+  const window = () => ({ send: vi.fn() })
+
+  /** The bridge's calls, answered over terminals of fakes, with two windows open. */
   function bridge() {
-    const { terminals, made } = setup()
+    const made = { ptys: [] }
+    const pages = [window(), window()]
     /** @type {Record<string, Function>} */
     const calls = {}
     handleTerminals({
       handle: (channel, answer) => (calls[channel] = answer),
       ipcMain,
       origin: 'app://inksprite',
-      terminals,
+      pages: () => pages,
     })
     const attach = vi
       .mocked(ipcMain.on)
       .mock.calls.find(([channel]) => channel === 'terminal:attach')
-    return { terminals, made, calls, attach: attach[1] }
+    return { made, pages, calls, attach: attach[1] }
   }
 
-  const sender = () => ({ once: vi.fn(), isDestroyed: () => false, send: vi.fn() })
   const top = { url: 'app://inksprite/', parent: null }
   const frame = { url: `${TERMINAL_ORIGIN}/?id=x`, parent: top }
 
-  it('makes, lists and ends a page’s terminals', () => {
-    const { calls } = bridge()
-    const window = sender()
-    const id = calls['terminal:create']({ sender: window })
+  it('makes a terminal in a project, and tells every window', () => {
+    const { calls, pages } = bridge()
+    const id = calls['terminal:create']({}, 'story_1')
 
-    expect(calls['terminal:list']({ sender: window })).toEqual([{ id, title: '' }])
-    expect(calls['terminal:list']({ sender: sender() })).toEqual([])
-    calls['terminal:close']({ sender: window }, id)
-    expect(calls['terminal:list']({ sender: window })).toEqual([])
+    expect(calls['terminal:list']({})).toEqual([{ id, project: 'story_1', title: '', rang: false }])
+    for (const page of pages) {
+      expect(page.send).toHaveBeenCalledWith('terminal:event', id, {
+        type: 'made',
+        project: 'story_1',
+      })
+    }
   })
 
-  it('ends a page’s terminals when its window goes, waiting for that once', () => {
-    const { calls } = bridge()
-    const window = sender()
-    calls['terminal:create']({ sender: window })
-    calls['terminal:create']({ sender: window })
+  it('ends a terminal for any window, and tells every window', () => {
+    const { calls, pages } = bridge()
+    const id = calls['terminal:create']({}, 'story_1')
+    calls['terminal:close']({}, id)
 
-    expect(window.once).toHaveBeenCalledTimes(1)
-    const [event, gone] = window.once.mock.calls[0]
-    expect(event).toBe('destroyed')
-    gone()
-    expect(calls['terminal:list']({ sender: window })).toEqual([])
+    expect(calls['terminal:list']({})).toEqual([])
+    for (const page of pages) {
+      expect(page.send).toHaveBeenLastCalledWith('terminal:event', id, { type: 'exit' })
+    }
   })
 
-  it('joins the terminal’s frame to its terminal', () => {
-    const { calls, made, attach } = bridge()
-    const window = sender()
-    const id = calls['terminal:create']({ sender: window })
+  it('keeps a terminal when no window is open to tell', () => {
+    const { calls, pages } = bridge()
+    const id = calls['terminal:create']({}, 'story_1')
+    pages.length = 0
+
+    expect(calls['terminal:list']({}).map(terminal => terminal.id)).toEqual([id])
+  })
+
+  it('hands no frame but the terminal’s a terminal, the page least of all', () => {
+    const { calls, attach } = bridge()
+    const id = calls['terminal:create']({}, 'story_1')
     const port = fakePort()
 
-    attach({ sender: window, senderFrame: frame, ports: [port] }, { id, ...SIZE })
-    expect(made.ptys).toHaveLength(1)
-    expect(port.closed).toBe(false)
-  })
-
-  it('hands no other frame a terminal, the page least of all', () => {
-    const { calls, made, attach } = bridge()
-    const window = sender()
-    const id = calls['terminal:create']({ sender: window })
-    const port = fakePort()
-
-    attach({ sender: window, senderFrame: top, ports: [port] }, { id, ...SIZE })
+    attach({ senderFrame: top, ports: [port] }, { id, ...SIZE })
     expect(port.closed).toBe(true)
     expect(port.sent).toEqual([])
-    expect(made.ptys).toHaveLength(0)
 
-    // Nor without a port, nor with nothing said.
-    attach({ sender: window, senderFrame: frame, ports: [] }, { id, ...SIZE })
+    // Nor is anything done without a port, and a frame that says nothing is
+    // told there is no terminal.
+    attach({ senderFrame: frame, ports: [] }, { id, ...SIZE })
     const unsaid = fakePort()
-    attach({ sender: window, senderFrame: frame, ports: [unsaid] }, undefined)
+    attach({ senderFrame: frame, ports: [unsaid] }, undefined)
     expect(unsaid.closed).toBe(true)
-    expect(made.ptys).toHaveLength(0)
+    expect(unsaid.sent).toEqual([{ type: 'exit' }])
   })
 
   it('ends every terminal as the app quits', () => {
-    const { calls, made, attach } = bridge()
-    const window = sender()
-    const id = calls['terminal:create']({ sender: window })
-    attach({ sender: window, senderFrame: frame, ports: [fakePort()] }, { id, ...SIZE })
+    const { calls } = bridge()
+    calls['terminal:create']({}, 'story_1')
+    calls['terminal:create']({}, 'story_2')
 
     const quit = vi.mocked(app.on).mock.calls.find(([event]) => event === 'will-quit')
     quit[1]()
-    expect(made.ptys[0].killed).toBe(1)
+    expect(calls['terminal:list']({})).toEqual([])
   })
 })
