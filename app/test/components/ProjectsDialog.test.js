@@ -81,6 +81,32 @@ describe('ProjectsDialog', () => {
     expect(cells).toEqual(['Apple', '3h ago', 'Jan 15, 2026'])
   })
 
+  it('counts how long ago from when it is opened, however long it has been there', async () => {
+    vi.useFakeTimers()
+    try {
+      // There since the app started, ten minutes after a project was edited.
+      vi.setSystemTime(now)
+      projects.rows.value = [
+        ...projects.rows.value,
+        { id: 'd', name: 'Damson', edited: now - HOUR / 6, created: now - HOUR },
+      ]
+      const wrapper = mount(ProjectsDialog, {
+        props: { visible: false, storyId: 'b' },
+        global: { plugins: [PrimeVue], stubs: { Dialog }, directives: { tooltip: {} } },
+      })
+      // Opened half an hour on, before the minute has next come round for it.
+      vi.setSystemTime(now + HOUR / 2)
+      await wrapper.setProps({ visible: true })
+      await flushPromises()
+
+      const edited = id => wrapper.findAll(`[data-project="${id}"] td`)[1].text()
+      expect(edited('d')).toBe('40m ago')
+      expect(edited('b')).toBe('1h ago')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('reads the list again each time it opens, and starts over', async () => {
     const wrapper = await mountDialog()
     expect(projects.refresh).toHaveBeenCalledTimes(1)

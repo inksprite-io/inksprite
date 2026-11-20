@@ -259,7 +259,7 @@ const appState = useApplicationState()
 const cloud = useCloudSync()
 const toast = useToast()
 const { block } = useBlocking()
-const { formatRelativeTime } = useReactiveTime()
+const { now, formatRelativeTime } = useReactiveTime()
 
 /** @type {import('vue').Ref<{ mask?: HTMLElement }|null>} */
 const dialog = ref(null)
@@ -458,11 +458,14 @@ watch([query, order], () => {
   chosenId.value = null
 })
 
-// Opened, it starts over, and reads again what other windows may have changed.
+// Opened, it starts over, and reads again what other windows may have
+// changed. It is there from the app's start, so the time its "ago"s count
+// from is taken as it opens, not when the minute next comes round.
 watch(
   () => props.visible,
   visible => {
     if (!visible) return
+    now.value = Date.now()
     query.value = ''
     chosenId.value = null
     projects.lookElsewhere()
