@@ -316,1211 +316,1211 @@
 - [NODE_NAMES][312]
 - [MARK_NAMES][313]
 - [schema][314]
-- [editor/markdown][315]
-- [formulaInline][316]
+- [stores/migrations/commentThreads][315]
+- [threadsOffText][316]
   - [Parameters][317]
-- [formulaInline][318]
+- [threadsOffText][318]
   - [Parameters][319]
-- [closeOn][320]
-  - [Parameters][321]
-- [formulaBlock][322]
-  - [Parameters][323]
-- [lines][324]
-- [lines][325]
-- [cellsIn][326]
-  - [Parameters][327]
-- [tokenizerOf][328]
-- [block][329]
-- [block][330]
-- [top][331]
-- [split][332]
-- [state][333]
+- [editor/comments][320]
+- [Threads][321]
+- [FoundComment][322]
+  - [Properties][323]
+- [MarkupToken][324]
+  - [Properties][325]
+- [OPEN_MARKUP][326]
+- [OPEN_MARKUP][327]
+- [ParsedMarkup][328]
+- [TOKEN_PATTERN][329]
+- [CLOSE_PATTERN][330]
+- [newCommentId][331]
+- [BREAK_PATTERN][332]
+- [closeMarkup][333]
   - [Parameters][334]
-- [state][335]
+- [cleanComment][335]
   - [Parameters][336]
-- [state][337]
+- [commentOf][337]
   - [Parameters][338]
-- [state][339]
+- [parseMarkup][339]
   - [Parameters][340]
-- [state][341]
-  - [Parameters][342]
-- [state][343]
-  - [Parameters][344]
-- [state][345]
-  - [Parameters][346]
-- [][347]
-- [][348]
-- [TAIL][349]
-- [ROOM][350]
-- [DELIMITED][351]
-- [spacesAsNeighbours][352]
-  - [Parameters][353]
-- [children][354]
-- [children][355]
-- [LinearSerializer][356]
-  - [serialize][357]
-    - [Parameters][358]
-  - [write][359]
-    - [Parameters][360]
-- [dollars][361]
-- [dollars][362]
-- [dollars][363]
-  - [Parameters][364]
-- [][365]
-- [DOLLAR_MARKS][366]
-- [DOLLAR_MARKS][367]
-- [dollarsResolved][368]
-  - [Parameters][369]
-- [opensFormula][370]
-  - [Parameters][371]
-- [dollarsIn][372]
-  - [Parameters][373]
-- [][374]
-- [][375]
-- [BETWEEN_DOLLARS][376]
-- [writtenFormula][377]
+- [stack][341]
+- [stack][342]
+- [pairs][343]
+- [pop][344]
+- [pop][345]
+- [tokens][346]
+- [runs][347]
+- [runs][348]
+- [runs][349]
+- [get][350]
+- [get][351]
+- [get][352]
+- [get][353]
+- [Span][354]
+- [renderMarkup][355]
+  - [Parameters][356]
+- [pop][357]
+- [pop][358]
+- [open][359]
+- [open][360]
+- [open][361]
+- [open][362]
+- [open][363]
+- [joinRuns][364]
+  - [Parameters][365]
+- [joined][366]
+- [joined][367]
+- [last][368]
+- [markupOffset][369]
+  - [Parameters][370]
+- [changeStretch][371]
+  - [Parameters][372]
+- [withoutRuns][373]
+  - [Parameters][374]
+- [findComments][375]
+  - [Parameters][376]
+- [settleComments][377]
   - [Parameters][378]
-- [writtenFormulaBlock][379]
+- [withoutComments][379]
   - [Parameters][380]
-- [ENTITY][381]
-- [AUTOLINK][382]
-- [escapeMore][383]
-  - [Parameters][384]
-- [endsLine][385]
-  - [Parameters][386]
-- [withBlockSuggestions][387]
-  - [Parameters][388]
-- [withBlockSuggestions][389]
-  - [Parameters][390]
-- [type][391]
-- [type][392]
-- [][393]
-- [][394]
-- [serializer][395]
-- [][396]
-- [][397]
-- [cells][398]
-- [rowOf][399]
-  - [Parameters][400]
-- [ruleOf][401]
-  - [Parameters][402]
-- [parseMarkdown][403]
-  - [Parameters][404]
-- [serializeMarkdown][405]
-  - [Parameters][406]
-- [settleMarkdown][407]
-  - [Parameters][408]
-- [appendBlocks][409]
-  - [Parameters][410]
-- [stores/migrations/commentThreads][411]
-- [threadsOffText][412]
+- [HALF_PATTERN][381]
+- [quoteWithoutComments][382]
+  - [Parameters][383]
+- [nearest][384]
+  - [Parameters][385]
+- [nearest][386]
+  - [Parameters][387]
+- [editAroundComments][388]
+  - [Parameters][389]
+- [lost][390]
+- [lost][391]
+- [spans][392]
+- [spans][393]
+- [rewriteAroundComments][394]
+  - [Parameters][395]
+- [placed][396]
+- [countComments][397]
+  - [Parameters][398]
+- [CONTEXT_CHARS][399]
+- [newPost][400]
+  - [Parameters][401]
+- [authorOf][402]
+  - [Parameters][403]
+- [suggesterOf][404]
+  - [Parameters][405]
+- [newThread][406]
+  - [Parameters][407]
+- [placedIds][408]
+  - [Parameters][409]
+- [threadState][410]
+  - [Parameters][411]
+- [wordsAround][412]
   - [Parameters][413]
-- [threadsOffText][414]
+- [suggestionPlaced][414]
   - [Parameters][415]
-- [editor/comments][416]
-- [Threads][417]
-- [FoundComment][418]
-  - [Properties][419]
-- [MarkupToken][420]
-  - [Properties][421]
-- [OPEN_MARKUP][422]
-- [OPEN_MARKUP][423]
-- [ParsedMarkup][424]
-- [TOKEN_PATTERN][425]
-- [CLOSE_PATTERN][426]
-- [newCommentId][427]
-- [BREAK_PATTERN][428]
-- [closeMarkup][429]
+- [settleThreads][416]
+  - [Parameters][417]
+- [next][418]
+- [next][419]
+- [next][420]
+- [liftThreads][421]
+  - [Parameters][422]
+- [withThreadsOnly][423]
+  - [Parameters][424]
+- [countOpen][425]
+  - [Parameters][426]
+- [sameThread][427]
+  - [Parameters][428]
+- [said][429]
   - [Parameters][430]
-- [cleanComment][431]
+- [placeThread][431]
   - [Parameters][432]
-- [commentOf][433]
-  - [Parameters][434]
-- [parseMarkup][435]
-  - [Parameters][436]
-- [stack][437]
-- [stack][438]
-- [pairs][439]
-- [pop][440]
-- [pop][441]
-- [tokens][442]
-- [runs][443]
-- [runs][444]
-- [runs][445]
-- [get][446]
-- [get][447]
-- [get][448]
-- [get][449]
-- [Span][450]
-- [renderMarkup][451]
+- [spots][433]
+- [commentOn][434]
+  - [Parameters][435]
+- [PlacedThread][436]
+  - [Properties][437]
+- [readableText][438]
+  - [Parameters][439]
+- [WIDEN_STEP][440]
+- [passageInText][441]
+  - [Parameters][442]
+- [][443]
+- [withoutComment][444]
+  - [Parameters][445]
+- [CommentRange][446]
+- [runsOver][447]
+  - [Parameters][448]
+- [ranges][449]
+- [going][450]
+- [commentRanges][451]
   - [Parameters][452]
-- [pop][453]
-- [pop][454]
-- [open][455]
-- [open][456]
-- [open][457]
-- [open][458]
-- [open][459]
-- [joinRuns][460]
-  - [Parameters][461]
-- [joined][462]
-- [joined][463]
-- [last][464]
-- [markupOffset][465]
-  - [Parameters][466]
-- [changeStretch][467]
-  - [Parameters][468]
-- [withoutRuns][469]
-  - [Parameters][470]
-- [findComments][471]
-  - [Parameters][472]
-- [settleComments][473]
-  - [Parameters][474]
-- [withoutComments][475]
-  - [Parameters][476]
-- [HALF_PATTERN][477]
-- [quoteWithoutComments][478]
+- [pieces][453]
+- [pieces][454]
+- [pieces][455]
+- [pieces][456]
+- [pieces][457]
+- [keepComments][458]
+  - [Parameters][459]
+- [][460]
+- [nodes][461]
+- [commentAround][462]
+  - [Parameters][463]
+- [CommentEntry][464]
+  - [Properties][465]
+- [entriesOf][466]
+  - [Parameters][467]
+- [entriesOf][468]
+  - [Parameters][469]
+- [commentsInDoc][470]
+  - [Parameters][471]
+- [commentsGone][472]
+  - [Parameters][473]
+- [commentsInMarkdown][474]
+  - [Parameters][475]
+- [plainPassage][476]
+  - [Parameters][477]
+- [closeOf][478]
   - [Parameters][479]
-- [nearest][480]
-  - [Parameters][481]
-- [nearest][482]
-  - [Parameters][483]
-- [editAroundComments][484]
-  - [Parameters][485]
-- [lost][486]
-- [lost][487]
-- [spans][488]
-- [spans][489]
-- [rewriteAroundComments][490]
-  - [Parameters][491]
-- [placed][492]
-- [countComments][493]
+- [CommentCount][480]
+- [commentMarkupPlugin][481]
+  - [Parameters][482]
+- [counts][483]
+- [counts][484]
+- [countOf][485]
+  - [Parameters][486]
+- [countOf][487]
+  - [Parameters][488]
+- [top][489]
+- [split][490]
+- [state][491]
+  - [Parameters][492]
+- [state][493]
   - [Parameters][494]
-- [CONTEXT_CHARS][495]
-- [newPost][496]
-  - [Parameters][497]
-- [authorOf][498]
-  - [Parameters][499]
-- [suggesterOf][500]
-  - [Parameters][501]
-- [newThread][502]
-  - [Parameters][503]
-- [placedIds][504]
-  - [Parameters][505]
-- [threadState][506]
-  - [Parameters][507]
-- [wordsAround][508]
+- [state][495]
+  - [Parameters][496]
+- [state][497]
+  - [Parameters][498]
+- [state][499]
+  - [Parameters][500]
+- [state][501]
+  - [Parameters][502]
+- [state][503]
+  - [Parameters][504]
+- [loose][505]
+- [loose][506]
+- [stores/migrations/profiles][507]
+- [builtInFor][508]
   - [Parameters][509]
-- [suggestionPlaced][510]
+- [profileFrom][510]
   - [Parameters][511]
-- [settleThreads][512]
+- [promptsToProfiles][512]
   - [Parameters][513]
-- [next][514]
-- [next][515]
-- [next][516]
-- [liftThreads][517]
-  - [Parameters][518]
-- [withThreadsOnly][519]
+- [chatsToProfiles][514]
+  - [Parameters][515]
+- [storiesToProfiles][516]
+  - [Parameters][517]
+- [stores/migrations/summariesInPlace][518]
+- [stoodFor][519]
   - [Parameters][520]
-- [countOpen][521]
+- [stoodFor][521]
   - [Parameters][522]
-- [sameThread][523]
+- [placeChat][523]
   - [Parameters][524]
-- [said][525]
-  - [Parameters][526]
-- [placeThread][527]
-  - [Parameters][528]
-- [spots][529]
-- [commentOn][530]
-  - [Parameters][531]
-- [PlacedThread][532]
-  - [Properties][533]
-- [readableText][534]
-  - [Parameters][535]
-- [WIDEN_STEP][536]
-- [passageInText][537]
-  - [Parameters][538]
-- [][539]
-- [withoutComment][540]
+- [targets][525]
+- [targets][526]
+- [order][527]
+- [moved][528]
+- [moved][529]
+  - [Parameters][530]
+- [summariesIntoPlace][531]
+  - [Parameters][532]
+- [chats][533]
+- [changed][534]
+- [changed][535]
+- [stores/migrations/purgeDeleted][536]
+- [FLAGGED_TABLES][537]
+- [Purged][538]
+  - [Properties][539]
+- [withoutDeleted][540]
   - [Parameters][541]
-- [CommentRange][542]
-- [runsOver][543]
+- [goneFiles][542]
+- [deletedIds][543]
   - [Parameters][544]
-- [ranges][545]
-- [going][546]
-- [commentRanges][547]
+- [stores/migrations/profileSkills][545]
+- [RENAMED][546]
+- [rolesToSkills][547]
   - [Parameters][548]
-- [pieces][549]
-- [pieces][550]
-- [pieces][551]
-- [pieces][552]
-- [pieces][553]
-- [keepComments][554]
-  - [Parameters][555]
-- [][556]
-- [nodes][557]
-- [commentAround][558]
+- [skills][549]
+- [][550]
+- [stores/migrations/jobWorkflows][551]
+- [rolesToWorkflows][552]
+  - [Parameters][553]
+- [stores/migrations/modelKeeps][554]
+- [withoutModelKeeps][555]
+  - [Parameters][556]
+- [stores/migrations/allowedProviders][557]
+- [allowedProvidersToPresets][558]
   - [Parameters][559]
-- [CommentEntry][560]
-  - [Properties][561]
-- [entriesOf][562]
-  - [Parameters][563]
-- [entriesOf][564]
-  - [Parameters][565]
-- [commentsInDoc][566]
-  - [Parameters][567]
-- [commentsGone][568]
-  - [Parameters][569]
-- [commentsInMarkdown][570]
-  - [Parameters][571]
-- [plainPassage][572]
-  - [Parameters][573]
-- [closeOf][574]
-  - [Parameters][575]
-- [CommentCount][576]
-- [commentMarkupPlugin][577]
-  - [Parameters][578]
-- [counts][579]
-- [counts][580]
-- [countOf][581]
+- [stores/migrations/experimentalSkills][560]
+- [withExperimentalOff][561]
+  - [Parameters][562]
+- [experimentalOffChats][563]
+  - [Parameters][564]
+- [experimentalOffProfiles][565]
+  - [Parameters][566]
+- [stores/migrations/projectViews][567]
+- [VIEW_FIELDS][568]
+- [viewsOffStories][569]
+  - [Parameters][570]
+- [views][571]
+- [view][572]
+- [view][573]
+  - [Parameters][574]
+- [utils/backupArchive][575]
+- [MANIFEST][576]
+- [BYTES][577]
+  - [BYTES][578]
+  - [BYTES][579]
+- [ENTRY_CHARS][580]
+- [writeArchive][581]
   - [Parameters][582]
-- [countOf][583]
-  - [Parameters][584]
-- [loose][585]
-- [loose][586]
-- [stores/migrations/profiles][587]
-- [builtInFor][588]
+- [named][583]
+- [named][584]
+  - [Parameters][585]
+- [ZipEntry][586]
+  - [Properties][587]
+- [isArchive][588]
   - [Parameters][589]
-- [profileFrom][590]
+- [isZip][590]
   - [Parameters][591]
-- [promptsToProfiles][592]
+- [readArchive][592]
   - [Parameters][593]
-- [chatsToProfiles][594]
-  - [Parameters][595]
-- [storiesToProfiles][596]
-  - [Parameters][597]
-- [stores/migrations/summariesInPlace][598]
-- [stoodFor][599]
+- [tables][594]
+- [][595]
+- [entries][596]
+- [dataStart][597]
+  - [Parameters][598]
+- [blobOf][599]
   - [Parameters][600]
-- [stoodFor][601]
-  - [Parameters][602]
-- [placeChat][603]
-  - [Parameters][604]
-- [targets][605]
-- [targets][606]
-- [order][607]
-- [moved][608]
-- [moved][609]
-  - [Parameters][610]
-- [summariesIntoPlace][611]
-  - [Parameters][612]
-- [chats][613]
-- [changed][614]
-- [changed][615]
-- [stores/migrations/purgeDeleted][616]
-- [FLAGGED_TABLES][617]
-- [Purged][618]
-  - [Properties][619]
-- [withoutDeleted][620]
-  - [Parameters][621]
-- [goneFiles][622]
-- [deletedIds][623]
-  - [Parameters][624]
-- [stores/migrations/profileSkills][625]
-- [RENAMED][626]
-- [rolesToSkills][627]
-  - [Parameters][628]
-- [skills][629]
-- [][630]
-- [stores/migrations/jobWorkflows][631]
-- [rolesToWorkflows][632]
-  - [Parameters][633]
-- [stores/migrations/modelKeeps][634]
-- [withoutModelKeeps][635]
+- [MOST_ENTRY][601]
+- [bytesOf][602]
+  - [Parameters][603]
+- [inflateSync][604]
+- [textOf][605]
+  - [Parameters][606]
+- [utils/chatTabs][607]
+- [ChatText][608]
+- [CHAT_TEXT_TITLES][609]
+- [chatTabId][610]
+  - [Parameters][611]
+- [chatTabOf][612]
+  - [Parameters][613]
+- [match][614]
+- [match][615]
+- [match][616]
+- [skillTabId][617]
+  - [Parameters][618]
+- [skillTabOf][619]
+  - [Parameters][620]
+- [utils/chatTitle][621]
+- [DEFAULT_CHAT_TITLE][622]
+- [EARLIER_DEFAULTS][623]
+- [isDefaultChatTitle][624]
+  - [Parameters][625]
+- [shownChatTitle][626]
+  - [Parameters][627]
+- [][628]
+- [plainLine][629]
+  - [Parameters][630]
+- [plainTitle][631]
+  - [Parameters][632]
+- [plainTitle][633]
+  - [Parameters][634]
+- [chatPreview][635]
   - [Parameters][636]
-- [stores/migrations/allowedProviders][637]
-- [allowedProvidersToPresets][638]
+- [utils/compareNames][637]
+- [compareNames][638]
   - [Parameters][639]
-- [stores/migrations/experimentalSkills][640]
-- [withExperimentalOff][641]
-  - [Parameters][642]
-- [experimentalOffChats][643]
-  - [Parameters][644]
-- [experimentalOffProfiles][645]
-  - [Parameters][646]
-- [stores/migrations/projectViews][647]
-- [VIEW_FIELDS][648]
-- [viewsOffStories][649]
-  - [Parameters][650]
-- [views][651]
-- [view][652]
-- [view][653]
-  - [Parameters][654]
-- [utils/backupArchive][655]
-- [MANIFEST][656]
-- [BYTES][657]
-  - [BYTES][658]
-  - [BYTES][659]
-- [ENTRY_CHARS][660]
-- [writeArchive][661]
+- [utils/dataUrl][640]
+- [DATA_URL][641]
+- [decodeDataPayload][642]
+  - [Parameters][643]
+- [bytesOfDataUrl][644]
+  - [Parameters][645]
+- [utils/diff][646]
+- [Step][647]
+- [diffSequences][648]
+  - [Parameters][649]
+- [steps][650]
+- [shortestEdit][651]
+  - [Parameters][652]
+- [trace][653]
+- [at][654]
+  - [Parameters][655]
+- [deletionsFirst][656]
+  - [Parameters][657]
+- [added][658]
+- [Chunk][659]
+  - [Properties][660]
+- [diff3][661]
   - [Parameters][662]
-- [named][663]
-- [named][664]
+- [chunks][663]
+- [matches][664]
   - [Parameters][665]
-- [ZipEntry][666]
-  - [Properties][667]
-- [isArchive][668]
+- [pairUp][666]
+  - [Parameters][667]
+- [sharedCount][668]
   - [Parameters][669]
-- [isZip][670]
-  - [Parameters][671]
-- [readArchive][672]
-  - [Parameters][673]
-- [tables][674]
-- [][675]
-- [entries][676]
-- [dataStart][677]
-  - [Parameters][678]
-- [blobOf][679]
+- [utils/documentEdits][670]
+- [DOCUMENT_EDIT_OPTIONS][671]
+- [utils/documentLinks][672]
+- [ELSEWHERE][673]
+- [ELSEWHERE][674]
+- [LinkTree][675]
+  - [Properties][676]
+- [ORDER_PREFIX][677]
+- [UNSAFE_IN_LINK][678]
+- [isDocumentHref][679]
   - [Parameters][680]
-- [MOST_ENTRY][681]
-- [bytesOf][682]
-  - [Parameters][683]
-- [inflateSync][684]
-- [textOf][685]
+- [unwrap][681]
+  - [Parameters][682]
+- [pathOf][683]
+  - [Parameters][684]
+- [fileNameOf][685]
   - [Parameters][686]
-- [utils/chatTabs][687]
-- [ChatText][688]
-- [CHAT_TEXT_TITLES][689]
-- [chatTabId][690]
-  - [Parameters][691]
-- [chatTabOf][692]
-  - [Parameters][693]
-- [match][694]
-- [match][695]
-- [match][696]
-- [skillTabId][697]
-  - [Parameters][698]
-- [skillTabOf][699]
-  - [Parameters][700]
-- [utils/chatTitle][701]
-- [DEFAULT_CHAT_TITLE][702]
-- [EARLIER_DEFAULTS][703]
-- [isDefaultChatTitle][704]
-  - [Parameters][705]
-- [shownChatTitle][706]
-  - [Parameters][707]
-- [][708]
-- [plainLine][709]
+- [stepNameOf][687]
+  - [Parameters][688]
+- [pathNames][689]
+  - [Parameters][690]
+- [namesOf][691]
+  - [Parameters][692]
+- [childNamed][693]
+  - [Parameters][694]
+- [][695]
+- [walk][696]
+  - [Parameters][697]
+- [resolveLink][698]
+  - [Parameters][699]
+- [documentNamed][700]
+  - [Parameters][701]
+- [found][702]
+- [found][703]
+- [][704]
+- [readableHref][705]
+  - [Parameters][706]
+- [lineage][707]
+  - [Parameters][708]
+- [encodeName][709]
   - [Parameters][710]
-- [plainTitle][711]
+- [hrefFor][711]
   - [Parameters][712]
-- [plainTitle][713]
+- [headingHref][713]
   - [Parameters][714]
-- [chatPreview][715]
+- [headingOf][715]
   - [Parameters][716]
-- [utils/compareNames][717]
-- [compareNames][718]
-  - [Parameters][719]
-- [utils/dataUrl][720]
-- [DATA_URL][721]
-- [decodeDataPayload][722]
-  - [Parameters][723]
-- [bytesOfDataUrl][724]
-  - [Parameters][725]
-- [utils/diff][726]
-- [Step][727]
-- [diffSequences][728]
-  - [Parameters][729]
-- [steps][730]
-- [shortestEdit][731]
-  - [Parameters][732]
-- [trace][733]
-- [at][734]
+- [namesHeading][717]
+  - [Parameters][718]
+- [plain][719]
+  - [Parameters][720]
+- [plain][721]
+  - [Parameters][722]
+- [ownHref][723]
+  - [Parameters][724]
+- [linkOnClipboard][725]
+  - [Parameters][726]
+- [projectHref][727]
+  - [Parameters][728]
+- [utils/documentPath][729]
+- [documentTitles][730]
+  - [Parameters][731]
+- [documentTitles][732]
+  - [Parameters][733]
+- [documentPath][734]
   - [Parameters][735]
-- [deletionsFirst][736]
+- [titleKey][736]
   - [Parameters][737]
-- [added][738]
-- [Chunk][739]
-  - [Properties][740]
-- [diff3][741]
-  - [Parameters][742]
-- [chunks][743]
-- [matches][744]
-  - [Parameters][745]
-- [pairUp][746]
-  - [Parameters][747]
-- [sharedCount][748]
-  - [Parameters][749]
-- [utils/documentEdits][750]
-- [DOCUMENT_EDIT_OPTIONS][751]
-- [utils/documentLinks][752]
-- [ELSEWHERE][753]
-- [ELSEWHERE][754]
-- [LinkTree][755]
-  - [Properties][756]
-- [ORDER_PREFIX][757]
-- [UNSAFE_IN_LINK][758]
-- [isDocumentHref][759]
-  - [Parameters][760]
-- [unwrap][761]
-  - [Parameters][762]
-- [pathOf][763]
-  - [Parameters][764]
-- [fileNameOf][765]
-  - [Parameters][766]
-- [stepNameOf][767]
-  - [Parameters][768]
-- [pathNames][769]
-  - [Parameters][770]
-- [namesOf][771]
+- [namesake][738]
+  - [Parameters][739]
+- [freeTitle][740]
+  - [Parameters][741]
+- [utils/edits][742]
+- [CONTEXT_STEP][743]
+- [CONTEXT_STEP][744]
+- [onlyAt][745]
+  - [Parameters][746]
+- [once][747]
+  - [Parameters][748]
+- [leastEnough][749]
+  - [Parameters][750]
+- [diffEdit][751]
+  - [Parameters][752]
+- [placedEdit][753]
+  - [Parameters][754]
+- [padded][755]
+  - [Parameters][756]
+- [][757]
+- [foundOnce][758]
+  - [Parameters][759]
+- [diffAppend][760]
+  - [Parameters][761]
+- [narrowEdit][762]
+  - [Parameters][763]
+- [reverseEdit][764]
+  - [Parameters][765]
+- [applyEdit][766]
+  - [Parameters][767]
+- [keepDecisions][768]
+  - [Parameters][769]
+- [utils/errors][770]
+- [ProviderNotConfiguredError][771]
   - [Parameters][772]
-- [childNamed][773]
+- [ConnectionNeededError][773]
   - [Parameters][774]
-- [][775]
-- [walk][776]
-  - [Parameters][777]
-- [resolveLink][778]
-  - [Parameters][779]
-- [documentNamed][780]
-  - [Parameters][781]
-- [found][782]
-- [found][783]
-- [][784]
-- [readableHref][785]
-  - [Parameters][786]
-- [lineage][787]
-  - [Parameters][788]
-- [encodeName][789]
-  - [Parameters][790]
-- [hrefFor][791]
-  - [Parameters][792]
-- [headingHref][793]
+- [CommandError][775]
+  - [Parameters][776]
+- [CannotApplyError][777]
+  - [Parameters][778]
+- [AnswerFailedError][779]
+  - [Parameters][780]
+- [SummaryCutShortError][781]
+  - [Parameters][782]
+- [failureNotice][783]
+  - [Parameters][784]
+- [utils/focus][785]
+- [isTextField][786]
+  - [Parameters][787]
+- [formatThinkingTime][788]
+  - [Parameters][789]
+- [formatRelativeTime][790]
+  - [Parameters][791]
+- [TOOL_RESULT_PREVIEW_LIMIT][792]
+- [formatToolArguments][793]
   - [Parameters][794]
-- [headingOf][795]
-  - [Parameters][796]
-- [namesHeading][797]
-  - [Parameters][798]
-- [plain][799]
-  - [Parameters][800]
-- [plain][801]
-  - [Parameters][802]
-- [ownHref][803]
-  - [Parameters][804]
-- [linkOnClipboard][805]
-  - [Parameters][806]
-- [projectHref][807]
-  - [Parameters][808]
-- [utils/documentPath][809]
-- [documentTitles][810]
-  - [Parameters][811]
-- [documentTitles][812]
-  - [Parameters][813]
-- [documentPath][814]
-  - [Parameters][815]
-- [titleKey][816]
-  - [Parameters][817]
-- [namesake][818]
-  - [Parameters][819]
-- [freeTitle][820]
-  - [Parameters][821]
-- [utils/edits][822]
-- [CONTEXT_STEP][823]
-- [CONTEXT_STEP][824]
-- [onlyAt][825]
-  - [Parameters][826]
-- [once][827]
-  - [Parameters][828]
-- [leastEnough][829]
-  - [Parameters][830]
-- [diffEdit][831]
-  - [Parameters][832]
-- [placedEdit][833]
-  - [Parameters][834]
-- [padded][835]
+- [PYTHON_RESULT_PREVIEW_LIMIT][795]
+- [formatPythonResult][796]
+  - [Parameters][797]
+- [formatToolResult][798]
+  - [Parameters][799]
+- [utils][800]
+- [Utilities Overview][801]
+  - [Text Processing][802]
+  - [AI Integration][803]
+  - [Chat][804]
+  - [Editor][805]
+  - [Browser][806]
+  - [Storage][807]
+- [Usage Examples][808]
+  - [Examples][809]
+- [utils/lineDiff][810]
+- [CONTEXT][811]
+- [MOST_EDITS][812]
+- [lineDiff][813]
+  - [Parameters][814]
+- [utils/linkUpdates][815]
+- [DESTINATION][816]
+- [DESTINATION][817]
+- [LinkedText][818]
+- [LinkTarget][819]
+- [LinkTargets][820]
+- [mayLink][821]
+  - [Parameters][822]
+- [][823]
+- [destinationsIn][824]
+  - [Parameters][825]
+- [partsOf][826]
+  - [Parameters][827]
+- [partsOf][828]
+  - [Parameters][829]
+- [canonical][830]
+  - [Parameters][831]
+- [linkTargets][832]
+  - [Parameters][833]
+- [went][834]
+- [rewritten][835]
   - [Parameters][836]
-- [][837]
-- [foundOnce][838]
-  - [Parameters][839]
-- [diffAppend][840]
-  - [Parameters][841]
-- [narrowEdit][842]
-  - [Parameters][843]
-- [reverseEdit][844]
-  - [Parameters][845]
-- [applyEdit][846]
-  - [Parameters][847]
-- [keepDecisions][848]
-  - [Parameters][849]
-- [utils/errors][850]
-- [ProviderNotConfiguredError][851]
-  - [Parameters][852]
-- [ConnectionNeededError][853]
-  - [Parameters][854]
-- [CommandError][855]
-  - [Parameters][856]
-- [CannotApplyError][857]
-  - [Parameters][858]
-- [AnswerFailedError][859]
-  - [Parameters][860]
-- [SummaryCutShortError][861]
-  - [Parameters][862]
-- [failureNotice][863]
-  - [Parameters][864]
-- [utils/focus][865]
-- [isTextField][866]
-  - [Parameters][867]
-- [formatThinkingTime][868]
-  - [Parameters][869]
-- [formatRelativeTime][870]
-  - [Parameters][871]
-- [TOOL_RESULT_PREVIEW_LIMIT][872]
-- [formatToolArguments][873]
-  - [Parameters][874]
-- [PYTHON_RESULT_PREVIEW_LIMIT][875]
-- [formatPythonResult][876]
-  - [Parameters][877]
-- [formatToolResult][878]
-  - [Parameters][879]
-- [utils][880]
-- [Utilities Overview][881]
-  - [Text Processing][882]
-  - [AI Integration][883]
-  - [Chat][884]
-  - [Editor][885]
-  - [Browser][886]
-  - [Storage][887]
-- [Usage Examples][888]
-  - [Examples][889]
-- [utils/lineDiff][890]
-- [CONTEXT][891]
-- [MOST_EDITS][892]
-- [lineDiff][893]
-  - [Parameters][894]
-- [utils/linkUpdates][895]
-- [DESTINATION][896]
-- [DESTINATION][897]
-- [LinkedText][898]
-- [LinkTarget][899]
-- [LinkTargets][900]
-- [mayLink][901]
-  - [Parameters][902]
-- [][903]
-- [destinationsIn][904]
-  - [Parameters][905]
-- [partsOf][906]
-  - [Parameters][907]
-- [partsOf][908]
-  - [Parameters][909]
-- [canonical][910]
-  - [Parameters][911]
-- [linkTargets][912]
-  - [Parameters][913]
-- [went][914]
-- [rewritten][915]
+- [relinked][837]
+  - [Parameters][838]
+- [now][839]
+- [utils/localStorage][840]
+- [localStorage][841]
+  - [get][842]
+    - [Parameters][843]
+  - [set][844]
+    - [Parameters][845]
+  - [remove][846]
+    - [Parameters][847]
+- [utils/markdown][848]
+- [SAFE_SCHEMES][849]
+- [escapeHtml][850]
+  - [Parameters][851]
+- [isSafeUrl][852]
+  - [Parameters][853]
+- [mathToken][854]
+  - [Parameters][855]
+- [math][856]
+- [reader][857]
+- [renderMarkdown][858]
+  - [Parameters][859]
+- [stripMarkdown][860]
+  - [Parameters][861]
+- [utils/math][862]
+- [katex][863]
+- [katex][864]
+- [shallowRef][865]
+- [loading][866]
+- [remembered][867]
+- [REMEMBER][868]
+- [OPTIONS][869]
+- [loadMath][870]
+- [mathReady][871]
+- [typesetMath][872]
+  - [Parameters][873]
+- [html][874]
+- [mathError][875]
+  - [Parameters][876]
+- [asWritten][877]
+  - [Parameters][878]
+- [formulaAround][879]
+  - [Parameters][880]
+- [copyTex][881]
+  - [Parameters][882]
+- [event][883]
+- [utils/modelFacts][884]
+- [dollars][885]
+  - [Parameters][886]
+- [dollars][887]
+- [dollars][888]
+- [formatPrice][889]
+  - [Parameters][890]
+- [formatContext][891]
+  - [Parameters][892]
+- [utils/oauth][893]
+- [generateCodeVerifier][894]
+- [generateCodeChallenge][895]
+  - [Parameters][896]
+- [generateState][897]
+- [base64URLEncode][898]
+  - [Parameters][899]
+- [storeOAuthParams][900]
+  - [Parameters][901]
+- [retrieveOAuthParams][902]
+- [authorizationUrl][903]
+  - [Parameters][904]
+- [exchangeCode][905]
+  - [Parameters][906]
+- [utils/obfuscate][907]
+- [UPPER][908]
+- [UPPER][909]
+- [UPPER][910]
+- [ObfuscateOptions][911]
+- [KEPT_KEYS][912]
+- [isKept][913]
+  - [Parameters][914]
+- [scrambleText][915]
   - [Parameters][916]
-- [relinked][917]
+- [scrambleValue][917]
   - [Parameters][918]
-- [now][919]
-- [utils/localStorage][920]
-- [localStorage][921]
-  - [get][922]
-    - [Parameters][923]
-  - [set][924]
-    - [Parameters][925]
-  - [remove][926]
-    - [Parameters][927]
-- [utils/markdown][928]
-- [SAFE_SCHEMES][929]
-- [escapeHtml][930]
+- [scrambleValue][919]
+- [scrambleJsonText][920]
+  - [Parameters][921]
+- [scrambleCommand][922]
+  - [Parameters][923]
+- [scrambleConsultation][924]
+  - [Parameters][925]
+- [scrambleApiMessage][926]
+  - [Parameters][927]
+- [scrambleMetadata][928]
+  - [Parameters][929]
+- [scrambleMessage][930]
   - [Parameters][931]
-- [isSafeUrl][932]
+- [obfuscateBackup][932]
   - [Parameters][933]
-- [mathToken][934]
-  - [Parameters][935]
-- [math][936]
-- [reader][937]
-- [renderMarkdown][938]
+- [settings][934]
+- [utils/partialJson][935]
+- [STRING_BODY][936]
+- [FIELD][937]
+- [decode][938]
   - [Parameters][939]
-- [stripMarkdown][940]
+- [partialStrings][940]
   - [Parameters][941]
-- [utils/math][942]
-- [katex][943]
-- [katex][944]
-- [shallowRef][945]
-- [loading][946]
-- [remembered][947]
-- [REMEMBER][948]
-- [OPTIONS][949]
-- [loadMath][950]
-- [mathReady][951]
-- [typesetMath][952]
+- [PartialField][942]
+- [partialFields][943]
+  - [Parameters][944]
+- [utils/pictures][945]
+- [PICTURES_DIR][946]
+- [ID][947]
+- [PATH][948]
+- [PLAIN][949]
+- [decoded][950]
+  - [Parameters][951]
+- [decoded][952]
   - [Parameters][953]
-- [html][954]
-- [mathError][955]
-  - [Parameters][956]
-- [asWritten][957]
-  - [Parameters][958]
-- [formulaAround][959]
-  - [Parameters][960]
-- [copyTex][961]
-  - [Parameters][962]
-- [event][963]
-- [utils/modelFacts][964]
-- [formatPrice][965]
-  - [Parameters][966]
-- [formatContext][967]
-  - [Parameters][968]
-- [utils/oauth][969]
-- [generateCodeVerifier][970]
-- [generateCodeChallenge][971]
-  - [Parameters][972]
-- [generateState][973]
-- [base64URLEncode][974]
-  - [Parameters][975]
-- [storeOAuthParams][976]
-  - [Parameters][977]
-- [retrieveOAuthParams][978]
-- [authorizationUrl][979]
-  - [Parameters][980]
-- [exchangeCode][981]
-  - [Parameters][982]
-- [utils/obfuscate][983]
-- [UPPER][984]
-- [UPPER][985]
-- [UPPER][986]
-- [ObfuscateOptions][987]
-- [KEPT_KEYS][988]
-- [isKept][989]
-  - [Parameters][990]
-- [scrambleText][991]
-  - [Parameters][992]
-- [scrambleValue][993]
-  - [Parameters][994]
-- [scrambleValue][995]
-- [scrambleJsonText][996]
+- [extensionOf][954]
+  - [Parameters][955]
+- [pictureName][956]
+  - [Parameters][957]
+- [pictureHref][958]
+  - [Parameters][959]
+- [pictureOf][960]
+  - [Parameters][961]
+- [pictureKey][962]
+  - [Parameters][963]
+- [pictureOfKey][964]
+  - [Parameters][965]
+- [picturesIn][966]
+  - [Parameters][967]
+- [keys][968]
+- [keys][969]
+- [keys][970]
+- [keys][971]
+- [keys][972]
+- [][973]
+- [][974]
+- [repointPictures][975]
+  - [Parameters][976]
+- [unreferencedPictures][977]
+  - [Parameters][978]
+- [utils/plainCopy][979]
+- [plainCopy][980]
+  - [Parameters][981]
+- [copyOf][982]
+- [copyOf][983]
+  - [Parameters][984]
+- [utils/projectList][985]
+- [ProjectRow][986]
+  - [Properties][987]
+- [byName][988]
+  - [Parameters][989]
+- [byName][990]
+  - [Parameters][991]
+- [sortProjects][992]
+  - [Parameters][993]
+- [][994]
+- [][995]
+- [recentProjects][996]
   - [Parameters][997]
-- [scrambleCommand][998]
+- [folded][998]
   - [Parameters][999]
-- [scrambleConsultation][1000]
-  - [Parameters][1001]
-- [scrambleApiMessage][1002]
-  - [Parameters][1003]
-- [scrambleMetadata][1004]
+- [folded][1000]
+- [projectsNamed][1001]
+  - [Parameters][1002]
+- [utils/routeHelpers][1003]
+- [storyIdFromRoute][1004]
   - [Parameters][1005]
-- [scrambleMessage][1006]
+- [pushProjectToRoute][1006]
   - [Parameters][1007]
-- [obfuscateBackup][1008]
+- [goToProject][1008]
   - [Parameters][1009]
-- [settings][1010]
-- [utils/partialJson][1011]
-- [STRING_BODY][1012]
-- [FIELD][1013]
-- [decode][1014]
-  - [Parameters][1015]
-- [partialStrings][1016]
-  - [Parameters][1017]
-- [PartialField][1018]
-- [partialFields][1019]
-  - [Parameters][1020]
-- [utils/pictures][1021]
-- [PICTURES_DIR][1022]
-- [ID][1023]
-- [PATH][1024]
-- [PLAIN][1025]
-- [decoded][1026]
+- [replaceProjectInRoute][1010]
+  - [Parameters][1011]
+- [utils/sections][1012]
+- [HEADING][1013]
+- [FENCE][1014]
+- [MarkdownSection][1015]
+  - [Properties][1016]
+- [SectionNode][1017]
+  - [Properties][1018]
+- [linker][1019]
+- [seen][1020]
+- [seen][1021]
+- [wordsOf][1022]
+  - [Parameters][1023]
+- [wordsOf][1024]
+  - [Parameters][1025]
+- [wordsOf][1026]
   - [Parameters][1027]
-- [decoded][1028]
+- [markdownSections][1028]
   - [Parameters][1029]
-- [extensionOf][1030]
-  - [Parameters][1031]
-- [pictureName][1032]
+- [TREE_LIMIT][1030]
+- [LIST_LIMIT][1031]
+- [sectionTree][1032]
   - [Parameters][1033]
-- [pictureHref][1034]
-  - [Parameters][1035]
-- [pictureOf][1036]
+- [roots][1034]
+- [node][1035]
+- [collapse][1036]
   - [Parameters][1037]
-- [pictureKey][1038]
-  - [Parameters][1039]
-- [pictureOfKey][1040]
-  - [Parameters][1041]
-- [picturesIn][1042]
+- [all][1038]
+- [all][1039]
+- [][1040]
+- [][1041]
+- [cut][1042]
   - [Parameters][1043]
-- [keys][1044]
-- [keys][1045]
-- [keys][1046]
-- [keys][1047]
-- [keys][1048]
-- [][1049]
-- [][1050]
-- [repointPictures][1051]
-  - [Parameters][1052]
-- [unreferencedPictures][1053]
-  - [Parameters][1054]
-- [utils/plainCopy][1055]
-- [plainCopy][1056]
-  - [Parameters][1057]
-- [copyOf][1058]
-- [copyOf][1059]
-  - [Parameters][1060]
-- [utils/projectList][1061]
-- [ProjectRow][1062]
-  - [Properties][1063]
-- [byName][1064]
-  - [Parameters][1065]
-- [byName][1066]
-  - [Parameters][1067]
-- [sortProjects][1068]
-  - [Parameters][1069]
-- [][1070]
-- [][1071]
-- [recentProjects][1072]
+- [findSection][1044]
+  - [Parameters][1045]
+- [indexOf][1046]
+  - [Parameters][1047]
+- [lines][1048]
+- [lines][1049]
+- [sectionIndexAt][1050]
+  - [Parameters][1051]
+- [sectionPath][1052]
+  - [Parameters][1053]
+- [utils/sessionStorage][1054]
+- [sessionStorage][1055]
+  - [get][1056]
+    - [Parameters][1057]
+  - [set][1058]
+    - [Parameters][1059]
+  - [remove][1060]
+    - [Parameters][1061]
+- [utils/settingsFile][1062]
+- [SETTINGS_TABLES][1063]
+- [SETTINGS_TABLES][1064]
+- [SettingsTable][1065]
+- [SettingsGroup][1066]
+- [UNPICKED][1067]
+- [KINDS][1068]
+- [GROUP_NAMES][1069]
+- [SettingsItem][1070]
+  - [Properties][1071]
+- [rowId][1072]
   - [Parameters][1073]
-- [folded][1074]
-  - [Parameters][1075]
-- [folded][1076]
-- [projectsNamed][1077]
+- [rowId][1074]
+- [itemKey][1075]
+  - [Parameters][1076]
+- [everyInstallHas][1077]
   - [Parameters][1078]
-- [utils/routeHelpers][1079]
-- [storyIdFromRoute][1080]
-  - [Parameters][1081]
-- [pushProjectToRoute][1082]
-  - [Parameters][1083]
-- [goToProject][1084]
-  - [Parameters][1085]
-- [replaceProjectInRoute][1086]
+- [rowName][1079]
+  - [Parameters][1080]
+- [settingsItems][1081]
+  - [Parameters][1082]
+- [items][1083]
+- [item][1084]
+- [item][1085]
+- [settingsNeeds][1086]
   - [Parameters][1087]
-- [utils/sections][1088]
-- [HEADING][1089]
-- [FENCE][1090]
-- [MarkdownSection][1091]
-  - [Properties][1092]
-- [SectionNode][1093]
-  - [Properties][1094]
-- [linker][1095]
-- [seen][1096]
-- [seen][1097]
-- [wordsOf][1098]
-  - [Parameters][1099]
-- [wordsOf][1100]
+- [needs][1088]
+- [add][1089]
+  - [Parameters][1090]
+- [pickWithNeeds][1091]
+  - [Parameters][1092]
+- [pickSettings][1093]
+  - [Parameters][1094]
+- [chosen][1095]
+- [settingsFilename][1096]
+  - [Parameters][1097]
+- [][1098]
+- [LISTING][1099]
+- [essence][1100]
   - [Parameters][1101]
-- [wordsOf][1102]
+- [stableJson][1102]
   - [Parameters][1103]
-- [markdownSections][1104]
+- [fingerprint][1104]
   - [Parameters][1105]
-- [TREE_LIMIT][1106]
-- [LIST_LIMIT][1107]
-- [sectionTree][1108]
-  - [Parameters][1109]
-- [roots][1110]
-- [node][1111]
-- [collapse][1112]
-  - [Parameters][1113]
-- [all][1114]
-- [all][1115]
-- [][1116]
-- [][1117]
-- [cut][1118]
-  - [Parameters][1119]
-- [findSection][1120]
-  - [Parameters][1121]
-- [indexOf][1122]
-  - [Parameters][1123]
-- [sectionIndexAt][1124]
-  - [Parameters][1125]
-- [sectionPath][1126]
+- [mergeRow][1106]
+  - [Parameters][1107]
+- [][1108]
+- [SettingsImport][1109]
+  - [Properties][1110]
+- [planImport][1111]
+  - [Parameters][1112]
+- [plan][1113]
+- [changesAnything][1114]
+  - [Parameters][1115]
+- [listed][1116]
+  - [Parameters][1117]
+- [NAMED][1118]
+- [itemsInWords][1119]
+  - [Parameters][1120]
+- [itemPhrases][1121]
+  - [Parameters][1122]
+- [phrases][1123]
+- [slice][1124]
+- [][1125]
+- [describeImport][1126]
   - [Parameters][1127]
-- [utils/sessionStorage][1128]
-- [sessionStorage][1129]
-  - [get][1130]
-    - [Parameters][1131]
-  - [set][1132]
-    - [Parameters][1133]
-  - [remove][1134]
-    - [Parameters][1135]
-- [utils/settingsFile][1136]
-- [SETTINGS_TABLES][1137]
-- [SETTINGS_TABLES][1138]
-- [SettingsTable][1139]
-- [SettingsGroup][1140]
-- [UNPICKED][1141]
-- [KINDS][1142]
-- [GROUP_NAMES][1143]
-- [SettingsItem][1144]
-  - [Properties][1145]
-- [rowId][1146]
-  - [Parameters][1147]
-- [rowId][1148]
-- [itemKey][1149]
-  - [Parameters][1150]
-- [everyInstallHas][1151]
-  - [Parameters][1152]
-- [rowName][1153]
-  - [Parameters][1154]
-- [settingsItems][1155]
-  - [Parameters][1156]
-- [items][1157]
-- [item][1158]
-- [item][1159]
-- [settingsNeeds][1160]
-  - [Parameters][1161]
-- [needs][1162]
-- [add][1163]
+- [sentences][1128]
+- [sentences][1129]
+- [describeSelection][1130]
+  - [Parameters][1131]
+- [ai/providers][1132]
+- [ProviderType][1133]
+  - [Properties][1134]
+- [SignIn][1135]
+  - [Properties][1136]
+- [ProviderKind][1137]
+- [PROVIDER_TYPES][1138]
+- [BUILT_IN_PROVIDERS][1139]
+- [DEFAULT_SPEECH_PROVIDER_ID][1140]
+- [ConnectionKind][1141]
+  - [Properties][1142]
+- [BUILT_IN_KINDS][1143]
+- [CONNECTION_KINDS][1144]
+  - [][1145]
+  - [][1146]
+- [connectionKind][1147]
+  - [Parameters][1148]
+- [connectionKind][1149]
+- [kindOf][1150]
+  - [Parameters][1151]
+- [untouchedBuiltIn][1152]
+  - [Parameters][1153]
+- [inMenuOrder][1154]
+  - [Parameters][1155]
+- [typeOf][1156]
+  - [Parameters][1157]
+- [providerDoes][1158]
+  - [Parameters][1159]
+- [DEFAULT_PROVIDER_TYPE][1160]
+- [providerLabel][1161]
+  - [Parameters][1162]
+- [knownAddress][1163]
   - [Parameters][1164]
-- [pickWithNeeds][1165]
+- [needsEndpoint][1165]
   - [Parameters][1166]
-- [pickSettings][1167]
+- [needsKey][1167]
   - [Parameters][1168]
-- [chosen][1169]
-- [settingsFilename][1170]
-  - [Parameters][1171]
-- [][1172]
-- [LISTING][1173]
-- [essence][1174]
-  - [Parameters][1175]
-- [stableJson][1176]
-  - [Parameters][1177]
-- [fingerprint][1178]
-  - [Parameters][1179]
-- [mergeRow][1180]
-  - [Parameters][1181]
-- [][1182]
-- [SettingsImport][1183]
-  - [Properties][1184]
-- [planImport][1185]
+- [connectionGap][1169]
+  - [Parameters][1170]
+- [presetProblem][1171]
+  - [Parameters][1172]
+- [canListModels][1173]
+  - [Parameters][1174]
+- [listsPublicly][1175]
+  - [Parameters][1176]
+- [signInOf][1177]
+  - [Parameters][1178]
+- [creditsPage][1179]
+  - [Parameters][1180]
+- [speaksOpenRouterReasoning][1181]
+  - [Parameters][1182]
+- [servesChat][1183]
+  - [Parameters][1184]
+- [takesReasoningEffort][1185]
   - [Parameters][1186]
-- [plan][1187]
-- [changesAnything][1188]
-  - [Parameters][1189]
-- [listed][1190]
-  - [Parameters][1191]
-- [NAMED][1192]
-- [itemsInWords][1193]
-  - [Parameters][1194]
-- [itemPhrases][1195]
-  - [Parameters][1196]
-- [phrases][1197]
-- [slice][1198]
-- [][1199]
-- [describeImport][1200]
-  - [Parameters][1201]
-- [sentences][1202]
-- [sentences][1203]
-- [describeSelection][1204]
+- [takesChatTemplateKwargs][1187]
+  - [Parameters][1188]
+- [AISamplerParameters][1189]
+  - [Properties][1190]
+- [REASONING_EFFORT_OPTIONS][1191]
+- [DEFAULT_PRESET_ID][1192]
+- [AI_DEFAULTS][1193]
+- [resolveAISettings][1194]
+  - [Parameters][1195]
+- [resolveAISettings][1196]
+  - [Parameters][1197]
+- [mergeAISettings][1198]
+  - [Parameters][1199]
+- [TITLE_DEFAULTS][1200]
+- [utils/settingsTree][1201]
+- [settingKey][1202]
+  - [Parameters][1203]
+- [settingKey][1204]
   - [Parameters][1205]
-- [ai/providers][1206]
-- [ProviderType][1207]
-  - [Properties][1208]
-- [SignIn][1209]
-  - [Properties][1210]
-- [ProviderKind][1211]
-- [PROVIDER_TYPES][1212]
-- [BUILT_IN_PROVIDERS][1213]
-- [DEFAULT_SPEECH_PROVIDER_ID][1214]
-- [ConnectionKind][1215]
-  - [Properties][1216]
-- [BUILT_IN_KINDS][1217]
-- [CONNECTION_KINDS][1218]
-  - [][1219]
-  - [][1220]
-- [connectionKind][1221]
-  - [Parameters][1222]
-- [connectionKind][1223]
-- [kindOf][1224]
+- [SettingsNode][1206]
+  - [Properties][1207]
+- [][1208]
+- [itemOf][1209]
+  - [Parameters][1210]
+- [itemOf][1211]
+  - [Parameters][1212]
+- [settingsTree][1213]
+  - [Parameters][1214]
+- [][1215]
+- [leavesOf][1216]
+  - [Parameters][1217]
+- [selectionKeys][1218]
+  - [Parameters][1219]
+- [visit][1220]
+  - [Parameters][1221]
+- [visit][1222]
+  - [Parameters][1223]
+- [tickedLeaves][1224]
   - [Parameters][1225]
-- [untouchedBuiltIn][1226]
+- [pickedSettings][1226]
   - [Parameters][1227]
-- [inMenuOrder][1228]
-  - [Parameters][1229]
-- [typeOf][1230]
-  - [Parameters][1231]
-- [providerDoes][1232]
-  - [Parameters][1233]
-- [DEFAULT_PROVIDER_TYPE][1234]
-- [providerLabel][1235]
-  - [Parameters][1236]
-- [knownAddress][1237]
-  - [Parameters][1238]
-- [needsEndpoint][1239]
-  - [Parameters][1240]
-- [needsKey][1241]
-  - [Parameters][1242]
-- [connectionGap][1243]
-  - [Parameters][1244]
-- [presetProblem][1245]
-  - [Parameters][1246]
-- [canListModels][1247]
-  - [Parameters][1248]
-- [listsPublicly][1249]
-  - [Parameters][1250]
-- [signInOf][1251]
-  - [Parameters][1252]
-- [creditsPage][1253]
-  - [Parameters][1254]
-- [speaksOpenRouterReasoning][1255]
-  - [Parameters][1256]
-- [servesChat][1257]
-  - [Parameters][1258]
-- [takesReasoningEffort][1259]
+- [utils/sharedDocuments][1228]
+- [shareTree][1229]
+  - [Parameters][1230]
+- [shareTree][1231]
+  - [Parameters][1232]
+- [shareTree][1233]
+  - [Parameters][1234]
+- [Sharing][1235]
+- [nodeOf][1236]
+  - [Parameters][1237]
+- [sharingOf][1238]
+  - [Parameters][1239]
+- [sharedWith][1240]
+  - [Parameters][1241]
+- [changes][1242]
+- [utils/siblingOrder][1243]
+- [orderSiblings][1244]
+  - [Parameters][1245]
+- [][1246]
+- [][1247]
+- [][1248]
+- [][1249]
+- [utils/tabs][1250]
+- [Tabs][1251]
+  - [Properties][1252]
+- [NO_TABS][1253]
+- [CLOSED_KEPT][1254]
+- [TabFields][1255]
+  - [Properties][1256]
+- [DOCUMENT_TABS][1257]
+- [CHAT_TABS][1258]
+- [showing][1259]
   - [Parameters][1260]
-- [takesChatTemplateKwargs][1261]
+- [settled][1261]
   - [Parameters][1262]
-- [AISamplerParameters][1263]
-  - [Properties][1264]
-- [REASONING_EFFORT_OPTIONS][1265]
-- [DEFAULT_PRESET_ID][1266]
-- [AI_DEFAULTS][1267]
-- [resolveAISettings][1268]
-  - [Parameters][1269]
-- [resolveAISettings][1270]
-  - [Parameters][1271]
-- [mergeAISettings][1272]
-  - [Parameters][1273]
-- [TITLE_DEFAULTS][1274]
-- [utils/settingsTree][1275]
-- [settingKey][1276]
-  - [Parameters][1277]
-- [settingKey][1278]
-  - [Parameters][1279]
-- [SettingsNode][1280]
-  - [Properties][1281]
-- [][1282]
-- [itemOf][1283]
+- [tabsOf][1263]
+  - [Parameters][1264]
+- [tabsPatch][1265]
+  - [Parameters][1266]
+- [normalizeTabs][1267]
+  - [Parameters][1268]
+- [openTab][1269]
+  - [Parameters][1270]
+- [keepTab][1271]
+  - [Parameters][1272]
+- [moveTab][1273]
+  - [Parameters][1274]
+- [without][1275]
+  - [Parameters][1276]
+- [closeTab][1277]
+  - [Parameters][1278]
+- [closeTabs][1279]
+  - [Parameters][1280]
+- [dropTabs][1281]
+  - [Parameters][1282]
+- [lastClosed][1283]
   - [Parameters][1284]
-- [itemOf][1285]
+- [tabBeside][1285]
   - [Parameters][1286]
-- [settingsTree][1287]
+- [tabAt][1287]
   - [Parameters][1288]
-- [][1289]
-- [leavesOf][1290]
-  - [Parameters][1291]
-- [selectionKeys][1292]
-  - [Parameters][1293]
-- [visit][1294]
-  - [Parameters][1295]
-- [visit][1296]
-  - [Parameters][1297]
-- [tickedLeaves][1298]
+- [tabNames][1289]
+  - [Parameters][1290]
+- [tail][1291]
+  - [Parameters][1292]
+- [utils/tarWriter][1293]
+- [BLOCK][1294]
+- [NAME_MOST][1295]
+- [SIZE_MOST][1296]
+- [TarWriter][1297]
+- [header][1298]
   - [Parameters][1299]
-- [pickedSettings][1300]
+- [put][1300]
   - [Parameters][1301]
-- [utils/sharedDocuments][1302]
-- [shareTree][1303]
-  - [Parameters][1304]
-- [shareTree][1305]
-  - [Parameters][1306]
-- [shareTree][1307]
-  - [Parameters][1308]
-- [Sharing][1309]
-- [nodeOf][1310]
+- [octal][1302]
+  - [Parameters][1303]
+- [record][1304]
+  - [Parameters][1305]
+- [padding][1306]
+  - [Parameters][1307]
+- [tarWriter][1308]
+  - [Parameters][1309]
+- [begin][1310]
   - [Parameters][1311]
-- [sharingOf][1312]
-  - [Parameters][1313]
-- [sharedWith][1314]
-  - [Parameters][1315]
-- [changes][1316]
-- [utils/siblingOrder][1317]
-- [orderSiblings][1318]
-  - [Parameters][1319]
-- [][1320]
-- [][1321]
-- [][1322]
-- [][1323]
-- [utils/tabs][1324]
-- [Tabs][1325]
-  - [Properties][1326]
-- [NO_TABS][1327]
-- [CLOSED_KEPT][1328]
-- [TabFields][1329]
-  - [Properties][1330]
-- [DOCUMENT_TABS][1331]
-- [CHAT_TABS][1332]
-- [showing][1333]
+- [utils/tex][1312]
+- [TEX][1313]
+- [DISPLAY][1314]
+- [MATH_BLOCK][1315]
+- [SINGLE][1316]
+- [MATH_INLINE][1317]
+- [Found][1318]
+  - [Properties][1319]
+- [trimTex][1320]
+  - [Parameters][1321]
+- [foundIn][1322]
+  - [Parameters][1323]
+- [formulaAt][1324]
+  - [Parameters][1325]
+- [mayHoldFormula][1326]
+  - [Parameters][1327]
+- [replaceFormulas][1328]
+  - [Parameters][1329]
+- [utils/titleValidation][1330]
+- [normalizeTitle][1331]
+  - [Parameters][1332]
+- [shouldUpdateTitle][1333]
   - [Parameters][1334]
-- [settled][1335]
+- [isCustomTitle][1335]
   - [Parameters][1336]
-- [tabsOf][1337]
+- [getTitlePlaceholder][1337]
   - [Parameters][1338]
-- [tabsPatch][1339]
+- [freeName][1339]
   - [Parameters][1340]
-- [normalizeTabs][1341]
-  - [Parameters][1342]
-- [openTab][1343]
-  - [Parameters][1344]
-- [keepTab][1345]
-  - [Parameters][1346]
-- [moveTab][1347]
-  - [Parameters][1348]
-- [without][1349]
+- [][1341]
+- [utils/touch][1342]
+- [hasTouchKeyboard][1343]
+- [submitOnEnter][1344]
+  - [Parameters][1345]
+- [utils/trash][1346]
+- [TRASH_KEPT_MS][1347]
+- [TRASH_KEPT_MS][1348]
+- [expired][1349]
   - [Parameters][1350]
-- [closeTab][1351]
+- [trashedIds][1351]
   - [Parameters][1352]
-- [closeTabs][1353]
-  - [Parameters][1354]
-- [dropTabs][1355]
-  - [Parameters][1356]
-- [lastClosed][1357]
-  - [Parameters][1358]
-- [tabBeside][1359]
-  - [Parameters][1360]
-- [tabAt][1361]
+- [known][1353]
+- [known][1354]
+- [][1355]
+- [outOfTrash][1356]
+  - [Parameters][1357]
+- [utils/turns][1358]
+- [Turn][1359]
+  - [Properties][1360]
+- [commandOf][1361]
   - [Parameters][1362]
-- [tabNames][1363]
+- [groupTurns][1363]
   - [Parameters][1364]
-- [tail][1365]
-  - [Parameters][1366]
-- [utils/tarWriter][1367]
-- [BLOCK][1368]
-- [NAME_MOST][1369]
-- [SIZE_MOST][1370]
-- [TarWriter][1371]
-- [header][1372]
-  - [Parameters][1373]
-- [put][1374]
-  - [Parameters][1375]
-- [octal][1376]
-  - [Parameters][1377]
-- [record][1378]
-  - [Parameters][1379]
-- [padding][1380]
-  - [Parameters][1381]
-- [tarWriter][1382]
-  - [Parameters][1383]
-- [begin][1384]
-  - [Parameters][1385]
-- [utils/tex][1386]
-- [TEX][1387]
-- [DISPLAY][1388]
-- [MATH_BLOCK][1389]
-- [SINGLE][1390]
-- [MATH_INLINE][1391]
-- [Found][1392]
-  - [Properties][1393]
-- [trimTex][1394]
-  - [Parameters][1395]
-- [foundIn][1396]
-  - [Parameters][1397]
-- [formulaAt][1398]
+- [turns][1365]
+- [compactedRuns][1366]
+  - [Parameters][1367]
+- [textLines][1368]
+  - [Parameters][1369]
+- [utils/unzip][1370]
+- [MIB][1371]
+- [TooLargeError][1372]
+- [unzipWithin][1373]
+  - [Parameters][1374]
+- [utils/versions][1375]
+- [PAUSE_MS][1376]
+- [PAUSE_MS][1377]
+- [PAUSE_MS][1378]
+- [STRETCH_MS][1379]
+- [DAILY_FOR_MS][1380]
+- [dayOf][1381]
+  - [Parameters][1382]
+- [weekOf][1383]
+  - [Parameters][1384]
+- [thinned][1385]
+  - [Parameters][1386]
+- [CLASHED][1387]
+- [DOC_CLASHED][1388]
+- [TAKEN_BEFORE][1389]
+- [model][1390]
+- [utils/visibility][1391]
+- [FIELDS][1392]
+- [FIELDS][1393]
+- [FIELDS][1394]
+- [ChatMark][1395]
+- [ChatMarks][1396]
+- [shown][1397]
+- [markOf][1398]
   - [Parameters][1399]
-- [mayHoldFormula][1400]
-  - [Parameters][1401]
-- [replaceFormulas][1402]
-  - [Parameters][1403]
-- [utils/titleValidation][1404]
-- [normalizeTitle][1405]
+- [][1400]
+- [withMark][1401]
+  - [Parameters][1402]
+- [chatVisibility][1403]
+  - [Parameters][1404]
+- [settle][1405]
   - [Parameters][1406]
-- [shouldUpdateTitle][1407]
+- [sees][1407]
   - [Parameters][1408]
-- [isCustomTitle][1409]
+- [hiddenEverywhere][1409]
   - [Parameters][1410]
-- [getTitlePlaceholder][1411]
+- [markFor][1411]
   - [Parameters][1412]
-- [freeName][1413]
-  - [Parameters][1414]
-- [][1415]
-- [utils/touch][1416]
-- [hasTouchKeyboard][1417]
-- [submitOnEnter][1418]
-  - [Parameters][1419]
-- [utils/trash][1420]
-- [TRASH_KEPT_MS][1421]
-- [TRASH_KEPT_MS][1422]
-- [expired][1423]
+- [utils/webkit][1413]
+- [isWebKit][1414]
+  - [Parameters][1415]
+- [utils/wordCount][1416]
+- [PICTURE][1417]
+- [editor/suggestionText][1418]
+- [CLOSE][1419]
+- [CLOSE][1420]
+- [INSERTED][1421]
+- [DELETED][1422]
+- [holdsSuggestions][1423]
   - [Parameters][1424]
-- [trashedIds][1425]
+- [seenMarkdown][1425]
   - [Parameters][1426]
-- [known][1427]
-- [known][1428]
-- [][1429]
-- [outOfTrash][1430]
-  - [Parameters][1431]
-- [utils/turns][1432]
-- [Turn][1433]
+- [textAsItStands][1427]
+  - [Parameters][1428]
+- [withoutSuggestionMarkup][1429]
+  - [Parameters][1430]
+- [Turned][1431]
+  - [Properties][1432]
+- [Reading][1433]
   - [Properties][1434]
-- [commandOf][1435]
+- [written][1435]
   - [Parameters][1436]
-- [groupTurns][1437]
-  - [Parameters][1438]
-- [turns][1439]
-- [compactedRuns][1440]
+- [written][1437]
+- [filter][1438]
+- [filter][1439]
+- [readingOf][1440]
   - [Parameters][1441]
-- [textLines][1442]
-  - [Parameters][1443]
-- [utils/unzip][1444]
-- [MIB][1445]
-- [TooLargeError][1446]
-- [unzipWithin][1447]
-  - [Parameters][1448]
-- [utils/versions][1449]
-- [PAUSE_MS][1450]
-- [PAUSE_MS][1451]
-- [PAUSE_MS][1452]
-- [STRETCH_MS][1453]
-- [DAILY_FOR_MS][1454]
-- [dayOf][1455]
-  - [Parameters][1456]
-- [weekOf][1457]
-  - [Parameters][1458]
-- [thinned][1459]
-  - [Parameters][1460]
-- [CLASHED][1461]
-- [DOC_CLASHED][1462]
-- [TAKEN_BEFORE][1463]
-- [model][1464]
-- [utils/visibility][1465]
-- [FIELDS][1466]
-- [FIELDS][1467]
-- [FIELDS][1468]
-- [ChatMark][1469]
-- [ChatMarks][1470]
-- [shown][1471]
-- [markOf][1472]
-  - [Parameters][1473]
-- [][1474]
-- [withMark][1475]
-  - [Parameters][1476]
-- [chatVisibility][1477]
-  - [Parameters][1478]
-- [settle][1479]
-  - [Parameters][1480]
-- [sees][1481]
-  - [Parameters][1482]
-- [hiddenEverywhere][1483]
-  - [Parameters][1484]
-- [markFor][1485]
-  - [Parameters][1486]
-- [utils/webkit][1487]
-- [isWebKit][1488]
-  - [Parameters][1489]
-- [utils/wordCount][1490]
-- [PICTURE][1491]
-- [editor/suggestionText][1492]
-- [CLOSE][1493]
-- [CLOSE][1494]
-- [INSERTED][1495]
-- [DELETED][1496]
-- [holdsSuggestions][1497]
+- [blocks][1442]
+- [held][1443]
+- [says][1444]
+- [endOf][1445]
+  - [Parameters][1446]
+- [editor/markdown][1447]
+- [formulaInline][1448]
+  - [Parameters][1449]
+- [formulaInline][1450]
+  - [Parameters][1451]
+- [closeOn][1452]
+  - [Parameters][1453]
+- [formulaBlock][1454]
+  - [Parameters][1455]
+- [cellsIn][1456]
+  - [Parameters][1457]
+- [tokenizerOf][1458]
+- [block][1459]
+- [block][1460]
+- [][1461]
+- [][1462]
+- [TAIL][1463]
+- [ROOM][1464]
+- [DELIMITED][1465]
+- [spacesAsNeighbours][1466]
+  - [Parameters][1467]
+- [children][1468]
+- [children][1469]
+- [LinearSerializer][1470]
+  - [serialize][1471]
+    - [Parameters][1472]
+  - [write][1473]
+    - [Parameters][1474]
+- [][1475]
+- [DOLLAR_MARKS][1476]
+- [DOLLAR_MARKS][1477]
+- [dollarsResolved][1478]
+  - [Parameters][1479]
+- [opensFormula][1480]
+  - [Parameters][1481]
+- [dollarsIn][1482]
+  - [Parameters][1483]
+- [][1484]
+- [][1485]
+- [BETWEEN_DOLLARS][1486]
+- [writtenFormula][1487]
+  - [Parameters][1488]
+- [writtenFormulaBlock][1489]
+  - [Parameters][1490]
+- [ENTITY][1491]
+- [AUTOLINK][1492]
+- [escapeMore][1493]
+  - [Parameters][1494]
+- [endsLine][1495]
+  - [Parameters][1496]
+- [withBlockSuggestions][1497]
   - [Parameters][1498]
-- [seenMarkdown][1499]
+- [withBlockSuggestions][1499]
   - [Parameters][1500]
-- [textAsItStands][1501]
-  - [Parameters][1502]
-- [withoutSuggestionMarkup][1503]
-  - [Parameters][1504]
-- [Turned][1505]
-  - [Properties][1506]
-- [Reading][1507]
-  - [Properties][1508]
-- [written][1509]
+- [type][1501]
+- [type][1502]
+- [][1503]
+- [][1504]
+- [serializer][1505]
+- [][1506]
+- [][1507]
+- [cells][1508]
+- [rowOf][1509]
   - [Parameters][1510]
-- [written][1511]
-- [filter][1512]
-- [filter][1513]
-- [readingOf][1514]
-  - [Parameters][1515]
-- [blocks][1516]
-- [held][1517]
-- [says][1518]
-- [endOf][1519]
+- [ruleOf][1511]
+  - [Parameters][1512]
+- [parseMarkdown][1513]
+  - [Parameters][1514]
+- [serializeMarkdown][1515]
+  - [Parameters][1516]
+- [settleMarkdown][1517]
+  - [Parameters][1518]
+- [appendBlocks][1519]
   - [Parameters][1520]
 - [editor/suggestions][1521]
 - [SUGGESTION_MARKUP][1522]
@@ -2017,7 +2017,7 @@ Type: Record<[string][1704], [Array][1711]\<any>>
 
 ## out
 
-Type: [Array][1711]<[Step][727]>
+Type: [Array][1711]<[Step][647]>
 
 ## out
 
@@ -2041,7 +2041,7 @@ Type: Record<[string][1704], [string][1704]>
 
 ## out
 
-Type: Record<[string][1704], [PartialField][1018]>
+Type: Record<[string][1704], [PartialField][942]>
 
 ## out
 
@@ -2891,11 +2891,11 @@ Type: [Map][1716]<[string][1704], [Document][1712]>
 
 ## byId
 
-Type: [Map][1716]<[string][1704], [PlacedThread][532]>
+Type: [Map][1716]<[string][1704], [PlacedThread][436]>
 
 ## byId
 
-Type: [Map][1716]<[string][1704], [CommentEntry][560]>
+Type: [Map][1716]<[string][1704], [CommentEntry][464]>
 
 ## byId
 
@@ -3497,527 +3497,6 @@ tests, so a node from any of them is a node in all of them.
 
 Type: Schema
 
-## editor/markdown
-
-Markdown as the document's file format: what the store holds,
-what the model reads and writes, and what a file on disk will be.
-
-Built on `prosemirror-markdown`, the reference implementation, with the
-parser and serializer configured against our schema rather than inherited.
-The parser is markdown-it's `default` preset — CommonMark plus GFM
-strikethrough and tables — with raw HTML off, so a tag in a document is
-text. A picture's alt text is its words as plain text, marks and all
-dropped, as markdown-it writes it in HTML.
-
-A table is written the plainest way GFM reads: a pipe at each end of every
-row, one space inside each, and no padding to line the columns up, so that
-an edit to one cell is an edit to one line. A pipe in a cell is escaped,
-inside code as well, since the row is cut at its pipes before anything else
-is read. markdown-it keeps as many cells in a row as the header has and
-drops the rest, so a table with a row longer than its header is read as the
-text it was written as, whole: words are not lost to a save.
-
-A lone newline is a hard break, in both directions. A writer who ended a line
-meant it to end there, and CommonMark's soft wrap is not a reading anyone
-here expects. The serializer writes a hard break as a bare newline; when
-several run together, the ones after the first are written backslash-newline,
-which markdown-it reads as a hard break wherever it stands, so a run of
-breaks comes back as the same run rather than as a blank line that would
-split the paragraph.
-
-Text is escaped where the reference would leave it to come back as
-something else: an entity as its character, an address in angle brackets as
-a link, `1)` at the start of a line as a list, a `#` ending a heading as
-its closing. A space between words is bold, italic or struck only where
-the words on both sides of it are: one left in bold after bold italic
-would sit between the delimiters, and markdown would read them as text.
-
-A formula is read before markdown's escapes, by the delimiters the chat
-reads (`utils/tex.js`), and its TeX written as it is: `$…$` in a sentence,
-or `\(…\)` where dollars can't hold it, and `$$`, its TeX and `$$` on lines
-of their own. `\[…\]` is no formula here, since a bracket in the text is
-written `\[`. A dollar in the
-text is written `\$` only where it would otherwise open a formula, so a
-price stays as it is: each is written as a mark first, and once the whole
-is written, each mark, the last first, is a dollar or an escaped one by
-what is written after it.
-
-Two properties are pinned by tests: `parse(serialize(doc))` is `doc` for
-every node and mark, and `serialize(parse(md))` is a fixed point after one
-pass, which is what matters once files are edited outside the app.
-
-## formulaInline
-
-### Parameters
-
-- `state` &#x20;
-- `silent` &#x20;
-
-## formulaInline
-
-A formula in a sentence, read where markdown would otherwise read its
-dollar or its backslash as text. Within what a link's words or a cell may
-hold, as every inline rule is.
-
-### Parameters
-
-- `state` **StateInline**&#x20;
-- `silent` **[boolean][1705]**&#x20;
-
-Returns **[boolean][1705]**&#x20;
-
-## closeOn
-
-Where a formula's closing `$$` is on the line it ends: the first with
-nothing but spaces after it, or -1.
-
-### Parameters
-
-- `line` **[string][1704]**&#x20;
-
-Returns **[number][1706]**&#x20;
-
-## formulaBlock
-
-A formula with lines of its own: `$$` starting a line, and `$$` ending the
-same line or a later one, with no blank line between. It ends a paragraph
-where it starts, as a fence does.
-
-### Parameters
-
-- `state` **StateBlock**&#x20;
-- `startLine` **[number][1706]**&#x20;
-- `endLine` **[number][1706]**&#x20;
-- `silent` **[boolean][1705]**&#x20;
-
-Returns **[boolean][1705]**&#x20;
-
-## lines
-
-Type: [Array][1711]<[string][1704]>
-
-## lines
-
-Type: [Array][1711]<[string][1704]>
-
-## cellsIn
-
-How many cells markdown-it finds in a row: the line cut at every pipe not
-escaped, less the empty ends a leading and a trailing pipe leave.
-
-### Parameters
-
-- `line` **[string][1704]**&#x20;
-
-Returns **[number][1706]**&#x20;
-
-## tokenizerOf
-
-markdown-it with GFM's table rule made to refuse a table it would lose words
-from. The rule is run in full and its tokens taken back when a row has more
-cells than the header — and when only asked whether a table starts here,
-which must be answered the same way without leaving anything behind.
-
-## block
-
-Type: {\_\_rules\_\_: [Array][1711]<{name: [string][1704], fn: [Function][1719], alt: [Array][1711]<[string][1704]>}>}
-
-## block
-
-Type: unknown
-
-## top
-
-## split
-
-Type: (`"insertion"` | `"deletion"`)
-
-## state
-
-### Parameters
-
-- `state` **StateBlock**&#x20;
-- `startLine` **[number][1706]**&#x20;
-- `endLine` **[number][1706]**&#x20;
-- `silent` **[boolean][1705]**&#x20;
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-- `silent` &#x20;
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-- `silent` &#x20;
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-- `silent` &#x20;
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-- `silent` &#x20;
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-
-##
-
-##
-
-Type: unknown
-
-## TAIL
-
-How much of the output the state keeps to look back on. Two characters would
-do: whether a line has ended, and whether a `!` before a link is escaped.
-
-Type: [number][1706]
-
-## ROOM
-
-How long the state's output grows before all but its tail is moved out.
-
-Type: [number][1706]
-
-## DELIMITED
-
-Marks written as delimiters around their text, which a space can strand.
-
-## spacesAsNeighbours
-
-A block's inline content with each run of spaces bold, italic or struck
-only where the text on both sides of it is too. Docs bolds a word's space
-with the word when it is double-clicked, and a space in bold between bold
-italic and plain text is written after the italic has closed and before
-the bold has: `***bold italic. ***plain`, which markdown reads as text,
-asterisks and all.
-
-### Parameters
-
-- `parent` **[Node][1713]**&#x20;
-
-Returns **[Node][1713]**&#x20;
-
-## children
-
-Type: [Array][1711]<[Node][1713]>
-
-## children
-
-Type: [Array][1711]<[Node][1713]>
-
-## LinearSerializer
-
-**Extends MarkdownSerializer**
-
-The reference serializer, writing in time linear in the document's length.
-
-Its state asks whether its output ends a line before nearly every block, and
-a string grown a piece at a time is copied whole to be read. In a long
-document that copy is the whole document, made again for every block: 20
-seconds for a 1.5 MB rulebook in Chromium, 40 in WebKit, every time it was
-saved, and as long for a list of 20,000 items. Here the state holds only the
-end of its output, and what comes before is moved out as it is written, so
-it answers the same, at once, at any depth.
-
-### serialize
-
-The document written, its text's dollars each a mark until what is
-written after them says whether they are escaped. A mark is a character
-the document has none of: should the first be in it already, the next is
-tried, and with none left every dollar is escaped.
-
-#### Parameters
-
-- `content` **[Node][1713]**&#x20;
-- `options` (optional, default `{}`)
-
-Returns **[string][1704]**&#x20;
-
-### write
-
-#### Parameters
-
-- `content` **[Node][1713]**&#x20;
-- `options` &#x20;
-- `dollars` **Dollars**&#x20;
-
-Returns **[string][1704]**&#x20;
-
-## dollars
-
-Type: Dollars
-
-## dollars
-
-Type: [Array][1711]<[string][1704]>
-
-## dollars
-
-A price per million tokens, from one per token: `$3`, `$0.37`, `$0.01`.
-
-### Parameters
-
-- `perToken` **[number][1706]** Dollars
-
-Returns **[string][1704]**&#x20;
-
-##
-
-## DOLLAR_MARKS
-
-How a serialization writes the text's dollars: each as `mark`, counted, to
-be settled once all is written; or, with no mark, each escaped.
-
-## DOLLAR_MARKS
-
-Characters a dollar is written as until it is settled: the private use area's.
-
-## dollarsResolved
-
-The text's dollars, written as marks, made dollars again: each escaped
-where it would open a formula as written, and left as it is otherwise. The
-last is settled first, since whether one opens a formula hangs on what is
-written after it, and a dollar escaped is no formula's close.
-
-### Parameters
-
-- `pieces` **[Array][1711]<[string][1704]>** What was written, cut at the marks
-
-Returns **[string][1704]**&#x20;
-
-## opensFormula
-
-Whether the `i`th dollar would open a formula, read with what is written
-after it as far as a blank line, beyond which no formula reaches.
-
-### Parameters
-
-- `pieces` **[Array][1711]<[string][1704]>**&#x20;
-- `dollars` **[Array][1711]<[string][1704]>** Those after it, settled
-- `i` **[number][1706]**&#x20;
-
-Returns **[boolean][1705]**&#x20;
-
-## dollarsIn
-
-A text's dollars as the serialization writes them (`Dollars`).
-
-### Parameters
-
-- `state` **MarkdownSerializerState**&#x20;
-- `text` **[string][1704]**&#x20;
-
-Returns **[string][1704]**&#x20;
-
-##
-
-##
-
-Type: unknown
-
-## BETWEEN_DOLLARS
-
-A formula's TeX that `$…$` holds: Pandoc's rule, as it is read (`utils/tex.js`).
-
-## writtenFormula
-
-A formula in a sentence as it is written: between dollars, or between `\(`
-and `\)` where dollars can't hold it, its TeX starting or ending with a
-space, running over lines, or a digit following it.
-
-### Parameters
-
-- `tex` **[string][1704]**&#x20;
-- `digitAfter` **[boolean][1705]?** Whether a digit follows it (optional, default `false`)
-
-Returns **[string][1704]**&#x20;
-
-## writtenFormulaBlock
-
-A formula with lines of its own as it is written: its TeX on the lines
-between, a blank line among them closed up, since none can be in it.
-
-### Parameters
-
-- `tex` **[string][1704]**&#x20;
-
-Returns **[string][1704]**&#x20;
-
-## ENTITY
-
-An entity markdown would read as the character it names: `&amp;`, `&#42;`.
-
-## AUTOLINK
-
-An address in angle brackets, which markdown would read as a link.
-
-## escapeMore
-
-Escapes the reference leaves out, after its own: text that would come back
-as something else. An entity would come back as its character, and an
-address in angle brackets as a link. At the start of a line, `1)`, a bare
-`1.` or `+` would open a list, and a line of `=` under another would make it
-a heading. At the end of a heading, a `#` would be read as its closing.
-
-### Parameters
-
-- `text` **[string][1704]** Already escaped by the reference
-- `startOfLine` **[boolean][1705]**&#x20;
-- `endsHeading` **[boolean][1705]**&#x20;
-
-Returns **[string][1704]**&#x20;
-
-## endsLine
-
-Whether nothing but breaks follows a block's child, which ends its line:
-the serializer drops trailing breaks.
-
-### Parameters
-
-- `parent` **[Node][1713]**&#x20;
-- `index` **[number][1706]**&#x20;
-
-Returns **[boolean][1705]**&#x20;
-
-## withBlockSuggestions
-
-### Parameters
-
-- `writers` &#x20;
-
-## withBlockSuggestions
-
-Block serializers with a whole block's suggestion written around the
-block, each half on a line of its own: the open, the block, then the close
-and the id.
-
-### Parameters
-
-- `writers` **Record<[string][1704], BlockWriter>**&#x20;
-
-Returns **Record<[string][1704], BlockWriter>**&#x20;
-
-## type
-
-Type: (`"insertion"` | `"deletion"`)
-
-## type
-
-Type: (`"insertion"` | `"deletion"`)
-
-##
-
-##
-
-Type: unknown
-
-## serializer
-
-The serializer `serializeMarkdown` writes with. Exported for tests, which
-hold it to what the reference's own `serialize` writes.
-
-##
-
-##
-
-Type: unknown
-
-## cells
-
-The cells' own serializer: a cell's text and marks, written as a paragraph's
-would be, but without the escapes for what starts a line, since a cell
-starts after a pipe. A dash in a cell stays a dash.
-
-## rowOf
-
-One row of a table, as a line.
-
-### Parameters
-
-- `row` **[Node][1713]**&#x20;
-
-Returns **[string][1704]**&#x20;
-
-## ruleOf
-
-A column's cell in the line under the header.
-
-### Parameters
-
-- `align` **([string][1704] | null)**&#x20;
-
-Returns **[string][1704]**&#x20;
-
-## parseMarkdown
-
-Read markdown into a document. Never throws on content: what the schema
-cannot hold is read as the text it was written as.
-
-### Parameters
-
-- `markdown` **([string][1704] | null | [undefined][1717])**&#x20;
-
-Returns **[Node][1713]** A document in the editor's schema
-
-## serializeMarkdown
-
-Write a document as markdown.
-
-### Parameters
-
-- `doc` **[Node][1713]**&#x20;
-
-Returns **[string][1704]**&#x20;
-
-## settleMarkdown
-
-Markdown in the file format's own form: what the editor would serialize
-from it. The same words, with the serializer's choices of bullet, escape,
-and line ending, so that text written from outside and text the editor
-wrote never differ in surface form — a recorded edit still matches after
-the document has been opened, and a document opened and closed untouched
-is byte-identical.
-
-### Parameters
-
-- `markdown` **([string][1704] | null | [undefined][1717])**&#x20;
-
-Returns **[string][1704]**&#x20;
-
-## appendBlocks
-
-Markdown after markdown: a blank line between, so the new text starts a
-block of its own rather than running on from the last one.
-
-### Parameters
-
-- `content` **([string][1704] | null | [undefined][1717])**&#x20;
-- `text` **[string][1704]**&#x20;
-
-Returns **[string][1704]**&#x20;
-
 ## stores/migrations/commentThreads
 
 What each comment says moves out of the text onto its
@@ -4208,7 +3687,7 @@ paragraph.
 
 - `content` **([string][1704] | null | [undefined][1717])**&#x20;
 
-Returns **[ParsedMarkup][424]**&#x20;
+Returns **[ParsedMarkup][328]**&#x20;
 
 ## stack
 
@@ -4216,7 +3695,7 @@ Type: [Array][1711]<[number][1706]>
 
 ## stack
 
-Type: [Array][1711]<{node: [SectionNode][1093], level: [number][1706], depth: [number][1706]}>
+Type: [Array][1711]<{node: [SectionNode][1017], level: [number][1706], depth: [number][1706]}>
 
 ## pairs
 
@@ -4232,7 +3711,7 @@ Type: [string][1704]
 
 ## tokens
 
-Type: [Map][1716]<[number][1706], [MarkupToken][420]>
+Type: [Map][1716]<[number][1706], [MarkupToken][324]>
 
 ## runs
 
@@ -4240,7 +3719,7 @@ Type: [Array][1711]\<MarkedRun>
 
 ## runs
 
-Type: [Map][1716]<[string][1704], [Array][1711]<[FoundComment][418]>>
+Type: [Map][1716]<[string][1704], [Array][1711]<[FoundComment][322]>>
 
 ## runs
 
@@ -4248,11 +3727,11 @@ Type: [Map][1716]<[number][1706], [number][1706]>
 
 ## get
 
-Type: [MarkupToken][420]
+Type: [MarkupToken][324]
 
 ## get
 
-Type: [MarkupToken][420]
+Type: [MarkupToken][324]
 
 ## get
 
@@ -4279,21 +3758,21 @@ comment, and spans of one id that touch are one.
 ### Parameters
 
 - `text` **[string][1704]** Without any markup
-- `spans` **[Array][1711]<[Span][450]>**&#x20;
+- `spans` **[Array][1711]<[Span][354]>**&#x20;
 
 Returns **[string][1704]**&#x20;
 
 ## pop
 
-Type: [Span][450]
+Type: [Span][354]
 
 ## pop
 
-Type: [Span][450]
+Type: [Span][354]
 
 ## open
 
-Type: [Array][1711]<[Span][450]>
+Type: [Array][1711]<[Span][354]>
 
 ## open
 
@@ -4341,7 +3820,7 @@ the comments that close there and before those that open.
 
 ### Parameters
 
-- `parsed` **[ParsedMarkup][424]**&#x20;
+- `parsed` **[ParsedMarkup][328]**&#x20;
 - `at` **[number][1706]**&#x20;
 
 Returns **[number][1706]**&#x20;
@@ -4356,7 +3835,7 @@ where they are in it, and gives back what they become.
 
 ### Parameters
 
-- `parsed` **[ParsedMarkup][424]**&#x20;
+- `parsed` **[ParsedMarkup][328]**&#x20;
 - `from` **[number][1706]** In the text without the markup
 - `to` **[number][1706]**&#x20;
 - `change` &#x20;
@@ -4370,7 +3849,7 @@ passages left.
 
 ### Parameters
 
-- `parsed` **[ParsedMarkup][424]**&#x20;
+- `parsed` **[ParsedMarkup][328]**&#x20;
 - `take` &#x20;
 
 Returns **[string][1704]**&#x20;
@@ -4383,7 +3862,7 @@ Every run of every comment in a piece of markdown, in the order they start.
 
 - `content` **([string][1704] | null | [undefined][1717])**&#x20;
 
-Returns **[Array][1711]<[FoundComment][418]>**&#x20;
+Returns **[Array][1711]<[FoundComment][322]>**&#x20;
 
 ## settleComments
 
@@ -4465,11 +3944,11 @@ and is named in what comes back.
 - `old` **[string][1704]** The passage to change, as it reads without them
 - `replacement` **[string][1704]** What it becomes, without them
 
-Returns **{count: [number][1706], old: [string][1704], new: [string][1704], resolved: [Array][1711]<[FoundComment][418]>}** How many times `old` is in the text, and when once, the edit to make
+Returns **{count: [number][1706], old: [string][1704], new: [string][1704], resolved: [Array][1711]<[FoundComment][322]>}** How many times `old` is in the text, and when once, the edit to make
 
 ## lost
 
-Type: [Array][1711]<[FoundComment][418]>
+Type: [Array][1711]<[FoundComment][322]>
 
 ## lost
 
@@ -4477,7 +3956,7 @@ Type: [Set][1710]<[string][1704]>
 
 ## spans
 
-Type: [Array][1711]<[Span][450]>
+Type: [Array][1711]<[Span][354]>
 
 ## spans
 
@@ -4497,11 +3976,11 @@ more than once, is resolved, and named in what comes back.
 - `content` **[string][1704]** The document as it is, comments and all
 - `body` **[string][1704]** What it becomes
 
-Returns **{body: [string][1704], resolved: [Array][1711]<[FoundComment][418]>}**&#x20;
+Returns **{body: [string][1704], resolved: [Array][1711]<[FoundComment][322]>}**&#x20;
 
 ## placed
 
-Type: [Map][1716]<[string][1704], [Array][1711]<[Span][450]>>
+Type: [Map][1716]<[string][1704], [Array][1711]<[Span][354]>>
 
 ## countComments
 
@@ -4628,21 +4107,21 @@ changed, so a save that touched no comment writes none.
 ### Parameters
 
 - `content` **([string][1704] | null | [undefined][1717])**&#x20;
-- `threads` **([Threads][417] | [undefined][1717])**&#x20;
+- `threads` **([Threads][321] | [undefined][1717])**&#x20;
 
-Returns **([Threads][417] | [undefined][1717])**&#x20;
-
-## next
-
-Type: [Threads][417]
+Returns **([Threads][321] | [undefined][1717])**&#x20;
 
 ## next
 
-Type: [Threads][417]
+Type: [Threads][321]
 
 ## next
 
-Type: [ChatMarks][1470]
+Type: [Threads][321]
+
+## next
+
+Type: [ChatMarks][1396]
 
 ## liftThreads
 
@@ -4654,7 +4133,7 @@ for an id is kept as it is.
 ### Parameters
 
 - `content` **[string][1704]**&#x20;
-- `threads` **([Threads][417] | [undefined][1717])**&#x20;
+- `threads` **([Threads][321] | [undefined][1717])**&#x20;
 - `now` **[number][1706]?** When the moved posts say they were written (optional, default `Date.now()`)
 
 ## withThreadsOnly
@@ -4665,7 +4144,7 @@ left: one pasted from another document, or written by hand.
 ### Parameters
 
 - `content` **[string][1704]**&#x20;
-- `threads` **([Threads][417] | [undefined][1717])**&#x20;
+- `threads` **([Threads][321] | [undefined][1717])**&#x20;
 
 Returns **[string][1704]**&#x20;
 
@@ -4678,7 +4157,7 @@ A suggestion's thread is not a comment's.
 
 ### Parameters
 
-- `threads` **([Threads][417] | [undefined][1717])**&#x20;
+- `threads` **([Threads][321] | [undefined][1717])**&#x20;
 
 Returns **[number][1706]**&#x20;
 
@@ -4759,9 +4238,9 @@ no thread is only taken out.
 ### Parameters
 
 - `content` **([string][1704] | null | [undefined][1717])**&#x20;
-- `threads` **([Threads][417] | [undefined][1717])**&#x20;
+- `threads` **([Threads][321] | [undefined][1717])**&#x20;
 
-Returns **{text: [string][1704], placed: [Array][1711]<[PlacedThread][532]>}**&#x20;
+Returns **{text: [string][1704], placed: [Array][1711]<[PlacedThread][436]>}**&#x20;
 
 ## WIDEN_STEP
 
@@ -4812,15 +4291,15 @@ overlap. In the order they start.
 - `pieces` **[Array][1711]<{node: [Node][1713], pos: [number][1706]}>** In order
 - `type` &#x20;
 
-Returns **[Array][1711]<[CommentRange][542]>**&#x20;
+Returns **[Array][1711]<[CommentRange][446]>**&#x20;
 
 ## ranges
 
-Type: [Array][1711]<[CommentRange][542]>
+Type: [Array][1711]<[CommentRange][446]>
 
 ## going
 
-Type: [Map][1716]<[string][1704], [CommentRange][542]>
+Type: [Map][1716]<[string][1704], [CommentRange][446]>
 
 ## commentRanges
 
@@ -4835,7 +4314,7 @@ passage is part of it, not the end of a run.
 
 - `doc` **[Node][1713]**&#x20;
 
-Returns **[Array][1711]<[CommentRange][542]>**&#x20;
+Returns **[Array][1711]<[CommentRange][446]>**&#x20;
 
 ## pieces
 
@@ -4888,7 +4367,7 @@ words, the innermost, and of two as short the one that starts later.
 
 - `$pos` **ResolvedPos**&#x20;
 
-Returns **([CommentRange][542] | null)**&#x20;
+Returns **([CommentRange][446] | null)**&#x20;
 
 ## CommentEntry
 
@@ -4909,9 +4388,9 @@ Entries in the order their comments start, the runs of one id joined.
 
 ### Parameters
 
-- `runs` **[Array][1711]<[CommentEntry][560]>**&#x20;
+- `runs` **[Array][1711]<[CommentEntry][464]>**&#x20;
 
-Returns **[Array][1711]<[CommentEntry][560]>**&#x20;
+Returns **[Array][1711]<[CommentEntry][464]>**&#x20;
 
 ## entriesOf
 
@@ -4919,9 +4398,9 @@ The entries a zip's central directory lists.
 
 ### Parameters
 
-- `file` **[Blob][1720]**&#x20;
+- `file` **[Blob][1719]**&#x20;
 
-Returns **[Promise][1721]<[Array][1711]<[ZipEntry][666]>>**&#x20;
+Returns **[Promise][1720]<[Array][1711]<[ZipEntry][586]>>**&#x20;
 
 ## commentsInDoc
 
@@ -4931,7 +4410,7 @@ The comments in an editor document, one entry each.
 
 - `doc` **[Node][1713]**&#x20;
 
-Returns **[Array][1711]<[CommentEntry][560]>**&#x20;
+Returns **[Array][1711]<[CommentEntry][464]>**&#x20;
 
 ## commentsGone
 
@@ -4954,7 +4433,7 @@ gives for the same text, without parsing it.
 
 - `content` **([string][1704] | null | [undefined][1717])**&#x20;
 
-Returns **[Array][1711]<[CommentEntry][560]>**&#x20;
+Returns **[Array][1711]<[CommentEntry][464]>**&#x20;
 
 ## plainPassage
 
@@ -5029,9 +4508,64 @@ How many nodes a list of subtrees holds.
 
 ### Parameters
 
-- `nodes` **[Array][1711]<[SectionNode][1093]>**&#x20;
+- `nodes` **[Array][1711]<[SectionNode][1017]>**&#x20;
 
 Returns **[number][1706]**&#x20;
+
+## top
+
+## split
+
+Type: (`"insertion"` | `"deletion"`)
+
+## state
+
+### Parameters
+
+- `state` &#x20;
+- `silent` &#x20;
+
+## state
+
+### Parameters
+
+- `state` &#x20;
+- `silent` &#x20;
+
+## state
+
+### Parameters
+
+- `state` &#x20;
+
+## state
+
+### Parameters
+
+- `state` **StateBlock**&#x20;
+- `startLine` **[number][1706]**&#x20;
+- `endLine` **[number][1706]**&#x20;
+- `silent` **[boolean][1705]**&#x20;
+
+## state
+
+### Parameters
+
+- `state` &#x20;
+- `silent` &#x20;
+
+## state
+
+### Parameters
+
+- `state` &#x20;
+- `silent` &#x20;
+
+## state
+
+### Parameters
+
+- `state` &#x20;
 
 ## loose
 
@@ -5176,7 +4710,7 @@ Type: [Map][1716]<[string][1704], [number][1706]>
 
 ## targets
 
-Type: [LinkTargets][900]
+Type: [LinkTargets][820]
 
 ## order
 
@@ -5228,7 +4762,7 @@ Type: [Array][1711]\<Message>
 
 ## changed
 
-Type: [Array][1711]<[LinkedText][898]>
+Type: [Array][1711]<[LinkedText][818]>
 
 ## stores/migrations/purgeDeleted
 
@@ -5261,7 +4795,7 @@ Drop every row marked deleted, and the bytes of any file document among them.
 
 - `tables` **Record<[string][1704], [Array][1711]\<any>>** Rows by table name
 
-Returns **[Purged][618]**&#x20;
+Returns **[Purged][538]**&#x20;
 
 ## goneFiles
 
@@ -5573,7 +5107,7 @@ file's, `image` for a library card's, as storage keeps them.
 
 - Throws **[Error][1714]** When it is too large for a zip to hold
 
-Returns **[Promise][1721]<[Blob][1720]>**&#x20;
+Returns **[Promise][1720]<[Blob][1719]>**&#x20;
 
 ## named
 
@@ -5613,13 +5147,13 @@ some other zip (a Scrivener project's).
 
 ### Parameters
 
-- `file` **[Blob][1720]**&#x20;
+- `file` **[Blob][1719]**&#x20;
 
 ## isZip
 
 ### Parameters
 
-- `file` **[Blob][1720]**&#x20;
+- `file` **[Blob][1719]**&#x20;
 
 ## readArchive
 
@@ -5628,13 +5162,13 @@ byte-carrying rows' bytes as Blobs cut from the file.
 
 ### Parameters
 
-- `file` **[Blob][1720]**&#x20;
+- `file` **[Blob][1719]**&#x20;
 
 <!---->
 
 - Throws **[Error][1714]** If it is not a backup's zip, saying why
 
-Returns **[Promise][1721]\<any>** The envelope, unchecked
+Returns **[Promise][1720]\<any>** The envelope, unchecked
 
 ## tables
 
@@ -5646,7 +5180,7 @@ Type: [Array][1711]<[string][1704]>
 
 ## entries
 
-Type: [Array][1711]<[ZipEntry][666]>
+Type: [Array][1711]<[ZipEntry][586]>
 
 ## dataStart
 
@@ -5655,8 +5189,8 @@ field may differ in length from the central directory's.
 
 ### Parameters
 
-- `file` **[Blob][1720]**&#x20;
-- `entry` **[ZipEntry][666]**&#x20;
+- `file` **[Blob][1719]**&#x20;
+- `entry` **[ZipEntry][586]**&#x20;
 
 ## blobOf
 
@@ -5664,8 +5198,8 @@ An entry's bytes, as a Blob cut from the file: stored, never read.
 
 ### Parameters
 
-- `file` **[Blob][1720]**&#x20;
-- `entry` **[ZipEntry][666]**&#x20;
+- `file` **[Blob][1719]**&#x20;
+- `entry` **[ZipEntry][586]**&#x20;
 - `type` **[string][1704]**&#x20;
 
 ## MOST_ENTRY
@@ -5678,11 +5212,11 @@ An entry's bytes, read and inflated.
 
 ### Parameters
 
-- `file` **[Blob][1720]**&#x20;
-- `entry` **[ZipEntry][666]**&#x20;
+- `file` **[Blob][1719]**&#x20;
+- `entry` **[ZipEntry][586]**&#x20;
 - `from` **[number][1706]?** Where its data begins, if known
 
-Returns **[Promise][1721]<[Uint8Array][1708]<[ArrayBuffer][1709]>>**&#x20;
+Returns **[Promise][1720]<[Uint8Array][1708]<[ArrayBuffer][1709]>>**&#x20;
 
 ## inflateSync
 
@@ -5692,8 +5226,8 @@ Type: [Uint8Array][1708]<[ArrayBuffer][1709]>
 
 ### Parameters
 
-- `file` **[Blob][1720]**&#x20;
-- `entry` **[ZipEntry][666]**&#x20;
+- `file` **[Blob][1719]**&#x20;
+- `entry` **[ZipEntry][586]**&#x20;
 
 ## utils/chatTabs
 
@@ -5722,7 +5256,7 @@ Type: (`"prompt"` | `"note"` | `"roleplay-prompt"` | `"post-history"`)
 What each tab is called. The roleplay prompt says whose it is, since the
 chat has a system prompt of its own and the tab may sit beside it.
 
-Type: Record<[ChatText][688], [string][1704]>
+Type: Record<[ChatText][608], [string][1704]>
 
 ## chatTabId
 
@@ -5731,7 +5265,7 @@ The tab for one of a chat's texts.
 ### Parameters
 
 - `chatId` **[string][1704]**&#x20;
-- `text` **[ChatText][688]**&#x20;
+- `text` **[ChatText][608]**&#x20;
 
 Returns **[string][1704]**&#x20;
 
@@ -5743,11 +5277,11 @@ The chat and the text a tab holds, or null for a document's tab.
 
 - `tabId` **([string][1704] | null | [undefined][1717])**&#x20;
 
-Returns **({chatId: [string][1704], text: [ChatText][688]} | null)**&#x20;
+Returns **({chatId: [string][1704], text: [ChatText][608]} | null)**&#x20;
 
 ## match
 
-Type: [ChatText][688]
+Type: [ChatText][608]
 
 ## match
 
@@ -5955,11 +5489,11 @@ The steps from `a` to `b`, items compared with `===`.
   - `options.startFirst` **[boolean][1705]?** Set aside what the two share at
     the start before what they share at the end
 
-Returns **([Array][1711]<[Step][727]> | null)** Null when the edit is over `maxEdits`
+Returns **([Array][1711]<[Step][647]> | null)** Null when the edit is over `maxEdits`
 
 ## steps
 
-Type: [Array][1711]<[Step][727]>
+Type: [Array][1711]<[Step][647]>
 
 ## shortestEdit
 
@@ -5976,11 +5510,11 @@ Myers' greedy search for the fewest deletions and insertions between
 - `bHi` **[number][1706]**&#x20;
 - `maxEdits` **[number][1706]**&#x20;
 
-Returns **([Array][1711]<[Step][727]> | null)**&#x20;
+Returns **([Array][1711]<[Step][647]> | null)**&#x20;
 
 ## trace
 
-Type: [Array][1711]<[Int32Array][1722]>
+Type: [Array][1711]<[Int32Array][1721]>
 
 ## at
 
@@ -5988,7 +5522,7 @@ A diagonal's reach after `d` steps, from the array kept for it.
 
 ### Parameters
 
-- `v` **[Int32Array][1722]**&#x20;
+- `v` **[Int32Array][1721]**&#x20;
 - `d` **[number][1706]**&#x20;
 - `k` **[number][1706]**&#x20;
 
@@ -6040,11 +5574,11 @@ both changed. Items compared with `===`.
   - `options.startFirst` **[boolean][1705]?** Line each side up against the
     base from the start first (`diffSequences`)
 
-Returns **([Array][1711]<[Chunk][739]> | null)** Null when either side's edit is over `maxEdits`
+Returns **([Array][1711]<[Chunk][659]> | null)** Null when either side's edit is over `maxEdits`
 
 ## chunks
 
-Type: [Array][1711]<[Chunk][739]>
+Type: [Array][1711]<[Chunk][659]>
 
 ## matches
 
@@ -6056,7 +5590,7 @@ Where each item of `a` is in `b`, or -1 where `b` lost it.
 - `b` &#x20;
 - `options` &#x20;
 
-Returns **([Int32Array][1722] | null)**&#x20;
+Returns **([Int32Array][1721] | null)**&#x20;
 
 ## pairUp
 
@@ -6229,7 +5763,7 @@ file whose kind the writer did not know may have wrong.
 
 ### Parameters
 
-- `tree` **[LinkTree][755]**&#x20;
+- `tree` **[LinkTree][675]**&#x20;
 - `folderId` **[string][1704]**&#x20;
 - `name` **[string][1704]**&#x20;
 - `last` **[boolean][1705]**&#x20;
@@ -6248,7 +5782,7 @@ meant the folder it got to.
 
 ### Parameters
 
-- `tree` **[LinkTree][755]**&#x20;
+- `tree` **[LinkTree][675]**&#x20;
 - `folderId` **[string][1704]**&#x20;
 - `names` **[Array][1711]<[string][1704]>**&#x20;
 
@@ -6262,7 +5796,7 @@ document it is in.
 
 ### Parameters
 
-- `tree` **[LinkTree][755]**&#x20;
+- `tree` **[LinkTree][675]**&#x20;
 - `href` **[string][1704]**&#x20;
 - `fromId` **([string][1704] | null)?** The document the link is in. Without one,
   as in a chat, a link is read from the top of the project.
@@ -6277,7 +5811,7 @@ one: a link has to go to one document.
 
 ### Parameters
 
-- `tree` **[LinkTree][755]**&#x20;
+- `tree` **[LinkTree][675]**&#x20;
 - `name` **[string][1704]**&#x20;
 
 Returns **([Document][1712] | null)**&#x20;
@@ -6311,7 +5845,7 @@ itself left out.
 
 ### Parameters
 
-- `tree` **[LinkTree][755]**&#x20;
+- `tree` **[LinkTree][675]**&#x20;
 - `id` **[string][1704]**&#x20;
 
 Returns **[Array][1711]<[Document][1712]>**&#x20;
@@ -6334,7 +5868,7 @@ The link from one document to another, as it is written in the first.
 
 ### Parameters
 
-- `tree` **[LinkTree][755]**&#x20;
+- `tree` **[LinkTree][675]**&#x20;
 - `fromId` **[string][1704]** The document the link goes in
 - `toId` **[string][1704]** The document it goes to
 
@@ -6420,7 +5954,7 @@ another folder, where the link as written would go somewhere else.
 
 ### Parameters
 
-- `tree` **[LinkTree][755]**&#x20;
+- `tree` **[LinkTree][675]**&#x20;
 - `id` **[string][1704]**&#x20;
 
 Returns **[string][1704]**&#x20;
@@ -6828,7 +6362,7 @@ Whether the element with the focus is a field the writer types into.
 
 ### Parameters
 
-- `element` **([Element][1723] | null)?** Defaults to whatever has the focus (optional, default `document.activeElement`)
+- `element` **([Element][1722] | null)?** Defaults to whatever has the focus (optional, default `document.activeElement`)
 
 Returns **[boolean][1705]**&#x20;
 
@@ -7065,7 +6599,7 @@ Type: {id: [string][1704], exact: [boolean][1705]}
 Where each document's links went: by document, by each destination as it
 is written.
 
-Type: [Map][1716]<[string][1704], [Map][1716]<[string][1704], [LinkTarget][899]>>
+Type: [Map][1716]<[string][1704], [Map][1716]<[string][1704], [LinkTarget][819]>>
 
 ## mayLink
 
@@ -7119,7 +6653,7 @@ project for one written from there, from the linking document otherwise.
 
 ### Parameters
 
-- `tree` **[LinkTree][755]**&#x20;
+- `tree` **[LinkTree][675]**&#x20;
 - `path` **[string][1704]** The link's path as it is written
 - `fromId` **[string][1704]**&#x20;
 - `toId` **[string][1704]**&#x20;
@@ -7132,14 +6666,14 @@ Where the links in these documents go now.
 
 ### Parameters
 
-- `tree` **[LinkTree][755]**&#x20;
-- `documents` **[Array][1711]<[LinkedText][898]>**&#x20;
+- `tree` **[LinkTree][675]**&#x20;
+- `documents` **[Array][1711]<[LinkedText][818]>**&#x20;
 
-Returns **[LinkTargets][900]**&#x20;
+Returns **[LinkTargets][820]**&#x20;
 
 ## went
 
-Type: [Map][1716]<[string][1704], [LinkTarget][899]>
+Type: [Map][1716]<[string][1704], [LinkTarget][819]>
 
 ## rewritten
 
@@ -7148,10 +6682,10 @@ still goes where it went, and in the form it was written in.
 
 ### Parameters
 
-- `tree` **[LinkTree][755]**&#x20;
+- `tree` **[LinkTree][675]**&#x20;
 - `href` **[string][1704]** As it is written
 - `fromId` **[string][1704]**&#x20;
-- `target` **([LinkTarget][899] | [undefined][1717])** Where it went
+- `target` **([LinkTarget][819] | [undefined][1717])** Where it went
 
 Returns **([string][1704] | null)**&#x20;
 
@@ -7163,11 +6697,11 @@ change are left out.
 
 ### Parameters
 
-- `tree` **[LinkTree][755]** As it is now
-- `documents` **[Array][1711]<[LinkedText][898]>** As they are now
-- `targets` **[LinkTargets][900]** Where their links went, from `linkTargets`
+- `tree` **[LinkTree][675]** As it is now
+- `documents` **[Array][1711]<[LinkedText][818]>** As they are now
+- `targets` **[LinkTargets][820]** Where their links went, from `linkTargets`
 
-Returns **[Array][1711]<[LinkedText][898]>**&#x20;
+Returns **[Array][1711]<[LinkedText][818]>**&#x20;
 
 ## now
 
@@ -7347,7 +6881,7 @@ KaTeX, once something has asked for it.
 
 ## loading
 
-Type: ([Promise][1721]\<void> | null)
+Type: ([Promise][1720]\<void> | null)
 
 ## remembered
 
@@ -7371,7 +6905,7 @@ How KaTeX is asked to typeset, but for whether a formula is set on its own.
 Load KaTeX, its stylesheet and fonts. Once is enough; every later call has
 the same promise.
 
-Returns **[Promise][1721]\<void>**&#x20;
+Returns **[Promise][1720]\<void>**&#x20;
 
 ## mathReady
 
@@ -7429,7 +6963,7 @@ The formula a node is in, if it is in one.
 
 - `node` **[Node][1713]**&#x20;
 
-Returns **([Element][1723] | null)**&#x20;
+Returns **([Element][1722] | null)**&#x20;
 
 ## copyTex
 
@@ -7446,12 +6980,30 @@ so its paragraphs and lines come apart as they do in any copy.
 
 ## event
 
-Type: ([Element][1723] | null)
+Type: ([Element][1722] | null)
 
 ## utils/modelFacts
 
 What the model picker says of a model in a few characters:
 its price, in and out, per million tokens, and how much it reads at once.
+
+## dollars
+
+A price per million tokens, from one per token: `$3`, `$0.37`, `$0.01`.
+
+### Parameters
+
+- `perToken` **[number][1706]** Dollars
+
+Returns **[string][1704]**&#x20;
+
+## dollars
+
+Type: Dollars
+
+## dollars
+
+Type: [Array][1711]<[string][1704]>
 
 ## formatPrice
 
@@ -7496,7 +7048,7 @@ Generates a code challenge from a code verifier using SHA-256
 
 - Throws **[Error][1714]** If Web Crypto API is not available (insecure context)
 
-Returns **[Promise][1721]<[string][1704]>** The base64url-encoded SHA-256 hash of the verifier
+Returns **[Promise][1720]<[string][1704]>** The base64url-encoded SHA-256 hash of the verifier
 
 ## generateState
 
@@ -7548,7 +7100,7 @@ verifier and state are kept for when the service sends the writer back
 
 - Throws **[Error][1714]** If not in a secure context or Web Crypto API unavailable
 
-Returns **[Promise][1721]<[string][1704]>**&#x20;
+Returns **[Promise][1720]<[string][1704]>**&#x20;
 
 ## exchangeCode
 
@@ -7564,7 +7116,7 @@ Trade the code a service sent the writer back with for an API key
 
 - Throws **[Error][1714]** When the service refuses, in its words
 
-Returns **[Promise][1721]<[string][1704]>** The API key
+Returns **[Promise][1720]<[string][1704]>** The API key
 
 ## utils/obfuscate
 
@@ -7677,7 +7229,7 @@ the model read it, is the writer's and goes too.
 ### Parameters
 
 - `command` **ChatCommand**&#x20;
-- `options` **Required\<Pick<[ObfuscateOptions][987], (`"consults"` | `"random"`)>>**&#x20;
+- `options` **Required\<Pick<[ObfuscateOptions][911], (`"consults"` | `"random"`)>>**&#x20;
   - `options.consults` &#x20;
   - `options.random` &#x20;
 
@@ -7714,7 +7266,7 @@ Returns **any**&#x20;
 ### Parameters
 
 - `metadata` **any**&#x20;
-- `options` **Required\<Pick<[ObfuscateOptions][987], (`"consults"` | `"random"`)>>**&#x20;
+- `options` **Required\<Pick<[ObfuscateOptions][911], (`"consults"` | `"random"`)>>**&#x20;
 
 Returns **any**&#x20;
 
@@ -7726,7 +7278,7 @@ by the one rule first, and then the parts that need more care.
 ### Parameters
 
 - `message` **any**&#x20;
-- `options` **Required<[ObfuscateOptions][987]>**&#x20;
+- `options` **Required<[ObfuscateOptions][911]>**&#x20;
 
 Returns **any**&#x20;
 
@@ -7738,13 +7290,13 @@ with its words taken out and everything else as it was.
 ### Parameters
 
 - `backup` **T**&#x20;
-- `options` **[ObfuscateOptions][987]?** (optional, default `{}`)
+- `options` **[ObfuscateOptions][911]?** (optional, default `{}`)
 
 Returns **T**&#x20;
 
 ## settings
 
-Type: Required<[ObfuscateOptions][987]>
+Type: Required<[ObfuscateOptions][911]>
 
 ## utils/partialJson
 
@@ -7805,7 +7357,7 @@ come. Read as `partialStrings` reads them.
 
 - `text` **([string][1704] | null | [undefined][1717])** JSON, or the front part of some
 
-Returns **Record<[string][1704], [PartialField][1018]>**&#x20;
+Returns **Record<[string][1704], [PartialField][942]>**&#x20;
 
 ## utils/pictures
 
@@ -7953,11 +7505,11 @@ Type: [Set][1710]<[string][1704]>
 
 ## keys
 
-Type: [Array][1711]<[SettingsGroup][1140]>
+Type: [Array][1711]<[SettingsGroup][1066]>
 
 ## keys
 
-Type: [Array][1711]<[SettingsGroup][1140]>
+Type: [Array][1711]<[SettingsGroup][1066]>
 
 ## keys
 
@@ -7965,7 +7517,7 @@ Type: TreeSelectionKeys
 
 ## keys
 
-Type: [WeakMap][1724]<[Node][1713], [string][1704]>
+Type: [WeakMap][1723]<[Node][1713], [string][1704]>
 
 ##
 
@@ -8023,7 +7575,7 @@ nothing can catch.
 
 <!---->
 
-- Throws **[RangeError][1725]** When the value holds a cycle, as JSON's TypeError would
+- Throws **[RangeError][1724]** When the value holds a cycle, as JSON's TypeError would
 
 Returns **T**&#x20;
 
@@ -8074,8 +7626,8 @@ By name, numbers as numbers, with two of one name in a fixed order.
 
 ### Parameters
 
-- `a` **[ProjectRow][1062]**&#x20;
-- `b` **[ProjectRow][1062]**&#x20;
+- `a` **[ProjectRow][986]**&#x20;
+- `b` **[ProjectRow][986]**&#x20;
 
 Returns **[number][1706]**&#x20;
 
@@ -8086,20 +7638,20 @@ way the times run.
 
 ### Parameters
 
-- `rows` **[Array][1711]<[ProjectRow][1062]>**&#x20;
+- `rows` **[Array][1711]<[ProjectRow][986]>**&#x20;
 - `order` **ProjectOrder**&#x20;
   - `order.by` &#x20;
   - `order.descending` &#x20;
 
-Returns **[Array][1711]<[ProjectRow][1062]>**&#x20;
+Returns **[Array][1711]<[ProjectRow][986]>**&#x20;
 
 ##
 
-Type: [ProjectRow][1062]
+Type: [ProjectRow][986]
 
 ##
 
-Type: [ProjectRow][1062]
+Type: [ProjectRow][986]
 
 ## recentProjects
 
@@ -8107,10 +7659,10 @@ The projects edited most recently, the latest first.
 
 ### Parameters
 
-- `rows` **[Array][1711]<[ProjectRow][1062]>**&#x20;
+- `rows` **[Array][1711]<[ProjectRow][986]>**&#x20;
 - `limit` **[number][1706]**&#x20;
 
-Returns **[Array][1711]<[ProjectRow][1062]>**&#x20;
+Returns **[Array][1711]<[ProjectRow][986]>**&#x20;
 
 ## folded
 
@@ -8130,10 +7682,10 @@ The projects with every word of the query somewhere in their names.
 
 ### Parameters
 
-- `rows` **[Array][1711]<[ProjectRow][1062]>**&#x20;
+- `rows` **[Array][1711]<[ProjectRow][986]>**&#x20;
 - `query` **[string][1704]**&#x20;
 
-Returns **[Array][1711]<[ProjectRow][1062]>**&#x20;
+Returns **[Array][1711]<[ProjectRow][986]>**&#x20;
 
 ## utils/routeHelpers
 
@@ -8174,7 +7726,7 @@ in another window is shown there instead (`platform/windows.js`).
 - `router` &#x20;
 - `storyId` **[string][1704]** The project to open
 
-Returns **[Promise][1721]\<void>**&#x20;
+Returns **[Promise][1720]\<void>**&#x20;
 
 ## replaceProjectInRoute
 
@@ -8231,7 +7783,7 @@ Type: [Object][1707]
 - `link` **[string][1704]**&#x20;
 - `title` **[string][1704]**&#x20;
 - `words` **[number][1706]**&#x20;
-- `sections` **[Array][1711]<[SectionNode][1093]>?**&#x20;
+- `sections` **[Array][1711]<[SectionNode][1017]>?**&#x20;
 - `entries` **[number][1706]?** How many subsections a long run has, not listed here
 - `range` **[string][1704]?** The first and last of that run
 - `more` **[number][1706]?** Subsections left out of this tree for its size
@@ -8284,7 +7836,7 @@ block is code, not a heading.
 
 - `markdown` **[string][1704]**&#x20;
 
-Returns **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+Returns **[Array][1711]<[MarkdownSection][1015]>**&#x20;
 
 ## TREE_LIMIT
 
@@ -8312,25 +7864,25 @@ one section, asked for by name, that list is the answer.
 
 ### Parameters
 
-- `sections` **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+- `sections` **[Array][1711]<[MarkdownSection][1015]>**&#x20;
 - `limit` **[number][1706]?** (optional, default `TREE_LIMIT`)
 - `list` **[number][1706]?** How many subsections a node lists before it counts them instead (optional, default `LIST_LIMIT`)
 
-Returns **[Array][1711]<[SectionNode][1093]>**&#x20;
+Returns **[Array][1711]<[SectionNode][1017]>**&#x20;
 
 ## roots
 
-Type: [Array][1711]<[SectionNode][1093]>
+Type: [Array][1711]<[SectionNode][1017]>
 
 ## node
 
-Type: [SectionNode][1093]
+Type: [SectionNode][1017]
 
 ## collapse
 
 ### Parameters
 
-- `node` **[SectionNode][1093]**&#x20;
+- `node` **[SectionNode][1017]**&#x20;
 
 ## all
 
@@ -8342,7 +7894,7 @@ Type: [Set][1710]<[string][1704]>
 
 ##
 
-Type: [Array][1711]<[SectionNode][1093]>
+Type: [Array][1711]<[SectionNode][1017]>
 
 ##
 
@@ -8352,7 +7904,7 @@ Type: [number][1706]
 
 ### Parameters
 
-- `node` **[SectionNode][1093]**&#x20;
+- `node` **[SectionNode][1017]**&#x20;
 - `at` **[number][1706]**&#x20;
 
 ## findSection
@@ -8362,10 +7914,10 @@ failing both, the first whose title contains the reference.
 
 ### Parameters
 
-- `sections` **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+- `sections` **[Array][1711]<[MarkdownSection][1015]>**&#x20;
 - `reference` **[string][1704]**&#x20;
 
-Returns **([MarkdownSection][1091] | null)**&#x20;
+Returns **([MarkdownSection][1015] | null)**&#x20;
 
 ## indexOf
 
@@ -8374,10 +7926,18 @@ depth below the text's top level.
 
 ### Parameters
 
-- `sections` **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+- `sections` **[Array][1711]<[MarkdownSection][1015]>**&#x20;
 - `depth` **[number][1706]?** How many levels, counting the top (optional, default `3`)
 
 Returns **[string][1704]** '' for a text with no headings
+
+## lines
+
+Type: [Array][1711]<[string][1704]>
+
+## lines
+
+Type: [Array][1711]<[string][1704]>
 
 ## sectionIndexAt
 
@@ -8385,7 +7945,7 @@ The section an offset falls in: the last heading at or before it.
 
 ### Parameters
 
-- `sections` **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+- `sections` **[Array][1711]<[MarkdownSection][1015]>**&#x20;
 - `offset` **[number][1706]**&#x20;
 
 Returns **[number][1706]** Its index, or -1 before the first heading
@@ -8397,7 +7957,7 @@ would say it — `Spells / Spell Descriptions / Fire Burst`.
 
 ### Parameters
 
-- `sections` **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+- `sections` **[Array][1711]<[MarkdownSection][1015]>**&#x20;
 - `index` **[number][1706]**&#x20;
 
 Returns **[string][1704]**&#x20;
@@ -8474,7 +8034,7 @@ Design: `.llm/settings_import_design.md`.
 
 The app tables a setup is made of, in the order the export lists them.
 
-Type: [Array][1711]<[SettingsTable][1139]>
+Type: [Array][1711]<[SettingsTable][1065]>
 
 ## SettingsGroup
 
@@ -8488,20 +8048,20 @@ Type: (`"builtInProfiles"` | `"startingProfiles"` | `"narration"` | `"workflows"
 The groups left unpicked until the writer picks them: how one person likes
 to work, which a setup handed to someone else shouldn't carry unasked.
 
-Type: ReadonlySet<[SettingsGroup][1140]>
+Type: ReadonlySet<[SettingsGroup][1066]>
 
 ## KINDS
 
 What each kind of item is called: as a heading, and in a sentence about
 one of them or several.
 
-Type: Record<([SettingsTable][1139] | `"settings"`), {heading: [string][1704], one: [string][1704], many: [string][1704]}>
+Type: Record<([SettingsTable][1065] | `"settings"`), {heading: [string][1704], one: [string][1704], many: [string][1704]}>
 
 ## GROUP_NAMES
 
 Each group of settings by name, as a heading's item and in a sentence.
 
-Type: Record<[SettingsGroup][1140], {label: [string][1704], phrase: [string][1704]}>
+Type: Record<[SettingsGroup][1066], {label: [string][1704], phrase: [string][1704]}>
 
 ## SettingsItem
 
@@ -8513,7 +8073,7 @@ Type: [Object][1707]
 ### Properties
 
 - `key` **[string][1704]** `table/id`, or `settings/group`
-- `kind` **([SettingsTable][1139] | `"settings"`)**&#x20;
+- `kind` **([SettingsTable][1065] | `"settings"`)**&#x20;
 - `name` **[string][1704]** What the writer calls it
 - `picked` **[boolean][1705]?** Whether the export starts with it picked
 - `needs` **[Array][1711]<[string][1704]>?** The keys of the items it is no use without
@@ -8562,7 +8122,7 @@ What a row is called in the export's list and in a sentence.
 
 ### Parameters
 
-- `table` **[SettingsTable][1139]**&#x20;
+- `table` **[SettingsTable][1065]**&#x20;
 - `row` **any**&#x20;
 
 Returns **[string][1704]**&#x20;
@@ -8574,22 +8134,22 @@ export lists it.
 
 ### Parameters
 
-- `tables` **Partial\<Record<[SettingsTable][1139], [Array][1711]\<any>>>** The rows here
+- `tables` **Partial\<Record<[SettingsTable][1065], [Array][1711]\<any>>>** The rows here
 - `settings` **BackedUpSettings** The outside settings here
 
-Returns **[Array][1711]<[SettingsItem][1144]>**&#x20;
+Returns **[Array][1711]<[SettingsItem][1070]>**&#x20;
 
 ## items
 
-Type: [Array][1711]<[SettingsItem][1144]>
+Type: [Array][1711]<[SettingsItem][1070]>
 
 ## item
 
-Type: [SettingsItem][1144]
+Type: [SettingsItem][1070]
 
 ## item
 
-Type: [SettingsItem][1144]
+Type: [SettingsItem][1070]
 
 ## settingsNeeds
 
@@ -8597,7 +8157,7 @@ The rows a group of settings names, which it is no use without.
 
 ### Parameters
 
-- `group` **[SettingsGroup][1140]**&#x20;
+- `group` **[SettingsGroup][1066]**&#x20;
 - `settings` **BackedUpSettings**&#x20;
 
 Returns **[Array][1711]<[string][1704]>**&#x20;
@@ -8621,7 +8181,7 @@ of the items there are.
 ### Parameters
 
 - `picked` **[Set][1710]<[string][1704]>**&#x20;
-- `items` **[Array][1711]<[SettingsItem][1144]>**&#x20;
+- `items` **[Array][1711]<[SettingsItem][1070]>**&#x20;
 - `key` **[string][1704]** The item just picked
 
 Returns **[Set][1710]<[string][1704]>** A new set
@@ -8633,7 +8193,7 @@ backup envelope.
 
 ### Parameters
 
-- `tables` **Partial\<Record<[SettingsTable][1139], [Array][1711]\<any>>>** The rows here
+- `tables` **Partial\<Record<[SettingsTable][1065], [Array][1711]\<any>>>** The rows here
 - `settings` **BackedUpSettings** The outside settings here
 - `picked` **[Set][1710]<[string][1704]>** The keys of the items to put in
 
@@ -8709,7 +8269,7 @@ writer's key go to an address of its choosing.
 
 ### Parameters
 
-- `table` **[SettingsTable][1139]**&#x20;
+- `table` **[SettingsTable][1065]**&#x20;
 - `row` **any** The file's
 - `here` **any** The row here, if there is one
 - `options` **{byHand: [boolean][1705], now: [number][1706]}**&#x20;
@@ -8732,8 +8292,8 @@ Type: [Object][1707]
 
 - `rows` **TableData** The rows to write, by table
 - `settings` **Partial\<BackedUpSettings>** The outside settings to take
-- `added` **[Array][1711]<[SettingsItem][1144]>** Items not here before
-- `changed` **[Array][1711]<[SettingsItem][1144]>** Items here that the file's copies replace
+- `added` **[Array][1711]<[SettingsItem][1070]>** Items not here before
+- `changed` **[Array][1711]<[SettingsItem][1070]>** Items here that the file's copies replace
 - `fingerprints` **Record<[string][1704], [string][1704]>** Every item's fingerprint once this is done
 
 ## planImport
@@ -8743,7 +8303,7 @@ Work out what a settings file changes here, writing nothing.
 ### Parameters
 
 - `file` &#x20;
-- `here` **{tables: Partial\<Record<[SettingsTable][1139], [Array][1711]\<any>>>, settings: BackedUpSettings}**&#x20;
+- `here` **{tables: Partial\<Record<[SettingsTable][1065], [Array][1711]\<any>>>, settings: BackedUpSettings}**&#x20;
 - `$2` **[Object][1707]**&#x20;
   - `$2.byHand` &#x20;
   - `$2.fingerprints` (optional, default `{}`)
@@ -8755,11 +8315,11 @@ Work out what a settings file changes here, writing nothing.
   - `options.fingerprints` **Record<[string][1704], [string][1704]>?** Each item's as last imported
   - `options.now` **[number][1706]?** Timestamp, injectable for tests
 
-Returns **[SettingsImport][1183]**&#x20;
+Returns **[SettingsImport][1109]**&#x20;
 
 ## plan
 
-Type: [SettingsImport][1183]
+Type: [SettingsImport][1109]
 
 ## changesAnything
 
@@ -8767,7 +8327,7 @@ Whether importing would change anything here.
 
 ### Parameters
 
-- `plan` **[SettingsImport][1183]**&#x20;
+- `plan` **[SettingsImport][1109]**&#x20;
 
 Returns **[boolean][1705]**&#x20;
 
@@ -8794,7 +8354,7 @@ name when there are few and by count when there are more.
 
 ### Parameters
 
-- `items` **[Array][1711]<[SettingsItem][1144]>**&#x20;
+- `items` **[Array][1711]<[SettingsItem][1070]>**&#x20;
 
 Returns **[string][1704]**&#x20;
 
@@ -8804,7 +8364,7 @@ Items as the phrases of a sentence's list, a kind each; see `itemsInWords`.
 
 ### Parameters
 
-- `items` **[Array][1711]<[SettingsItem][1144]>**&#x20;
+- `items` **[Array][1711]<[SettingsItem][1070]>**&#x20;
 
 Returns **[Array][1711]<[string][1704]>**&#x20;
 
@@ -8814,11 +8374,11 @@ Type: [Array][1711]<[string][1704]>
 
 ## slice
 
-Type: [SettingsGroup][1140]
+Type: [SettingsGroup][1066]
 
 ##
 
-Type: [SettingsTable][1139]
+Type: [SettingsTable][1065]
 
 ## describeImport
 
@@ -8827,7 +8387,7 @@ connection Work proxy and the preset Work. Changes the narration connection."
 
 ### Parameters
 
-- `plan` **[SettingsImport][1183]**&#x20;
+- `plan` **[SettingsImport][1109]**&#x20;
 - `$1` **[Object][1707]** (optional, default `{}`)
   - `$1.done` (optional, default `false`)
 
@@ -8856,7 +8416,7 @@ project Thief and the connection Work proxy. Changes the narration connection."
 - `$1` **[Object][1707]** (optional, default `{}`)
   - `$1.done` (optional, default `false`)
 
-- `selection` **{projects: [Array][1711]<[string][1704]>, cards: [Array][1711]<[string][1704]>, plan: Pick<[SettingsImport][1183], (`"added"` | `"changed"`)>}** The names of its projects and cards, and what its settings change here
+- `selection` **{projects: [Array][1711]<[string][1704]>, cards: [Array][1711]<[string][1704]>, plan: Pick<[SettingsImport][1109], (`"added"` | `"changed"`)>}** The names of its projects and cards, and what its settings change here
 
 Returns **[string][1704]**&#x20;
 
@@ -8895,12 +8455,12 @@ Type: [Object][1707]
 - `key` **[boolean][1705]?** Whether nothing gets through without an API key
 - `hidden` **[boolean][1705]?** Left out of the type menu and the built-in
   connections: known here, but not offered yet
-- `notChat` **[RegExp][1726]?** The models in the service's list that a chat
+- `notChat` **[RegExp][1725]?** The models in the service's list that a chat
   cannot use (embeddings, speech, pictures, and OpenAI's that answer only its
   Responses API), which a model picker leaves out
-- `does` **ReadonlyArray<[ProviderKind][1211]>?** What a connection of this
+- `does` **ReadonlyArray<[ProviderKind][1137]>?** What a connection of this
   type can be asked for; a chat alone when absent
-- `signIn` **[SignIn][1209]?** Where the writer signs in to have a key made
+- `signIn` **[SignIn][1135]?** Where the writer signs in to have a key made
   for them, for a service that offers it
 - `credits` **[string][1704]?** Where an account buys more, for a service
   that answers 402 when it has run out
@@ -8930,7 +8490,7 @@ Type: (`"chat"` | `"speech"`)
 
 Every connection type, in the order the settings menu offers them.
 
-Type: [Array][1711]<[ProviderType][1207]>
+Type: [Array][1711]<[ProviderType][1133]>
 
 ## BUILT_IN_PROVIDERS
 
@@ -8968,16 +8528,16 @@ Type: [Object][1707]
   without being told, or where a hosted service's API is, for the row
 - `server` **[string][1704]?** The server behind a generic connection, for
   what it takes (ai/capabilities.js)
-- `does` **ReadonlyArray<[ProviderKind][1211]>** What it can be asked for
+- `does` **ReadonlyArray<[ProviderKind][1137]>** What it can be asked for
 - `builtInId` **[string][1704]?** The built-in connection it was
 
 ## BUILT_IN_KINDS
 
-Type: ReadonlyArray<[ConnectionKind][1215]>
+Type: ReadonlyArray<[ConnectionKind][1141]>
 
 ## CONNECTION_KINDS
 
-Type: ReadonlyArray<[ConnectionKind][1215]>
+Type: ReadonlyArray<[ConnectionKind][1141]>
 
 ###
 
@@ -8995,11 +8555,11 @@ A kind by its id.
 
 - `id` **([string][1704] | null | [undefined][1717])**&#x20;
 
-Returns **([ConnectionKind][1215] | [undefined][1717])**&#x20;
+Returns **([ConnectionKind][1141] | [undefined][1717])**&#x20;
 
 ## connectionKind
 
-Type: [ConnectionKind][1215]
+Type: [ConnectionKind][1141]
 
 ## kindOf
 
@@ -9010,7 +8570,7 @@ its type, and an OpenAI-compatible server for anything else.
 
 - `provider` &#x20;
 
-Returns **[ConnectionKind][1215]**&#x20;
+Returns **[ConnectionKind][1141]**&#x20;
 
 ## untouchedBuiltIn
 
@@ -9044,7 +8604,7 @@ Returns **[Array][1711]\<T>**&#x20;
 
 - `type` **[string][1704]?**&#x20;
 
-Returns **([ProviderType][1207] | [undefined][1717])**&#x20;
+Returns **([ProviderType][1133] | [undefined][1717])**&#x20;
 
 ## providerDoes
 
@@ -9055,7 +8615,7 @@ narration.
 ### Parameters
 
 - `provider` &#x20;
-- `kind` **[ProviderKind][1211]**&#x20;
+- `kind` **[ProviderKind][1137]**&#x20;
 
 Returns **[boolean][1705]**&#x20;
 
@@ -9176,7 +8736,7 @@ for one that offers no sign-in.
 
 - `type` **[string][1704]?**&#x20;
 
-Returns **([SignIn][1209] | [undefined][1717])**&#x20;
+Returns **([SignIn][1135] | [undefined][1717])**&#x20;
 
 ## creditsPage
 
@@ -9265,7 +8825,7 @@ Type: [Object][1707]
 - `reasoningEffort` **(`"disabled"` | `"enabled"` | `"minimal"` | `"low"` | `"medium"` | `"high"` | `"xhigh"` | `"max"`)** How hard the model thinks. `enabled` asks for thinking without naming a level, for models whose thinking is a switch rather than a dial. A model is sent the nearest it takes (see ai/capabilities.js).
 - `showModelReasoning` **[boolean][1705]** Whether to surface reasoning tokens.
 - `maxToolRounds` **[number][1706]** How many rounds of tool calls a turn may make before it has to answer. 0 = no limit. See runCompletionLoop in composables/useAIChat.js.
-- `parameters` **[AISamplerParameters][1263]** Sampler parameters. Fields with sentinel values are omitted from requests.
+- `parameters` **[AISamplerParameters][1189]** Sampler parameters. Fields with sentinel values are omitted from requests.
 - `temperature` **[number][1706]** 1.0 = omitted.
 - `topP` **[number][1706]** 1.0 = omitted.
 - `minP` **[number][1706]** 0 = omitted.
@@ -9317,7 +8877,7 @@ settings, then the model's, then the writer's changes.
 ### Parameters
 
 - `overrides` **AISettingsOverrides?**&#x20;
-- `modelDefaults` **Partial<[AISamplerParameters][1263]>?** The samplers the
+- `modelDefaults` **Partial<[AISamplerParameters][1189]>?** The samplers the
   model's makers say it runs best at
 
 Returns **AIDefaults**&#x20;
@@ -9386,7 +8946,7 @@ Type: [Object][1707]
 
 - `key` **[string][1704]**&#x20;
 - `label` **[string][1704]**&#x20;
-- `children` **[Array][1711]<[SettingsNode][1280]>?**&#x20;
+- `children` **[Array][1711]<[SettingsNode][1206]>?**&#x20;
 
 ##
 
@@ -9415,9 +8975,9 @@ in the order the kinds are listed.
 
 ### Parameters
 
-- `items` **[Array][1711]<[SettingsItem][1144]>**&#x20;
+- `items` **[Array][1711]<[SettingsItem][1070]>**&#x20;
 
-Returns **[Array][1711]<[SettingsNode][1280]>**&#x20;
+Returns **[Array][1711]<[SettingsNode][1206]>**&#x20;
 
 ##
 
@@ -9429,7 +8989,7 @@ Every leaf of the tree, in order.
 
 ### Parameters
 
-- `nodes` **[Array][1711]<[SettingsNode][1280]>**&#x20;
+- `nodes` **[Array][1711]<[SettingsNode][1206]>**&#x20;
 
 Returns **[Array][1711]<[string][1704]>**&#x20;
 
@@ -9440,7 +9000,7 @@ under it is, partly when some is.
 
 ### Parameters
 
-- `nodes` **[Array][1711]<[SettingsNode][1280]>**&#x20;
+- `nodes` **[Array][1711]<[SettingsNode][1206]>**&#x20;
 - `ticked` **[Set][1710]<[string][1704]>** Leaf keys
 
 Returns **TreeSelectionKeys**&#x20;
@@ -9449,7 +9009,7 @@ Returns **TreeSelectionKeys**&#x20;
 
 ### Parameters
 
-- `node` **[SettingsNode][1280]**&#x20;
+- `node` **[SettingsNode][1206]**&#x20;
 
 Returns **(`"all"` | `"some"` | `"none"`)**&#x20;
 
@@ -9467,10 +9027,10 @@ click, with what each setting newly ticked is no use without ticked too
 
 ### Parameters
 
-- `nodes` **[Array][1711]<[SettingsNode][1280]>**&#x20;
+- `nodes` **[Array][1711]<[SettingsNode][1206]>**&#x20;
 - `keys` **TreeSelectionKeys**&#x20;
 - `before` **[Set][1710]<[string][1704]>** The leaves ticked before the click
-- `items` **[Array][1711]<[SettingsItem][1144]>**&#x20;
+- `items` **[Array][1711]<[SettingsItem][1070]>**&#x20;
 
 Returns **[Set][1710]<[string][1704]>**&#x20;
 
@@ -9553,7 +9113,7 @@ What the others see of each of a project's documents.
 - `documents` **[Array][1711]<[Document][1712]>** The project's
 - `storyId` **[string][1704]**&#x20;
 
-Returns **[Map][1716]<[string][1704], [Sharing][1309]>**&#x20;
+Returns **[Map][1716]<[string][1704], [Sharing][1235]>**&#x20;
 
 ## sharedWith
 
@@ -9648,7 +9208,7 @@ Type: [Object][1707]
 
 ## NO_TABS
 
-Type: [Tabs][1325]
+Type: [Tabs][1251]
 
 ## CLOSED_KEPT
 
@@ -9705,7 +9265,7 @@ that is open is not a closed one.
 - `shown` **[Array][1711]<[string][1704]>?** (optional, default `[]`)
 - `closed` **[Array][1711]<[string][1704]>?** (optional, default `[]`)
 
-Returns **[Tabs][1325]**&#x20;
+Returns **[Tabs][1251]**&#x20;
 
 ## tabsOf
 
@@ -9719,9 +9279,9 @@ none to bring back.
 ### Parameters
 
 - `view` **(Record<[string][1704], any> | null | [undefined][1717])**&#x20;
-- `fields` **[TabFields][1329]?** Which panel's: the editor's unless given (optional, default `DOCUMENT_TABS`)
+- `fields` **[TabFields][1255]?** Which panel's: the editor's unless given (optional, default `DOCUMENT_TABS`)
 
-Returns **[Tabs][1325]**&#x20;
+Returns **[Tabs][1251]**&#x20;
 
 ## tabsPatch
 
@@ -9729,8 +9289,8 @@ The view's fields a set of tabs is written to.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
-- `fields` **[TabFields][1329]?** Which panel's: the editor's unless given (optional, default `DOCUMENT_TABS`)
+- `tabs` **[Tabs][1251]**&#x20;
+- `fields` **[TabFields][1255]?** Which panel's: the editor's unless given (optional, default `DOCUMENT_TABS`)
 
 Returns **Record<[string][1704], ([Array][1711]<[string][1704]> | [string][1704] | null)>**&#x20;
 
@@ -9742,10 +9302,10 @@ order; a dropped active tab gives way as a close does.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
+- `tabs` **[Tabs][1251]**&#x20;
 - `canShow` &#x20;
 
-Returns **[Tabs][1325]**&#x20;
+Returns **[Tabs][1251]**&#x20;
 
 ## openTab
 
@@ -9759,13 +9319,13 @@ remembered as closed.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
+- `tabs` **[Tabs][1251]**&#x20;
 - `id` **[string][1704]**&#x20;
 - `$2` **[Object][1707]** (optional, default `{}`)
   - `$2.preview` (optional, default `false`)
   - `$2.beside` (optional, default `false`)
 
-Returns **[Tabs][1325]**&#x20;
+Returns **[Tabs][1251]**&#x20;
 
 ## keepTab
 
@@ -9774,10 +9334,10 @@ elsewhere. Any other tab is kept already.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
+- `tabs` **[Tabs][1251]**&#x20;
 - `id` **[string][1704]**&#x20;
 
-Returns **[Tabs][1325]**&#x20;
+Returns **[Tabs][1251]**&#x20;
 
 ## moveTab
 
@@ -9788,12 +9348,12 @@ are as they were.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
+- `tabs` **[Tabs][1251]**&#x20;
 - `id` **[string][1704]**&#x20;
 - `to` **[number][1706]** The place it comes to have in the strip, from 0; past
   either end is that end
 
-Returns **[Tabs][1325]** The same tabs where it is not open, or is there already
+Returns **[Tabs][1251]** The same tabs where it is not open, or is there already
 
 ## without
 
@@ -9805,12 +9365,12 @@ from the history.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
+- `tabs` **[Tabs][1251]**&#x20;
 - `id` **[string][1704]**&#x20;
 - `remember` **[boolean][1705]** Whether it is the tab closed last, for
   reopening: one the writer closed, rather than one whose document went
 
-Returns **[Tabs][1325]**&#x20;
+Returns **[Tabs][1251]**&#x20;
 
 ## closeTab
 
@@ -9823,10 +9383,10 @@ reopening.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
+- `tabs` **[Tabs][1251]**&#x20;
 - `id` **[string][1704]**&#x20;
 
-Returns **[Tabs][1325]**&#x20;
+Returns **[Tabs][1251]**&#x20;
 
 ## closeTabs
 
@@ -9835,10 +9395,10 @@ each remembered as a close is.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
+- `tabs` **[Tabs][1251]**&#x20;
 - `ids` **[Array][1711]<[string][1704]>**&#x20;
 
-Returns **[Tabs][1325]**&#x20;
+Returns **[Tabs][1251]**&#x20;
 
 ## dropTabs
 
@@ -9850,10 +9410,10 @@ it to open again.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
+- `tabs` **[Tabs][1251]**&#x20;
 - `ids` **[Array][1711]<[string][1704]>**&#x20;
 
-Returns **[Tabs][1325]**&#x20;
+Returns **[Tabs][1251]**&#x20;
 
 ## lastClosed
 
@@ -9863,7 +9423,7 @@ closed before it.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
+- `tabs` **[Tabs][1251]**&#x20;
 - `canShow` &#x20;
 
 Returns **([string][1704] | null)** Null with none to bring back
@@ -9875,7 +9435,7 @@ next one, or the one before.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
+- `tabs` **[Tabs][1251]**&#x20;
 - `step` **(`1` | `-1`)**&#x20;
 
 Returns **([string][1704] | null)** Null with no other tab to go to
@@ -9887,7 +9447,7 @@ last tab however many there are, as it is in a browser.
 
 ### Parameters
 
-- `tabs` **[Tabs][1325]**&#x20;
+- `tabs` **[Tabs][1251]**&#x20;
 - `place` **[number][1706]** 1 to 9
 
 Returns **([string][1704] | null)** Null with no tab there
@@ -10007,7 +9567,7 @@ Start a tar.
 
 - `at` **[number][1706]?** The time its entries carry, in seconds: now (optional, default `Math.floor(Date.now()/1000)`)
 
-Returns **[TarWriter][1371]**&#x20;
+Returns **[TarWriter][1297]**&#x20;
 
 ## begin
 
@@ -10095,7 +9655,7 @@ The formula a match is, or none when there is no TeX between its delimiters.
 - `match` **(RegExpExecArray | null)**&#x20;
 - `display` **[boolean][1705]**&#x20;
 
-Returns **([Found][782] | null)**&#x20;
+Returns **([Found][702] | null)**&#x20;
 
 ## formulaAt
 
@@ -10107,7 +9667,7 @@ The formula that starts a piece of text, if one does.
 - `brackets` **[boolean][1705]?** Whether `\[…\]` is one, as it is but in a
   document (optional, default `true`)
 
-Returns **([Found][782] | null)**&#x20;
+Returns **([Found][702] | null)**&#x20;
 
 ## mayHoldFormula
 
@@ -10224,7 +9784,7 @@ Enter is left to start a new line.
 
 ### Parameters
 
-- `event` **[KeyboardEvent][1727]**&#x20;
+- `event` **[KeyboardEvent][1726]**&#x20;
 - `action` &#x20;
 
 ## utils/trash
@@ -10352,11 +9912,11 @@ turns and the opening a summary kept is not folded into what came after it.
 - `covered` **[Set][1710]<[number][1706]>?** Which of them a summary stands in for, by
   position. See `compactionCover` in ai/compaction.js. (optional, default `new Set()`)
 
-Returns **[Array][1711]<[Turn][1433]>**&#x20;
+Returns **[Array][1711]<[Turn][1359]>**&#x20;
 
 ## turns
 
-Type: [Array][1711]<[Turn][1433]>
+Type: [Array][1711]<[Turn][1359]>
 
 ## compactedRuns
 
@@ -10369,7 +9929,7 @@ included, so they are in the run rather than closing runs of their own.
 
 ### Parameters
 
-- `turns` **[Array][1711]<[Turn][1433]>**&#x20;
+- `turns` **[Array][1711]<[Turn][1359]>**&#x20;
 
 Returns **[Map][1716]<[number][1706], [number][1706]>** For each turn a line goes above, how many
 messages were in the run it closes
@@ -10421,7 +9981,7 @@ would come to more than `most` bytes.
 
 <!---->
 
-- Throws **[TooLargeError][1446]**&#x20;
+- Throws **[TooLargeError][1372]**&#x20;
 
 ## utils/versions
 
@@ -10545,14 +10105,14 @@ The mark a chat put on this document itself, not on a folder above it.
 
 ### Parameters
 
-- `chat` **([ChatMarks][1470] | null | [undefined][1717])**&#x20;
+- `chat` **([ChatMarks][1396] | null | [undefined][1717])**&#x20;
 - `id` **[string][1704]**&#x20;
 
-Returns **([ChatMark][1469] | null)**&#x20;
+Returns **([ChatMark][1395] | null)**&#x20;
 
 ##
 
-Type: [ChatMark][1469]
+Type: [ChatMark][1395]
 
 ## withMark
 
@@ -10565,11 +10125,11 @@ the same. Every mark is the writer's: the model has none of its own.
 
 ### Parameters
 
-- `chat` **([ChatMarks][1470] | null | [undefined][1717])**&#x20;
+- `chat` **([ChatMarks][1396] | null | [undefined][1717])**&#x20;
 - `id` **[string][1704]**&#x20;
-- `mark` **([ChatMark][1469] | null)** Null to leave it to the folders above
+- `mark` **([ChatMark][1395] | null)** Null to leave it to the folders above
 
-Returns **[ChatMarks][1470]** The lists, to update the chat with
+Returns **[ChatMarks][1396]** The lists, to update the chat with
 
 ## chatVisibility
 
@@ -10581,7 +10141,7 @@ when the tree or the chat changes.
 
 ### Parameters
 
-- `chat` **([ChatMarks][1470] | null | [undefined][1717])** Null reads with no marks at all
+- `chat` **([ChatMarks][1396] | null | [undefined][1717])** Null reads with no marks at all
 - `get` &#x20;
 
 ## settle
@@ -10618,7 +10178,7 @@ nearest folder's. Null when nothing above it is marked.
 
 - `document` **TreeDocument**&#x20;
 
-Returns **([ChatMark][1469] | null)**&#x20;
+Returns **([ChatMark][1395] | null)**&#x20;
 
 ## utils/webkit
 
@@ -10762,7 +10322,7 @@ Returns **[string][1704]**&#x20;
 
 ## written
 
-Type: [Array][1711]<[Blob][1720]>
+Type: [Array][1711]<[Blob][1719]>
 
 ## filter
 
@@ -10797,7 +10357,7 @@ a block's markdown has come to hang on more than its neighbours.
 - `doc` **[Node][1713]** As parsed, suggestions' marks and all
 - `accepted` **[Array][1711]<[string][1704]>** The suggestions the reader sees made
 
-Returns **[Reading][1507]**&#x20;
+Returns **[Reading][1433]**&#x20;
 
 ## blocks
 
@@ -10822,6 +10382,446 @@ next, after the empty lines between. Undefined where it has not.
 - `block` **[number][1706]**&#x20;
 
 Returns **([number][1706] | [undefined][1717])**&#x20;
+
+## editor/markdown
+
+Markdown as the document's file format: what the store holds,
+what the model reads and writes, and what a file on disk will be.
+
+Built on `prosemirror-markdown`, the reference implementation, with the
+parser and serializer configured against our schema rather than inherited.
+The parser is markdown-it's `default` preset — CommonMark plus GFM
+strikethrough and tables — with raw HTML off, so a tag in a document is
+text. A picture's alt text is its words as plain text, marks and all
+dropped, as markdown-it writes it in HTML.
+
+A table is written the plainest way GFM reads: a pipe at each end of every
+row, one space inside each, and no padding to line the columns up, so that
+an edit to one cell is an edit to one line. A pipe in a cell is escaped,
+inside code as well, since the row is cut at its pipes before anything else
+is read. markdown-it keeps as many cells in a row as the header has and
+drops the rest, so a table with a row longer than its header is read as the
+text it was written as, whole: words are not lost to a save.
+
+A lone newline is a hard break, in both directions. A writer who ended a line
+meant it to end there, and CommonMark's soft wrap is not a reading anyone
+here expects. The serializer writes a hard break as a bare newline; when
+several run together, the ones after the first are written backslash-newline,
+which markdown-it reads as a hard break wherever it stands, so a run of
+breaks comes back as the same run rather than as a blank line that would
+split the paragraph.
+
+Text is escaped where the reference would leave it to come back as
+something else: an entity as its character, an address in angle brackets as
+a link, `1)` at the start of a line as a list, a `#` ending a heading as
+its closing. A space between words is bold, italic or struck only where
+the words on both sides of it are: one left in bold after bold italic
+would sit between the delimiters, and markdown would read them as text.
+
+A formula is read before markdown's escapes, by the delimiters the chat
+reads (`utils/tex.js`), and its TeX written as it is: `$…$` in a sentence,
+or `\(…\)` where dollars can't hold it, and `$$`, its TeX and `$$` on lines
+of their own. `\[…\]` is no formula here, since a bracket in the text is
+written `\[`. A dollar in the
+text is written `\$` only where it would otherwise open a formula, so a
+price stays as it is: each is written as a mark first, and once the whole
+is written, each mark, the last first, is a dollar or an escaped one by
+what is written after it.
+
+Two properties are pinned by tests: `parse(serialize(doc))` is `doc` for
+every node and mark, and `serialize(parse(md))` is a fixed point after one
+pass, which is what matters once files are edited outside the app.
+
+## formulaInline
+
+### Parameters
+
+- `state` &#x20;
+- `silent` &#x20;
+
+## formulaInline
+
+A formula in a sentence, read where markdown would otherwise read its
+dollar or its backslash as text. Within what a link's words or a cell may
+hold, as every inline rule is.
+
+### Parameters
+
+- `state` **StateInline**&#x20;
+- `silent` **[boolean][1705]**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## closeOn
+
+Where a formula's closing `$$` is on the line it ends: the first with
+nothing but spaces after it, or -1.
+
+### Parameters
+
+- `line` **[string][1704]**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## formulaBlock
+
+A formula with lines of its own: `$$` starting a line, and `$$` ending the
+same line or a later one, with no blank line between. It ends a paragraph
+where it starts, as a fence does.
+
+### Parameters
+
+- `state` **StateBlock**&#x20;
+- `startLine` **[number][1706]**&#x20;
+- `endLine` **[number][1706]**&#x20;
+- `silent` **[boolean][1705]**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## cellsIn
+
+How many cells markdown-it finds in a row: the line cut at every pipe not
+escaped, less the empty ends a leading and a trailing pipe leave.
+
+### Parameters
+
+- `line` **[string][1704]**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## tokenizerOf
+
+markdown-it with GFM's table rule made to refuse a table it would lose words
+from. The rule is run in full and its tokens taken back when a row has more
+cells than the header — and when only asked whether a table starts here,
+which must be answered the same way without leaving anything behind.
+
+## block
+
+Type: {\_\_rules\_\_: [Array][1711]<{name: [string][1704], fn: [Function][1727], alt: [Array][1711]<[string][1704]>}>}
+
+## block
+
+Type: unknown
+
+##
+
+##
+
+Type: unknown
+
+## TAIL
+
+How much of the output the state keeps to look back on. Two characters would
+do: whether a line has ended, and whether a `!` before a link is escaped.
+
+Type: [number][1706]
+
+## ROOM
+
+How long the state's output grows before all but its tail is moved out.
+
+Type: [number][1706]
+
+## DELIMITED
+
+Marks written as delimiters around their text, which a space can strand.
+
+## spacesAsNeighbours
+
+A block's inline content with each run of spaces bold, italic or struck
+only where the text on both sides of it is too. Docs bolds a word's space
+with the word when it is double-clicked, and a space in bold between bold
+italic and plain text is written after the italic has closed and before
+the bold has: `***bold italic. ***plain`, which markdown reads as text,
+asterisks and all.
+
+### Parameters
+
+- `parent` **[Node][1713]**&#x20;
+
+Returns **[Node][1713]**&#x20;
+
+## children
+
+Type: [Array][1711]<[Node][1713]>
+
+## children
+
+Type: [Array][1711]<[Node][1713]>
+
+## LinearSerializer
+
+**Extends MarkdownSerializer**
+
+The reference serializer, writing in time linear in the document's length.
+
+Its state asks whether its output ends a line before nearly every block, and
+a string grown a piece at a time is copied whole to be read. In a long
+document that copy is the whole document, made again for every block: 20
+seconds for a 1.5 MB rulebook in Chromium, 40 in WebKit, every time it was
+saved, and as long for a list of 20,000 items. Here the state holds only the
+end of its output, and what comes before is moved out as it is written, so
+it answers the same, at once, at any depth.
+
+### serialize
+
+The document written, its text's dollars each a mark until what is
+written after them says whether they are escaped. A mark is a character
+the document has none of: should the first be in it already, the next is
+tried, and with none left every dollar is escaped.
+
+#### Parameters
+
+- `content` **[Node][1713]**&#x20;
+- `options` (optional, default `{}`)
+
+Returns **[string][1704]**&#x20;
+
+### write
+
+#### Parameters
+
+- `content` **[Node][1713]**&#x20;
+- `options` &#x20;
+- `dollars` **Dollars**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+##
+
+## DOLLAR_MARKS
+
+How a serialization writes the text's dollars: each as `mark`, counted, to
+be settled once all is written; or, with no mark, each escaped.
+
+## DOLLAR_MARKS
+
+Characters a dollar is written as until it is settled: the private use area's.
+
+## dollarsResolved
+
+The text's dollars, written as marks, made dollars again: each escaped
+where it would open a formula as written, and left as it is otherwise. The
+last is settled first, since whether one opens a formula hangs on what is
+written after it, and a dollar escaped is no formula's close.
+
+### Parameters
+
+- `pieces` **[Array][1711]<[string][1704]>** What was written, cut at the marks
+
+Returns **[string][1704]**&#x20;
+
+## opensFormula
+
+Whether the `i`th dollar would open a formula, read with what is written
+after it as far as a blank line, beyond which no formula reaches.
+
+### Parameters
+
+- `pieces` **[Array][1711]<[string][1704]>**&#x20;
+- `dollars` **[Array][1711]<[string][1704]>** Those after it, settled
+- `i` **[number][1706]**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## dollarsIn
+
+A text's dollars as the serialization writes them (`Dollars`).
+
+### Parameters
+
+- `state` **MarkdownSerializerState**&#x20;
+- `text` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+##
+
+##
+
+Type: unknown
+
+## BETWEEN_DOLLARS
+
+A formula's TeX that `$…$` holds: Pandoc's rule, as it is read (`utils/tex.js`).
+
+## writtenFormula
+
+A formula in a sentence as it is written: between dollars, or between `\(`
+and `\)` where dollars can't hold it, its TeX starting or ending with a
+space, running over lines, or a digit following it.
+
+### Parameters
+
+- `tex` **[string][1704]**&#x20;
+- `digitAfter` **[boolean][1705]?** Whether a digit follows it (optional, default `false`)
+
+Returns **[string][1704]**&#x20;
+
+## writtenFormulaBlock
+
+A formula with lines of its own as it is written: its TeX on the lines
+between, a blank line among them closed up, since none can be in it.
+
+### Parameters
+
+- `tex` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## ENTITY
+
+An entity markdown would read as the character it names: `&amp;`, `&#42;`.
+
+## AUTOLINK
+
+An address in angle brackets, which markdown would read as a link.
+
+## escapeMore
+
+Escapes the reference leaves out, after its own: text that would come back
+as something else. An entity would come back as its character, and an
+address in angle brackets as a link. At the start of a line, `1)`, a bare
+`1.` or `+` would open a list, and a line of `=` under another would make it
+a heading. At the end of a heading, a `#` would be read as its closing.
+
+### Parameters
+
+- `text` **[string][1704]** Already escaped by the reference
+- `startOfLine` **[boolean][1705]**&#x20;
+- `endsHeading` **[boolean][1705]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## endsLine
+
+Whether nothing but breaks follows a block's child, which ends its line:
+the serializer drops trailing breaks.
+
+### Parameters
+
+- `parent` **[Node][1713]**&#x20;
+- `index` **[number][1706]**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## withBlockSuggestions
+
+### Parameters
+
+- `writers` &#x20;
+
+## withBlockSuggestions
+
+Block serializers with a whole block's suggestion written around the
+block, each half on a line of its own: the open, the block, then the close
+and the id.
+
+### Parameters
+
+- `writers` **Record<[string][1704], BlockWriter>**&#x20;
+
+Returns **Record<[string][1704], BlockWriter>**&#x20;
+
+## type
+
+Type: (`"insertion"` | `"deletion"`)
+
+## type
+
+Type: (`"insertion"` | `"deletion"`)
+
+##
+
+##
+
+Type: unknown
+
+## serializer
+
+The serializer `serializeMarkdown` writes with. Exported for tests, which
+hold it to what the reference's own `serialize` writes.
+
+##
+
+##
+
+Type: unknown
+
+## cells
+
+The cells' own serializer: a cell's text and marks, written as a paragraph's
+would be, but without the escapes for what starts a line, since a cell
+starts after a pipe. A dash in a cell stays a dash.
+
+## rowOf
+
+One row of a table, as a line.
+
+### Parameters
+
+- `row` **[Node][1713]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## ruleOf
+
+A column's cell in the line under the header.
+
+### Parameters
+
+- `align` **([string][1704] | null)**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## parseMarkdown
+
+Read markdown into a document. Never throws on content: what the schema
+cannot hold is read as the text it was written as.
+
+### Parameters
+
+- `markdown` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[Node][1713]** A document in the editor's schema
+
+## serializeMarkdown
+
+Write a document as markdown.
+
+### Parameters
+
+- `doc` **[Node][1713]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## settleMarkdown
+
+Markdown in the file format's own form: what the editor would serialize
+from it. The same words, with the serializer's choices of bullet, escape,
+and line ending, so that text written from outside and text the editor
+wrote never differ in surface form — a recorded edit still matches after
+the document has been opened, and a document opened and closed untouched
+is byte-identical.
+
+### Parameters
+
+- `markdown` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## appendBlocks
+
+Markdown after markdown: a blank line between, so the new text starts a
+block of its own rather than running on from the last one.
+
+### Parameters
+
+- `content` **([string][1704] | null | [undefined][1717])**&#x20;
+- `text` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
 
 ## editor/suggestions
 
@@ -11653,7 +11653,7 @@ Returns **[number][1706]**&#x20;
 
 ## blockWords
 
-Type: [WeakMap][1724]<[Node][1713], [Array][1711]<[string][1704]>>
+Type: [WeakMap][1723]<[Node][1713], [Array][1711]<[string][1704]>>
 
 ## wordsIn
 
@@ -12184,1211 +12184,1211 @@ Type: [Array][1711]\<BlobPart>
 [312]: #node_names
 [313]: #mark_names
 [314]: #schema
-[315]: #editormarkdown
-[316]: #formulainline
+[315]: #storesmigrationscommentthreads
+[316]: #threadsofftext
 [317]: #parameters-89
-[318]: #formulainline-1
+[318]: #threadsofftext-1
 [319]: #parameters-90
-[320]: #closeon
-[321]: #parameters-91
-[322]: #formulablock
-[323]: #parameters-92
-[324]: #lines
-[325]: #lines-1
-[326]: #cellsin
-[327]: #parameters-93
-[328]: #tokenizerof
-[329]: #block
-[330]: #block-1
-[331]: #top
-[332]: #split
-[333]: #state
-[334]: #parameters-94
-[335]: #state-1
-[336]: #parameters-95
-[337]: #state-2
-[338]: #parameters-96
-[339]: #state-3
-[340]: #parameters-97
-[341]: #state-4
-[342]: #parameters-98
-[343]: #state-5
-[344]: #parameters-99
-[345]: #state-6
-[346]: #parameters-100
-[347]: #-6
-[348]: #-7
-[349]: #tail
-[350]: #room
-[351]: #delimited
-[352]: #spacesasneighbours
-[353]: #parameters-101
-[354]: #children
-[355]: #children-1
-[356]: #linearserializer
-[357]: #serialize
-[358]: #parameters-102
-[359]: #write
-[360]: #parameters-103
-[361]: #dollars
-[362]: #dollars-1
-[363]: #dollars-2
-[364]: #parameters-104
-[365]: #-8
-[366]: #dollar_marks
-[367]: #dollar_marks-1
-[368]: #dollarsresolved
-[369]: #parameters-105
-[370]: #opensformula
-[371]: #parameters-106
-[372]: #dollarsin
-[373]: #parameters-107
-[374]: #-9
-[375]: #-10
-[376]: #between_dollars
-[377]: #writtenformula
-[378]: #parameters-108
-[379]: #writtenformulablock
-[380]: #parameters-109
-[381]: #entity
-[382]: #autolink
-[383]: #escapemore
-[384]: #parameters-110
-[385]: #endsline
-[386]: #parameters-111
-[387]: #withblocksuggestions
-[388]: #parameters-112
-[389]: #withblocksuggestions-1
-[390]: #parameters-113
-[391]: #type
-[392]: #type-1
-[393]: #-11
-[394]: #-12
-[395]: #serializer
-[396]: #-13
-[397]: #-14
-[398]: #cells
-[399]: #rowof
-[400]: #parameters-114
-[401]: #ruleof
-[402]: #parameters-115
-[403]: #parsemarkdown
-[404]: #parameters-116
-[405]: #serializemarkdown
-[406]: #parameters-117
-[407]: #settlemarkdown
-[408]: #parameters-118
-[409]: #appendblocks
-[410]: #parameters-119
-[411]: #storesmigrationscommentthreads
-[412]: #threadsofftext
-[413]: #parameters-120
-[414]: #threadsofftext-1
-[415]: #parameters-121
-[416]: #editorcomments
-[417]: #threads
-[418]: #foundcomment
-[419]: #properties-4
-[420]: #markuptoken
-[421]: #properties-5
-[422]: #open_markup
-[423]: #open_markup-1
-[424]: #parsedmarkup
-[425]: #token_pattern
-[426]: #close_pattern
-[427]: #newcommentid
-[428]: #break_pattern
-[429]: #closemarkup
+[320]: #editorcomments
+[321]: #threads
+[322]: #foundcomment
+[323]: #properties-4
+[324]: #markuptoken
+[325]: #properties-5
+[326]: #open_markup
+[327]: #open_markup-1
+[328]: #parsedmarkup
+[329]: #token_pattern
+[330]: #close_pattern
+[331]: #newcommentid
+[332]: #break_pattern
+[333]: #closemarkup
+[334]: #parameters-91
+[335]: #cleancomment
+[336]: #parameters-92
+[337]: #commentof
+[338]: #parameters-93
+[339]: #parsemarkup
+[340]: #parameters-94
+[341]: #stack
+[342]: #stack-1
+[343]: #pairs
+[344]: #pop
+[345]: #pop-1
+[346]: #tokens
+[347]: #runs
+[348]: #runs-1
+[349]: #runs-2
+[350]: #get
+[351]: #get-1
+[352]: #get-2
+[353]: #get-3
+[354]: #span
+[355]: #rendermarkup
+[356]: #parameters-95
+[357]: #pop-2
+[358]: #pop-3
+[359]: #open
+[360]: #open-1
+[361]: #open-2
+[362]: #open-3
+[363]: #open-4
+[364]: #joinruns
+[365]: #parameters-96
+[366]: #joined
+[367]: #joined-1
+[368]: #last
+[369]: #markupoffset
+[370]: #parameters-97
+[371]: #changestretch
+[372]: #parameters-98
+[373]: #withoutruns
+[374]: #parameters-99
+[375]: #findcomments
+[376]: #parameters-100
+[377]: #settlecomments
+[378]: #parameters-101
+[379]: #withoutcomments
+[380]: #parameters-102
+[381]: #half_pattern
+[382]: #quotewithoutcomments
+[383]: #parameters-103
+[384]: #nearest
+[385]: #parameters-104
+[386]: #nearest-1
+[387]: #parameters-105
+[388]: #editaroundcomments
+[389]: #parameters-106
+[390]: #lost
+[391]: #lost-1
+[392]: #spans
+[393]: #spans-1
+[394]: #rewritearoundcomments
+[395]: #parameters-107
+[396]: #placed
+[397]: #countcomments
+[398]: #parameters-108
+[399]: #context_chars
+[400]: #newpost
+[401]: #parameters-109
+[402]: #authorof
+[403]: #parameters-110
+[404]: #suggesterof
+[405]: #parameters-111
+[406]: #newthread
+[407]: #parameters-112
+[408]: #placedids
+[409]: #parameters-113
+[410]: #threadstate
+[411]: #parameters-114
+[412]: #wordsaround
+[413]: #parameters-115
+[414]: #suggestionplaced
+[415]: #parameters-116
+[416]: #settlethreads
+[417]: #parameters-117
+[418]: #next
+[419]: #next-1
+[420]: #next-2
+[421]: #liftthreads
+[422]: #parameters-118
+[423]: #withthreadsonly
+[424]: #parameters-119
+[425]: #countopen
+[426]: #parameters-120
+[427]: #samethread
+[428]: #parameters-121
+[429]: #said
 [430]: #parameters-122
-[431]: #cleancomment
+[431]: #placethread
 [432]: #parameters-123
-[433]: #commentof
-[434]: #parameters-124
-[435]: #parsemarkup
-[436]: #parameters-125
-[437]: #stack
-[438]: #stack-1
-[439]: #pairs
-[440]: #pop
-[441]: #pop-1
-[442]: #tokens
-[443]: #runs
-[444]: #runs-1
-[445]: #runs-2
-[446]: #get
-[447]: #get-1
-[448]: #get-2
-[449]: #get-3
-[450]: #span
-[451]: #rendermarkup
-[452]: #parameters-126
-[453]: #pop-2
-[454]: #pop-3
-[455]: #open
-[456]: #open-1
-[457]: #open-2
-[458]: #open-3
-[459]: #open-4
-[460]: #joinruns
-[461]: #parameters-127
-[462]: #joined
-[463]: #joined-1
-[464]: #last
-[465]: #markupoffset
-[466]: #parameters-128
-[467]: #changestretch
-[468]: #parameters-129
-[469]: #withoutruns
-[470]: #parameters-130
-[471]: #findcomments
-[472]: #parameters-131
-[473]: #settlecomments
-[474]: #parameters-132
-[475]: #withoutcomments
-[476]: #parameters-133
-[477]: #half_pattern
-[478]: #quotewithoutcomments
-[479]: #parameters-134
-[480]: #nearest
-[481]: #parameters-135
-[482]: #nearest-1
-[483]: #parameters-136
-[484]: #editaroundcomments
-[485]: #parameters-137
-[486]: #lost
-[487]: #lost-1
-[488]: #spans
-[489]: #spans-1
-[490]: #rewritearoundcomments
-[491]: #parameters-138
-[492]: #placed
-[493]: #countcomments
-[494]: #parameters-139
-[495]: #context_chars
-[496]: #newpost
-[497]: #parameters-140
-[498]: #authorof
-[499]: #parameters-141
-[500]: #suggesterof
-[501]: #parameters-142
-[502]: #newthread
-[503]: #parameters-143
-[504]: #placedids
-[505]: #parameters-144
-[506]: #threadstate
-[507]: #parameters-145
-[508]: #wordsaround
-[509]: #parameters-146
-[510]: #suggestionplaced
-[511]: #parameters-147
-[512]: #settlethreads
-[513]: #parameters-148
-[514]: #next
-[515]: #next-1
-[516]: #next-2
-[517]: #liftthreads
-[518]: #parameters-149
-[519]: #withthreadsonly
-[520]: #parameters-150
-[521]: #countopen
-[522]: #parameters-151
-[523]: #samethread
-[524]: #parameters-152
-[525]: #said
-[526]: #parameters-153
-[527]: #placethread
-[528]: #parameters-154
-[529]: #spots
-[530]: #commenton
-[531]: #parameters-155
-[532]: #placedthread
-[533]: #properties-6
-[534]: #readabletext
-[535]: #parameters-156
-[536]: #widen_step
-[537]: #passageintext
-[538]: #parameters-157
-[539]: #-15
-[540]: #withoutcomment
-[541]: #parameters-158
-[542]: #commentrange
-[543]: #runsover
-[544]: #parameters-159
-[545]: #ranges
-[546]: #going
-[547]: #commentranges
-[548]: #parameters-160
-[549]: #pieces
-[550]: #pieces-1
-[551]: #pieces-2
-[552]: #pieces-3
-[553]: #pieces-4
-[554]: #keepcomments
-[555]: #parameters-161
-[556]: #-16
-[557]: #nodes
-[558]: #commentaround
-[559]: #parameters-162
-[560]: #commententry
-[561]: #properties-7
-[562]: #entriesof
-[563]: #parameters-163
-[564]: #entriesof-1
-[565]: #parameters-164
-[566]: #commentsindoc
-[567]: #parameters-165
-[568]: #commentsgone
-[569]: #parameters-166
-[570]: #commentsinmarkdown
-[571]: #parameters-167
-[572]: #plainpassage
-[573]: #parameters-168
-[574]: #closeof
-[575]: #parameters-169
-[576]: #commentcount
-[577]: #commentmarkupplugin
-[578]: #parameters-170
-[579]: #counts
-[580]: #counts-1
-[581]: #countof
-[582]: #parameters-171
-[583]: #countof-1
-[584]: #parameters-172
-[585]: #loose
-[586]: #loose-1
-[587]: #storesmigrationsprofiles
-[588]: #builtinfor
-[589]: #parameters-173
-[590]: #profilefrom
-[591]: #parameters-174
-[592]: #promptstoprofiles
-[593]: #parameters-175
-[594]: #chatstoprofiles
-[595]: #parameters-176
-[596]: #storiestoprofiles
-[597]: #parameters-177
-[598]: #storesmigrationssummariesinplace
-[599]: #stoodfor
-[600]: #parameters-178
-[601]: #stoodfor-1
-[602]: #parameters-179
-[603]: #placechat
-[604]: #parameters-180
-[605]: #targets
-[606]: #targets-1
-[607]: #order
-[608]: #moved
-[609]: #moved-1
-[610]: #parameters-181
-[611]: #summariesintoplace
-[612]: #parameters-182
-[613]: #chats
-[614]: #changed
-[615]: #changed-1
-[616]: #storesmigrationspurgedeleted
-[617]: #flagged_tables
-[618]: #purged
-[619]: #properties-8
-[620]: #withoutdeleted
-[621]: #parameters-183
-[622]: #gonefiles
-[623]: #deletedids
-[624]: #parameters-184
-[625]: #storesmigrationsprofileskills
-[626]: #renamed
-[627]: #rolestoskills
-[628]: #parameters-185
-[629]: #skills
-[630]: #-17
-[631]: #storesmigrationsjobworkflows
-[632]: #rolestoworkflows
-[633]: #parameters-186
-[634]: #storesmigrationsmodelkeeps
-[635]: #withoutmodelkeeps
-[636]: #parameters-187
-[637]: #storesmigrationsallowedproviders
-[638]: #allowedproviderstopresets
-[639]: #parameters-188
-[640]: #storesmigrationsexperimentalskills
-[641]: #withexperimentaloff
-[642]: #parameters-189
-[643]: #experimentaloffchats
-[644]: #parameters-190
-[645]: #experimentaloffprofiles
-[646]: #parameters-191
-[647]: #storesmigrationsprojectviews
-[648]: #view_fields
-[649]: #viewsoffstories
-[650]: #parameters-192
-[651]: #views
-[652]: #view
-[653]: #view-1
-[654]: #parameters-193
-[655]: #utilsbackuparchive
-[656]: #manifest
-[657]: #bytes
-[658]: #bytes-1
-[659]: #bytes-2
-[660]: #entry_chars
-[661]: #writearchive
-[662]: #parameters-194
-[663]: #named
-[664]: #named-1
-[665]: #parameters-195
-[666]: #zipentry
-[667]: #properties-9
-[668]: #isarchive
-[669]: #parameters-196
-[670]: #iszip
-[671]: #parameters-197
-[672]: #readarchive
-[673]: #parameters-198
-[674]: #tables
-[675]: #-18
-[676]: #entries
-[677]: #datastart
-[678]: #parameters-199
-[679]: #blobof
+[433]: #spots
+[434]: #commenton
+[435]: #parameters-124
+[436]: #placedthread
+[437]: #properties-6
+[438]: #readabletext
+[439]: #parameters-125
+[440]: #widen_step
+[441]: #passageintext
+[442]: #parameters-126
+[443]: #-6
+[444]: #withoutcomment
+[445]: #parameters-127
+[446]: #commentrange
+[447]: #runsover
+[448]: #parameters-128
+[449]: #ranges
+[450]: #going
+[451]: #commentranges
+[452]: #parameters-129
+[453]: #pieces
+[454]: #pieces-1
+[455]: #pieces-2
+[456]: #pieces-3
+[457]: #pieces-4
+[458]: #keepcomments
+[459]: #parameters-130
+[460]: #-7
+[461]: #nodes
+[462]: #commentaround
+[463]: #parameters-131
+[464]: #commententry
+[465]: #properties-7
+[466]: #entriesof
+[467]: #parameters-132
+[468]: #entriesof-1
+[469]: #parameters-133
+[470]: #commentsindoc
+[471]: #parameters-134
+[472]: #commentsgone
+[473]: #parameters-135
+[474]: #commentsinmarkdown
+[475]: #parameters-136
+[476]: #plainpassage
+[477]: #parameters-137
+[478]: #closeof
+[479]: #parameters-138
+[480]: #commentcount
+[481]: #commentmarkupplugin
+[482]: #parameters-139
+[483]: #counts
+[484]: #counts-1
+[485]: #countof
+[486]: #parameters-140
+[487]: #countof-1
+[488]: #parameters-141
+[489]: #top
+[490]: #split
+[491]: #state
+[492]: #parameters-142
+[493]: #state-1
+[494]: #parameters-143
+[495]: #state-2
+[496]: #parameters-144
+[497]: #state-3
+[498]: #parameters-145
+[499]: #state-4
+[500]: #parameters-146
+[501]: #state-5
+[502]: #parameters-147
+[503]: #state-6
+[504]: #parameters-148
+[505]: #loose
+[506]: #loose-1
+[507]: #storesmigrationsprofiles
+[508]: #builtinfor
+[509]: #parameters-149
+[510]: #profilefrom
+[511]: #parameters-150
+[512]: #promptstoprofiles
+[513]: #parameters-151
+[514]: #chatstoprofiles
+[515]: #parameters-152
+[516]: #storiestoprofiles
+[517]: #parameters-153
+[518]: #storesmigrationssummariesinplace
+[519]: #stoodfor
+[520]: #parameters-154
+[521]: #stoodfor-1
+[522]: #parameters-155
+[523]: #placechat
+[524]: #parameters-156
+[525]: #targets
+[526]: #targets-1
+[527]: #order
+[528]: #moved
+[529]: #moved-1
+[530]: #parameters-157
+[531]: #summariesintoplace
+[532]: #parameters-158
+[533]: #chats
+[534]: #changed
+[535]: #changed-1
+[536]: #storesmigrationspurgedeleted
+[537]: #flagged_tables
+[538]: #purged
+[539]: #properties-8
+[540]: #withoutdeleted
+[541]: #parameters-159
+[542]: #gonefiles
+[543]: #deletedids
+[544]: #parameters-160
+[545]: #storesmigrationsprofileskills
+[546]: #renamed
+[547]: #rolestoskills
+[548]: #parameters-161
+[549]: #skills
+[550]: #-8
+[551]: #storesmigrationsjobworkflows
+[552]: #rolestoworkflows
+[553]: #parameters-162
+[554]: #storesmigrationsmodelkeeps
+[555]: #withoutmodelkeeps
+[556]: #parameters-163
+[557]: #storesmigrationsallowedproviders
+[558]: #allowedproviderstopresets
+[559]: #parameters-164
+[560]: #storesmigrationsexperimentalskills
+[561]: #withexperimentaloff
+[562]: #parameters-165
+[563]: #experimentaloffchats
+[564]: #parameters-166
+[565]: #experimentaloffprofiles
+[566]: #parameters-167
+[567]: #storesmigrationsprojectviews
+[568]: #view_fields
+[569]: #viewsoffstories
+[570]: #parameters-168
+[571]: #views
+[572]: #view
+[573]: #view-1
+[574]: #parameters-169
+[575]: #utilsbackuparchive
+[576]: #manifest
+[577]: #bytes
+[578]: #bytes-1
+[579]: #bytes-2
+[580]: #entry_chars
+[581]: #writearchive
+[582]: #parameters-170
+[583]: #named
+[584]: #named-1
+[585]: #parameters-171
+[586]: #zipentry
+[587]: #properties-9
+[588]: #isarchive
+[589]: #parameters-172
+[590]: #iszip
+[591]: #parameters-173
+[592]: #readarchive
+[593]: #parameters-174
+[594]: #tables
+[595]: #-9
+[596]: #entries
+[597]: #datastart
+[598]: #parameters-175
+[599]: #blobof
+[600]: #parameters-176
+[601]: #most_entry
+[602]: #bytesof
+[603]: #parameters-177
+[604]: #inflatesync
+[605]: #textof
+[606]: #parameters-178
+[607]: #utilschattabs
+[608]: #chattext
+[609]: #chat_text_titles
+[610]: #chattabid
+[611]: #parameters-179
+[612]: #chattabof
+[613]: #parameters-180
+[614]: #match
+[615]: #match-1
+[616]: #match-2
+[617]: #skilltabid
+[618]: #parameters-181
+[619]: #skilltabof
+[620]: #parameters-182
+[621]: #utilschattitle
+[622]: #default_chat_title
+[623]: #earlier_defaults
+[624]: #isdefaultchattitle
+[625]: #parameters-183
+[626]: #shownchattitle
+[627]: #parameters-184
+[628]: #-10
+[629]: #plainline
+[630]: #parameters-185
+[631]: #plaintitle
+[632]: #parameters-186
+[633]: #plaintitle-1
+[634]: #parameters-187
+[635]: #chatpreview
+[636]: #parameters-188
+[637]: #utilscomparenames
+[638]: #comparenames
+[639]: #parameters-189
+[640]: #utilsdataurl
+[641]: #data_url
+[642]: #decodedatapayload
+[643]: #parameters-190
+[644]: #bytesofdataurl
+[645]: #parameters-191
+[646]: #utilsdiff
+[647]: #step
+[648]: #diffsequences
+[649]: #parameters-192
+[650]: #steps
+[651]: #shortestedit
+[652]: #parameters-193
+[653]: #trace
+[654]: #at
+[655]: #parameters-194
+[656]: #deletionsfirst
+[657]: #parameters-195
+[658]: #added
+[659]: #chunk
+[660]: #properties-10
+[661]: #diff3
+[662]: #parameters-196
+[663]: #chunks
+[664]: #matches
+[665]: #parameters-197
+[666]: #pairup
+[667]: #parameters-198
+[668]: #sharedcount
+[669]: #parameters-199
+[670]: #utilsdocumentedits
+[671]: #document_edit_options
+[672]: #utilsdocumentlinks
+[673]: #elsewhere
+[674]: #elsewhere-1
+[675]: #linktree
+[676]: #properties-11
+[677]: #order_prefix
+[678]: #unsafe_in_link
+[679]: #isdocumenthref
 [680]: #parameters-200
-[681]: #most_entry
-[682]: #bytesof
-[683]: #parameters-201
-[684]: #inflatesync
-[685]: #textof
-[686]: #parameters-202
-[687]: #utilschattabs
-[688]: #chattext
-[689]: #chat_text_titles
-[690]: #chattabid
-[691]: #parameters-203
-[692]: #chattabof
-[693]: #parameters-204
-[694]: #match
-[695]: #match-1
-[696]: #match-2
-[697]: #skilltabid
-[698]: #parameters-205
-[699]: #skilltabof
-[700]: #parameters-206
-[701]: #utilschattitle
-[702]: #default_chat_title
-[703]: #earlier_defaults
-[704]: #isdefaultchattitle
-[705]: #parameters-207
-[706]: #shownchattitle
-[707]: #parameters-208
-[708]: #-19
-[709]: #plainline
-[710]: #parameters-209
-[711]: #plaintitle
-[712]: #parameters-210
-[713]: #plaintitle-1
-[714]: #parameters-211
-[715]: #chatpreview
-[716]: #parameters-212
-[717]: #utilscomparenames
-[718]: #comparenames
-[719]: #parameters-213
-[720]: #utilsdataurl
-[721]: #data_url
-[722]: #decodedatapayload
-[723]: #parameters-214
-[724]: #bytesofdataurl
-[725]: #parameters-215
-[726]: #utilsdiff
-[727]: #step
-[728]: #diffsequences
-[729]: #parameters-216
-[730]: #steps
-[731]: #shortestedit
-[732]: #parameters-217
-[733]: #trace
-[734]: #at
-[735]: #parameters-218
-[736]: #deletionsfirst
-[737]: #parameters-219
-[738]: #added
-[739]: #chunk
-[740]: #properties-10
-[741]: #diff3
-[742]: #parameters-220
-[743]: #chunks
-[744]: #matches
-[745]: #parameters-221
-[746]: #pairup
-[747]: #parameters-222
-[748]: #sharedcount
-[749]: #parameters-223
-[750]: #utilsdocumentedits
-[751]: #document_edit_options
-[752]: #utilsdocumentlinks
-[753]: #elsewhere
-[754]: #elsewhere-1
-[755]: #linktree
-[756]: #properties-11
-[757]: #order_prefix
-[758]: #unsafe_in_link
-[759]: #isdocumenthref
-[760]: #parameters-224
-[761]: #unwrap
-[762]: #parameters-225
-[763]: #pathof
-[764]: #parameters-226
-[765]: #filenameof
-[766]: #parameters-227
-[767]: #stepnameof
-[768]: #parameters-228
-[769]: #pathnames
-[770]: #parameters-229
-[771]: #namesof
-[772]: #parameters-230
-[773]: #childnamed
-[774]: #parameters-231
-[775]: #-20
-[776]: #walk
-[777]: #parameters-232
-[778]: #resolvelink
-[779]: #parameters-233
-[780]: #documentnamed
-[781]: #parameters-234
-[782]: #found
-[783]: #found-1
-[784]: #-21
-[785]: #readablehref
-[786]: #parameters-235
-[787]: #lineage
-[788]: #parameters-236
-[789]: #encodename
-[790]: #parameters-237
-[791]: #hreffor
-[792]: #parameters-238
-[793]: #headinghref
-[794]: #parameters-239
-[795]: #headingof
-[796]: #parameters-240
-[797]: #namesheading
-[798]: #parameters-241
-[799]: #plain
-[800]: #parameters-242
-[801]: #plain-1
-[802]: #parameters-243
-[803]: #ownhref
-[804]: #parameters-244
-[805]: #linkonclipboard
-[806]: #parameters-245
-[807]: #projecthref
-[808]: #parameters-246
-[809]: #utilsdocumentpath
-[810]: #documenttitles
-[811]: #parameters-247
-[812]: #documenttitles-1
-[813]: #parameters-248
-[814]: #documentpath
-[815]: #parameters-249
-[816]: #titlekey
-[817]: #parameters-250
-[818]: #namesake
-[819]: #parameters-251
-[820]: #freetitle
-[821]: #parameters-252
-[822]: #utilsedits
-[823]: #context_step
-[824]: #context_step-1
-[825]: #onlyat
-[826]: #parameters-253
-[827]: #once
-[828]: #parameters-254
-[829]: #leastenough
-[830]: #parameters-255
-[831]: #diffedit
-[832]: #parameters-256
-[833]: #placededit
-[834]: #parameters-257
-[835]: #padded
-[836]: #parameters-258
-[837]: #-22
-[838]: #foundonce
-[839]: #parameters-259
-[840]: #diffappend
-[841]: #parameters-260
-[842]: #narrowedit
-[843]: #parameters-261
-[844]: #reverseedit
-[845]: #parameters-262
-[846]: #applyedit
-[847]: #parameters-263
-[848]: #keepdecisions
-[849]: #parameters-264
-[850]: #utilserrors
-[851]: #providernotconfigurederror
-[852]: #parameters-265
-[853]: #connectionneedederror
-[854]: #parameters-266
-[855]: #commanderror
-[856]: #parameters-267
-[857]: #cannotapplyerror
-[858]: #parameters-268
-[859]: #answerfailederror
-[860]: #parameters-269
-[861]: #summarycutshorterror
-[862]: #parameters-270
-[863]: #failurenotice
-[864]: #parameters-271
-[865]: #utilsfocus
-[866]: #istextfield
-[867]: #parameters-272
-[868]: #formatthinkingtime
-[869]: #parameters-273
-[870]: #formatrelativetime
-[871]: #parameters-274
-[872]: #tool_result_preview_limit
-[873]: #formattoolarguments
-[874]: #parameters-275
-[875]: #python_result_preview_limit
-[876]: #formatpythonresult
-[877]: #parameters-276
-[878]: #formattoolresult
-[879]: #parameters-277
-[880]: #utils
-[881]: #utilities-overview
-[882]: #text-processing
-[883]: #ai-integration
-[884]: #chat
-[885]: #editor
-[886]: #browser
-[887]: #storage
-[888]: #usage-examples
-[889]: #examples
-[890]: #utilslinediff
-[891]: #context
-[892]: #most_edits
-[893]: #linediff
-[894]: #parameters-278
-[895]: #utilslinkupdates
-[896]: #destination
-[897]: #destination-1
-[898]: #linkedtext
-[899]: #linktarget
-[900]: #linktargets
-[901]: #maylink
-[902]: #parameters-279
-[903]: #-23
-[904]: #destinationsin
-[905]: #parameters-280
-[906]: #partsof
-[907]: #parameters-281
-[908]: #partsof-1
-[909]: #parameters-282
-[910]: #canonical
-[911]: #parameters-283
-[912]: #linktargets-1
-[913]: #parameters-284
-[914]: #went
-[915]: #rewritten
+[681]: #unwrap
+[682]: #parameters-201
+[683]: #pathof
+[684]: #parameters-202
+[685]: #filenameof
+[686]: #parameters-203
+[687]: #stepnameof
+[688]: #parameters-204
+[689]: #pathnames
+[690]: #parameters-205
+[691]: #namesof
+[692]: #parameters-206
+[693]: #childnamed
+[694]: #parameters-207
+[695]: #-11
+[696]: #walk
+[697]: #parameters-208
+[698]: #resolvelink
+[699]: #parameters-209
+[700]: #documentnamed
+[701]: #parameters-210
+[702]: #found
+[703]: #found-1
+[704]: #-12
+[705]: #readablehref
+[706]: #parameters-211
+[707]: #lineage
+[708]: #parameters-212
+[709]: #encodename
+[710]: #parameters-213
+[711]: #hreffor
+[712]: #parameters-214
+[713]: #headinghref
+[714]: #parameters-215
+[715]: #headingof
+[716]: #parameters-216
+[717]: #namesheading
+[718]: #parameters-217
+[719]: #plain
+[720]: #parameters-218
+[721]: #plain-1
+[722]: #parameters-219
+[723]: #ownhref
+[724]: #parameters-220
+[725]: #linkonclipboard
+[726]: #parameters-221
+[727]: #projecthref
+[728]: #parameters-222
+[729]: #utilsdocumentpath
+[730]: #documenttitles
+[731]: #parameters-223
+[732]: #documenttitles-1
+[733]: #parameters-224
+[734]: #documentpath
+[735]: #parameters-225
+[736]: #titlekey
+[737]: #parameters-226
+[738]: #namesake
+[739]: #parameters-227
+[740]: #freetitle
+[741]: #parameters-228
+[742]: #utilsedits
+[743]: #context_step
+[744]: #context_step-1
+[745]: #onlyat
+[746]: #parameters-229
+[747]: #once
+[748]: #parameters-230
+[749]: #leastenough
+[750]: #parameters-231
+[751]: #diffedit
+[752]: #parameters-232
+[753]: #placededit
+[754]: #parameters-233
+[755]: #padded
+[756]: #parameters-234
+[757]: #-13
+[758]: #foundonce
+[759]: #parameters-235
+[760]: #diffappend
+[761]: #parameters-236
+[762]: #narrowedit
+[763]: #parameters-237
+[764]: #reverseedit
+[765]: #parameters-238
+[766]: #applyedit
+[767]: #parameters-239
+[768]: #keepdecisions
+[769]: #parameters-240
+[770]: #utilserrors
+[771]: #providernotconfigurederror
+[772]: #parameters-241
+[773]: #connectionneedederror
+[774]: #parameters-242
+[775]: #commanderror
+[776]: #parameters-243
+[777]: #cannotapplyerror
+[778]: #parameters-244
+[779]: #answerfailederror
+[780]: #parameters-245
+[781]: #summarycutshorterror
+[782]: #parameters-246
+[783]: #failurenotice
+[784]: #parameters-247
+[785]: #utilsfocus
+[786]: #istextfield
+[787]: #parameters-248
+[788]: #formatthinkingtime
+[789]: #parameters-249
+[790]: #formatrelativetime
+[791]: #parameters-250
+[792]: #tool_result_preview_limit
+[793]: #formattoolarguments
+[794]: #parameters-251
+[795]: #python_result_preview_limit
+[796]: #formatpythonresult
+[797]: #parameters-252
+[798]: #formattoolresult
+[799]: #parameters-253
+[800]: #utils
+[801]: #utilities-overview
+[802]: #text-processing
+[803]: #ai-integration
+[804]: #chat
+[805]: #editor
+[806]: #browser
+[807]: #storage
+[808]: #usage-examples
+[809]: #examples
+[810]: #utilslinediff
+[811]: #context
+[812]: #most_edits
+[813]: #linediff
+[814]: #parameters-254
+[815]: #utilslinkupdates
+[816]: #destination
+[817]: #destination-1
+[818]: #linkedtext
+[819]: #linktarget
+[820]: #linktargets
+[821]: #maylink
+[822]: #parameters-255
+[823]: #-14
+[824]: #destinationsin
+[825]: #parameters-256
+[826]: #partsof
+[827]: #parameters-257
+[828]: #partsof-1
+[829]: #parameters-258
+[830]: #canonical
+[831]: #parameters-259
+[832]: #linktargets-1
+[833]: #parameters-260
+[834]: #went
+[835]: #rewritten
+[836]: #parameters-261
+[837]: #relinked
+[838]: #parameters-262
+[839]: #now
+[840]: #utilslocalstorage
+[841]: #localstorage
+[842]: #get-4
+[843]: #parameters-263
+[844]: #set
+[845]: #parameters-264
+[846]: #remove
+[847]: #parameters-265
+[848]: #utilsmarkdown
+[849]: #safe_schemes
+[850]: #escapehtml
+[851]: #parameters-266
+[852]: #issafeurl
+[853]: #parameters-267
+[854]: #mathtoken
+[855]: #parameters-268
+[856]: #math
+[857]: #reader
+[858]: #rendermarkdown
+[859]: #parameters-269
+[860]: #stripmarkdown
+[861]: #parameters-270
+[862]: #utilsmath
+[863]: #katex
+[864]: #katex-1
+[865]: #shallowref
+[866]: #loading
+[867]: #remembered
+[868]: #remember
+[869]: #options
+[870]: #loadmath
+[871]: #mathready
+[872]: #typesetmath
+[873]: #parameters-271
+[874]: #html
+[875]: #matherror
+[876]: #parameters-272
+[877]: #aswritten
+[878]: #parameters-273
+[879]: #formulaaround
+[880]: #parameters-274
+[881]: #copytex
+[882]: #parameters-275
+[883]: #event
+[884]: #utilsmodelfacts
+[885]: #dollars
+[886]: #parameters-276
+[887]: #dollars-1
+[888]: #dollars-2
+[889]: #formatprice
+[890]: #parameters-277
+[891]: #formatcontext
+[892]: #parameters-278
+[893]: #utilsoauth
+[894]: #generatecodeverifier
+[895]: #generatecodechallenge
+[896]: #parameters-279
+[897]: #generatestate
+[898]: #base64urlencode
+[899]: #parameters-280
+[900]: #storeoauthparams
+[901]: #parameters-281
+[902]: #retrieveoauthparams
+[903]: #authorizationurl
+[904]: #parameters-282
+[905]: #exchangecode
+[906]: #parameters-283
+[907]: #utilsobfuscate
+[908]: #upper
+[909]: #upper-1
+[910]: #upper-2
+[911]: #obfuscateoptions
+[912]: #kept_keys
+[913]: #iskept
+[914]: #parameters-284
+[915]: #scrambletext
 [916]: #parameters-285
-[917]: #relinked
+[917]: #scramblevalue
 [918]: #parameters-286
-[919]: #now
-[920]: #utilslocalstorage
-[921]: #localstorage
-[922]: #get-4
-[923]: #parameters-287
-[924]: #set
-[925]: #parameters-288
-[926]: #remove
-[927]: #parameters-289
-[928]: #utilsmarkdown
-[929]: #safe_schemes
-[930]: #escapehtml
-[931]: #parameters-290
-[932]: #issafeurl
-[933]: #parameters-291
-[934]: #mathtoken
-[935]: #parameters-292
-[936]: #math
-[937]: #reader
-[938]: #rendermarkdown
-[939]: #parameters-293
-[940]: #stripmarkdown
-[941]: #parameters-294
-[942]: #utilsmath
-[943]: #katex
-[944]: #katex-1
-[945]: #shallowref
-[946]: #loading
-[947]: #remembered
-[948]: #remember
-[949]: #options
-[950]: #loadmath
-[951]: #mathready
-[952]: #typesetmath
-[953]: #parameters-295
-[954]: #html
-[955]: #matherror
-[956]: #parameters-296
-[957]: #aswritten
-[958]: #parameters-297
-[959]: #formulaaround
-[960]: #parameters-298
-[961]: #copytex
-[962]: #parameters-299
-[963]: #event
-[964]: #utilsmodelfacts
-[965]: #formatprice
-[966]: #parameters-300
-[967]: #formatcontext
-[968]: #parameters-301
-[969]: #utilsoauth
-[970]: #generatecodeverifier
-[971]: #generatecodechallenge
-[972]: #parameters-302
-[973]: #generatestate
-[974]: #base64urlencode
-[975]: #parameters-303
-[976]: #storeoauthparams
-[977]: #parameters-304
-[978]: #retrieveoauthparams
-[979]: #authorizationurl
-[980]: #parameters-305
-[981]: #exchangecode
-[982]: #parameters-306
-[983]: #utilsobfuscate
-[984]: #upper
-[985]: #upper-1
-[986]: #upper-2
-[987]: #obfuscateoptions
-[988]: #kept_keys
-[989]: #iskept
-[990]: #parameters-307
-[991]: #scrambletext
-[992]: #parameters-308
-[993]: #scramblevalue
-[994]: #parameters-309
-[995]: #scramblevalue-1
-[996]: #scramblejsontext
-[997]: #parameters-310
-[998]: #scramblecommand
-[999]: #parameters-311
-[1000]: #scrambleconsultation
-[1001]: #parameters-312
-[1002]: #scrambleapimessage
-[1003]: #parameters-313
-[1004]: #scramblemetadata
-[1005]: #parameters-314
-[1006]: #scramblemessage
-[1007]: #parameters-315
-[1008]: #obfuscatebackup
-[1009]: #parameters-316
-[1010]: #settings
-[1011]: #utilspartialjson
-[1012]: #string_body
-[1013]: #field
-[1014]: #decode
-[1015]: #parameters-317
-[1016]: #partialstrings
-[1017]: #parameters-318
-[1018]: #partialfield
-[1019]: #partialfields
-[1020]: #parameters-319
-[1021]: #utilspictures
-[1022]: #pictures_dir
-[1023]: #id
-[1024]: #path
-[1025]: #plain-2
-[1026]: #decoded
-[1027]: #parameters-320
-[1028]: #decoded-1
-[1029]: #parameters-321
-[1030]: #extensionof
-[1031]: #parameters-322
-[1032]: #picturename
-[1033]: #parameters-323
-[1034]: #picturehref
-[1035]: #parameters-324
-[1036]: #pictureof
+[919]: #scramblevalue-1
+[920]: #scramblejsontext
+[921]: #parameters-287
+[922]: #scramblecommand
+[923]: #parameters-288
+[924]: #scrambleconsultation
+[925]: #parameters-289
+[926]: #scrambleapimessage
+[927]: #parameters-290
+[928]: #scramblemetadata
+[929]: #parameters-291
+[930]: #scramblemessage
+[931]: #parameters-292
+[932]: #obfuscatebackup
+[933]: #parameters-293
+[934]: #settings
+[935]: #utilspartialjson
+[936]: #string_body
+[937]: #field
+[938]: #decode
+[939]: #parameters-294
+[940]: #partialstrings
+[941]: #parameters-295
+[942]: #partialfield
+[943]: #partialfields
+[944]: #parameters-296
+[945]: #utilspictures
+[946]: #pictures_dir
+[947]: #id
+[948]: #path
+[949]: #plain-2
+[950]: #decoded
+[951]: #parameters-297
+[952]: #decoded-1
+[953]: #parameters-298
+[954]: #extensionof
+[955]: #parameters-299
+[956]: #picturename
+[957]: #parameters-300
+[958]: #picturehref
+[959]: #parameters-301
+[960]: #pictureof
+[961]: #parameters-302
+[962]: #picturekey
+[963]: #parameters-303
+[964]: #pictureofkey
+[965]: #parameters-304
+[966]: #picturesin
+[967]: #parameters-305
+[968]: #keys
+[969]: #keys-1
+[970]: #keys-2
+[971]: #keys-3
+[972]: #keys-4
+[973]: #-15
+[974]: #-16
+[975]: #repointpictures
+[976]: #parameters-306
+[977]: #unreferencedpictures
+[978]: #parameters-307
+[979]: #utilsplaincopy
+[980]: #plaincopy
+[981]: #parameters-308
+[982]: #copyof
+[983]: #copyof-1
+[984]: #parameters-309
+[985]: #utilsprojectlist
+[986]: #projectrow
+[987]: #properties-12
+[988]: #byname
+[989]: #parameters-310
+[990]: #byname-1
+[991]: #parameters-311
+[992]: #sortprojects
+[993]: #parameters-312
+[994]: #-17
+[995]: #-18
+[996]: #recentprojects
+[997]: #parameters-313
+[998]: #folded
+[999]: #parameters-314
+[1000]: #folded-1
+[1001]: #projectsnamed
+[1002]: #parameters-315
+[1003]: #utilsroutehelpers
+[1004]: #storyidfromroute
+[1005]: #parameters-316
+[1006]: #pushprojecttoroute
+[1007]: #parameters-317
+[1008]: #gotoproject
+[1009]: #parameters-318
+[1010]: #replaceprojectinroute
+[1011]: #parameters-319
+[1012]: #utilssections
+[1013]: #heading
+[1014]: #fence
+[1015]: #markdownsection
+[1016]: #properties-13
+[1017]: #sectionnode
+[1018]: #properties-14
+[1019]: #linker
+[1020]: #seen
+[1021]: #seen-1
+[1022]: #wordsof
+[1023]: #parameters-320
+[1024]: #wordsof-1
+[1025]: #parameters-321
+[1026]: #wordsof-2
+[1027]: #parameters-322
+[1028]: #markdownsections
+[1029]: #parameters-323
+[1030]: #tree_limit
+[1031]: #list_limit
+[1032]: #sectiontree
+[1033]: #parameters-324
+[1034]: #roots
+[1035]: #node
+[1036]: #collapse
 [1037]: #parameters-325
-[1038]: #picturekey
-[1039]: #parameters-326
-[1040]: #pictureofkey
-[1041]: #parameters-327
-[1042]: #picturesin
-[1043]: #parameters-328
-[1044]: #keys
-[1045]: #keys-1
-[1046]: #keys-2
-[1047]: #keys-3
-[1048]: #keys-4
-[1049]: #-24
-[1050]: #-25
-[1051]: #repointpictures
-[1052]: #parameters-329
-[1053]: #unreferencedpictures
-[1054]: #parameters-330
-[1055]: #utilsplaincopy
-[1056]: #plaincopy
+[1038]: #all
+[1039]: #all-1
+[1040]: #-19
+[1041]: #-20
+[1042]: #cut
+[1043]: #parameters-326
+[1044]: #findsection
+[1045]: #parameters-327
+[1046]: #indexof
+[1047]: #parameters-328
+[1048]: #lines
+[1049]: #lines-1
+[1050]: #sectionindexat
+[1051]: #parameters-329
+[1052]: #sectionpath
+[1053]: #parameters-330
+[1054]: #utilssessionstorage
+[1055]: #sessionstorage
+[1056]: #get-5
 [1057]: #parameters-331
-[1058]: #copyof
-[1059]: #copyof-1
-[1060]: #parameters-332
-[1061]: #utilsprojectlist
-[1062]: #projectrow
-[1063]: #properties-12
-[1064]: #byname
-[1065]: #parameters-333
-[1066]: #byname-1
-[1067]: #parameters-334
-[1068]: #sortprojects
-[1069]: #parameters-335
-[1070]: #-26
-[1071]: #-27
-[1072]: #recentprojects
-[1073]: #parameters-336
-[1074]: #folded
-[1075]: #parameters-337
-[1076]: #folded-1
-[1077]: #projectsnamed
-[1078]: #parameters-338
-[1079]: #utilsroutehelpers
-[1080]: #storyidfromroute
-[1081]: #parameters-339
-[1082]: #pushprojecttoroute
-[1083]: #parameters-340
-[1084]: #gotoproject
-[1085]: #parameters-341
-[1086]: #replaceprojectinroute
-[1087]: #parameters-342
-[1088]: #utilssections
-[1089]: #heading
-[1090]: #fence
-[1091]: #markdownsection
-[1092]: #properties-13
-[1093]: #sectionnode
-[1094]: #properties-14
-[1095]: #linker
-[1096]: #seen
-[1097]: #seen-1
-[1098]: #wordsof
-[1099]: #parameters-343
-[1100]: #wordsof-1
+[1058]: #set-1
+[1059]: #parameters-332
+[1060]: #remove-1
+[1061]: #parameters-333
+[1062]: #utilssettingsfile
+[1063]: #settings_tables
+[1064]: #settings_tables-1
+[1065]: #settingstable
+[1066]: #settingsgroup
+[1067]: #unpicked
+[1068]: #kinds
+[1069]: #group_names
+[1070]: #settingsitem
+[1071]: #properties-15
+[1072]: #rowid
+[1073]: #parameters-334
+[1074]: #rowid-1
+[1075]: #itemkey
+[1076]: #parameters-335
+[1077]: #everyinstallhas
+[1078]: #parameters-336
+[1079]: #rowname
+[1080]: #parameters-337
+[1081]: #settingsitems
+[1082]: #parameters-338
+[1083]: #items
+[1084]: #item
+[1085]: #item-1
+[1086]: #settingsneeds
+[1087]: #parameters-339
+[1088]: #needs
+[1089]: #add
+[1090]: #parameters-340
+[1091]: #pickwithneeds
+[1092]: #parameters-341
+[1093]: #picksettings
+[1094]: #parameters-342
+[1095]: #chosen
+[1096]: #settingsfilename
+[1097]: #parameters-343
+[1098]: #-21
+[1099]: #listing
+[1100]: #essence
 [1101]: #parameters-344
-[1102]: #wordsof-2
+[1102]: #stablejson
 [1103]: #parameters-345
-[1104]: #markdownsections
+[1104]: #fingerprint
 [1105]: #parameters-346
-[1106]: #tree_limit
-[1107]: #list_limit
-[1108]: #sectiontree
-[1109]: #parameters-347
-[1110]: #roots
-[1111]: #node
-[1112]: #collapse
-[1113]: #parameters-348
-[1114]: #all
-[1115]: #all-1
-[1116]: #-28
-[1117]: #-29
-[1118]: #cut
-[1119]: #parameters-349
-[1120]: #findsection
-[1121]: #parameters-350
-[1122]: #indexof
-[1123]: #parameters-351
-[1124]: #sectionindexat
-[1125]: #parameters-352
-[1126]: #sectionpath
+[1106]: #mergerow
+[1107]: #parameters-347
+[1108]: #-22
+[1109]: #settingsimport
+[1110]: #properties-16
+[1111]: #planimport
+[1112]: #parameters-348
+[1113]: #plan
+[1114]: #changesanything
+[1115]: #parameters-349
+[1116]: #listed
+[1117]: #parameters-350
+[1118]: #named-2
+[1119]: #itemsinwords
+[1120]: #parameters-351
+[1121]: #itemphrases
+[1122]: #parameters-352
+[1123]: #phrases
+[1124]: #slice
+[1125]: #-23
+[1126]: #describeimport
 [1127]: #parameters-353
-[1128]: #utilssessionstorage
-[1129]: #sessionstorage
-[1130]: #get-5
+[1128]: #sentences
+[1129]: #sentences-1
+[1130]: #describeselection
 [1131]: #parameters-354
-[1132]: #set-1
-[1133]: #parameters-355
-[1134]: #remove-1
-[1135]: #parameters-356
-[1136]: #utilssettingsfile
-[1137]: #settings_tables
-[1138]: #settings_tables-1
-[1139]: #settingstable
-[1140]: #settingsgroup
-[1141]: #unpicked
-[1142]: #kinds
-[1143]: #group_names
-[1144]: #settingsitem
-[1145]: #properties-15
-[1146]: #rowid
-[1147]: #parameters-357
-[1148]: #rowid-1
-[1149]: #itemkey
-[1150]: #parameters-358
-[1151]: #everyinstallhas
-[1152]: #parameters-359
-[1153]: #rowname
-[1154]: #parameters-360
-[1155]: #settingsitems
-[1156]: #parameters-361
-[1157]: #items
-[1158]: #item
-[1159]: #item-1
-[1160]: #settingsneeds
-[1161]: #parameters-362
-[1162]: #needs
-[1163]: #add
-[1164]: #parameters-363
-[1165]: #pickwithneeds
-[1166]: #parameters-364
-[1167]: #picksettings
-[1168]: #parameters-365
-[1169]: #chosen
-[1170]: #settingsfilename
-[1171]: #parameters-366
-[1172]: #-30
-[1173]: #listing
-[1174]: #essence
-[1175]: #parameters-367
-[1176]: #stablejson
-[1177]: #parameters-368
-[1178]: #fingerprint
-[1179]: #parameters-369
-[1180]: #mergerow
-[1181]: #parameters-370
-[1182]: #-31
-[1183]: #settingsimport
-[1184]: #properties-16
-[1185]: #planimport
-[1186]: #parameters-371
-[1187]: #plan
-[1188]: #changesanything
-[1189]: #parameters-372
-[1190]: #listed
-[1191]: #parameters-373
-[1192]: #named-2
-[1193]: #itemsinwords
-[1194]: #parameters-374
-[1195]: #itemphrases
-[1196]: #parameters-375
-[1197]: #phrases
-[1198]: #slice
-[1199]: #-32
-[1200]: #describeimport
-[1201]: #parameters-376
-[1202]: #sentences
-[1203]: #sentences-1
-[1204]: #describeselection
-[1205]: #parameters-377
-[1206]: #aiproviders
-[1207]: #providertype
-[1208]: #properties-17
-[1209]: #signin
-[1210]: #properties-18
-[1211]: #providerkind
-[1212]: #provider_types
-[1213]: #built_in_providers
-[1214]: #default_speech_provider_id
-[1215]: #connectionkind
-[1216]: #properties-19
-[1217]: #built_in_kinds
-[1218]: #connection_kinds
-[1219]: #-33
-[1220]: #-34
-[1221]: #connectionkind-1
-[1222]: #parameters-378
-[1223]: #connectionkind-2
-[1224]: #kindof
-[1225]: #parameters-379
-[1226]: #untouchedbuiltin
-[1227]: #parameters-380
-[1228]: #inmenuorder
-[1229]: #parameters-381
-[1230]: #typeof
-[1231]: #parameters-382
-[1232]: #providerdoes
-[1233]: #parameters-383
-[1234]: #default_provider_type
-[1235]: #providerlabel
-[1236]: #parameters-384
-[1237]: #knownaddress
-[1238]: #parameters-385
-[1239]: #needsendpoint
-[1240]: #parameters-386
-[1241]: #needskey
-[1242]: #parameters-387
-[1243]: #connectiongap
-[1244]: #parameters-388
-[1245]: #presetproblem
-[1246]: #parameters-389
-[1247]: #canlistmodels
-[1248]: #parameters-390
-[1249]: #listspublicly
-[1250]: #parameters-391
-[1251]: #signinof
-[1252]: #parameters-392
-[1253]: #creditspage
-[1254]: #parameters-393
-[1255]: #speaksopenrouterreasoning
-[1256]: #parameters-394
-[1257]: #serveschat
-[1258]: #parameters-395
-[1259]: #takesreasoningeffort
+[1132]: #aiproviders
+[1133]: #providertype
+[1134]: #properties-17
+[1135]: #signin
+[1136]: #properties-18
+[1137]: #providerkind
+[1138]: #provider_types
+[1139]: #built_in_providers
+[1140]: #default_speech_provider_id
+[1141]: #connectionkind
+[1142]: #properties-19
+[1143]: #built_in_kinds
+[1144]: #connection_kinds
+[1145]: #-24
+[1146]: #-25
+[1147]: #connectionkind-1
+[1148]: #parameters-355
+[1149]: #connectionkind-2
+[1150]: #kindof
+[1151]: #parameters-356
+[1152]: #untouchedbuiltin
+[1153]: #parameters-357
+[1154]: #inmenuorder
+[1155]: #parameters-358
+[1156]: #typeof
+[1157]: #parameters-359
+[1158]: #providerdoes
+[1159]: #parameters-360
+[1160]: #default_provider_type
+[1161]: #providerlabel
+[1162]: #parameters-361
+[1163]: #knownaddress
+[1164]: #parameters-362
+[1165]: #needsendpoint
+[1166]: #parameters-363
+[1167]: #needskey
+[1168]: #parameters-364
+[1169]: #connectiongap
+[1170]: #parameters-365
+[1171]: #presetproblem
+[1172]: #parameters-366
+[1173]: #canlistmodels
+[1174]: #parameters-367
+[1175]: #listspublicly
+[1176]: #parameters-368
+[1177]: #signinof
+[1178]: #parameters-369
+[1179]: #creditspage
+[1180]: #parameters-370
+[1181]: #speaksopenrouterreasoning
+[1182]: #parameters-371
+[1183]: #serveschat
+[1184]: #parameters-372
+[1185]: #takesreasoningeffort
+[1186]: #parameters-373
+[1187]: #takeschattemplatekwargs
+[1188]: #parameters-374
+[1189]: #aisamplerparameters
+[1190]: #properties-20
+[1191]: #reasoning_effort_options
+[1192]: #default_preset_id
+[1193]: #ai_defaults
+[1194]: #resolveaisettings
+[1195]: #parameters-375
+[1196]: #resolveaisettings-1
+[1197]: #parameters-376
+[1198]: #mergeaisettings
+[1199]: #parameters-377
+[1200]: #title_defaults
+[1201]: #utilssettingstree
+[1202]: #settingkey
+[1203]: #parameters-378
+[1204]: #settingkey-1
+[1205]: #parameters-379
+[1206]: #settingsnode
+[1207]: #properties-21
+[1208]: #-26
+[1209]: #itemof
+[1210]: #parameters-380
+[1211]: #itemof-1
+[1212]: #parameters-381
+[1213]: #settingstree
+[1214]: #parameters-382
+[1215]: #-27
+[1216]: #leavesof
+[1217]: #parameters-383
+[1218]: #selectionkeys
+[1219]: #parameters-384
+[1220]: #visit
+[1221]: #parameters-385
+[1222]: #visit-1
+[1223]: #parameters-386
+[1224]: #tickedleaves
+[1225]: #parameters-387
+[1226]: #pickedsettings
+[1227]: #parameters-388
+[1228]: #utilsshareddocuments
+[1229]: #sharetree
+[1230]: #parameters-389
+[1231]: #sharetree-1
+[1232]: #parameters-390
+[1233]: #sharetree-2
+[1234]: #parameters-391
+[1235]: #sharing
+[1236]: #nodeof
+[1237]: #parameters-392
+[1238]: #sharingof
+[1239]: #parameters-393
+[1240]: #sharedwith
+[1241]: #parameters-394
+[1242]: #changes
+[1243]: #utilssiblingorder
+[1244]: #ordersiblings
+[1245]: #parameters-395
+[1246]: #-28
+[1247]: #-29
+[1248]: #-30
+[1249]: #-31
+[1250]: #utilstabs
+[1251]: #tabs
+[1252]: #properties-22
+[1253]: #no_tabs
+[1254]: #closed_kept
+[1255]: #tabfields
+[1256]: #properties-23
+[1257]: #document_tabs
+[1258]: #chat_tabs
+[1259]: #showing
 [1260]: #parameters-396
-[1261]: #takeschattemplatekwargs
+[1261]: #settled
 [1262]: #parameters-397
-[1263]: #aisamplerparameters
-[1264]: #properties-20
-[1265]: #reasoning_effort_options
-[1266]: #default_preset_id
-[1267]: #ai_defaults
-[1268]: #resolveaisettings
-[1269]: #parameters-398
-[1270]: #resolveaisettings-1
-[1271]: #parameters-399
-[1272]: #mergeaisettings
-[1273]: #parameters-400
-[1274]: #title_defaults
-[1275]: #utilssettingstree
-[1276]: #settingkey
-[1277]: #parameters-401
-[1278]: #settingkey-1
-[1279]: #parameters-402
-[1280]: #settingsnode
-[1281]: #properties-21
-[1282]: #-35
-[1283]: #itemof
-[1284]: #parameters-403
-[1285]: #itemof-1
-[1286]: #parameters-404
-[1287]: #settingstree
-[1288]: #parameters-405
-[1289]: #-36
-[1290]: #leavesof
-[1291]: #parameters-406
-[1292]: #selectionkeys
-[1293]: #parameters-407
-[1294]: #visit
-[1295]: #parameters-408
-[1296]: #visit-1
-[1297]: #parameters-409
-[1298]: #tickedleaves
-[1299]: #parameters-410
-[1300]: #pickedsettings
-[1301]: #parameters-411
-[1302]: #utilsshareddocuments
-[1303]: #sharetree
-[1304]: #parameters-412
-[1305]: #sharetree-1
-[1306]: #parameters-413
-[1307]: #sharetree-2
-[1308]: #parameters-414
-[1309]: #sharing
-[1310]: #nodeof
-[1311]: #parameters-415
-[1312]: #sharingof
-[1313]: #parameters-416
-[1314]: #sharedwith
-[1315]: #parameters-417
-[1316]: #changes
-[1317]: #utilssiblingorder
-[1318]: #ordersiblings
-[1319]: #parameters-418
-[1320]: #-37
-[1321]: #-38
-[1322]: #-39
-[1323]: #-40
-[1324]: #utilstabs
-[1325]: #tabs
-[1326]: #properties-22
-[1327]: #no_tabs
-[1328]: #closed_kept
-[1329]: #tabfields
-[1330]: #properties-23
-[1331]: #document_tabs
-[1332]: #chat_tabs
-[1333]: #showing
-[1334]: #parameters-419
-[1335]: #settled
-[1336]: #parameters-420
-[1337]: #tabsof
-[1338]: #parameters-421
-[1339]: #tabspatch
-[1340]: #parameters-422
-[1341]: #normalizetabs
-[1342]: #parameters-423
-[1343]: #opentab
-[1344]: #parameters-424
-[1345]: #keeptab
-[1346]: #parameters-425
-[1347]: #movetab
-[1348]: #parameters-426
-[1349]: #without
-[1350]: #parameters-427
-[1351]: #closetab
-[1352]: #parameters-428
-[1353]: #closetabs
-[1354]: #parameters-429
-[1355]: #droptabs
-[1356]: #parameters-430
-[1357]: #lastclosed
-[1358]: #parameters-431
-[1359]: #tabbeside
-[1360]: #parameters-432
-[1361]: #tabat
-[1362]: #parameters-433
-[1363]: #tabnames
-[1364]: #parameters-434
-[1365]: #tail-1
-[1366]: #parameters-435
-[1367]: #utilstarwriter
-[1368]: #block-2
-[1369]: #name_most
-[1370]: #size_most
-[1371]: #tarwriter
-[1372]: #header
-[1373]: #parameters-436
-[1374]: #put
-[1375]: #parameters-437
-[1376]: #octal
-[1377]: #parameters-438
-[1378]: #record
-[1379]: #parameters-439
-[1380]: #padding
-[1381]: #parameters-440
-[1382]: #tarwriter-1
-[1383]: #parameters-441
-[1384]: #begin
-[1385]: #parameters-442
-[1386]: #utilstex
-[1387]: #tex
-[1388]: #display
-[1389]: #math_block
-[1390]: #single
-[1391]: #math_inline
-[1392]: #found-2
-[1393]: #properties-24
-[1394]: #trimtex
-[1395]: #parameters-443
-[1396]: #foundin
-[1397]: #parameters-444
-[1398]: #formulaat
-[1399]: #parameters-445
-[1400]: #mayholdformula
-[1401]: #parameters-446
-[1402]: #replaceformulas
-[1403]: #parameters-447
-[1404]: #utilstitlevalidation
-[1405]: #normalizetitle
-[1406]: #parameters-448
-[1407]: #shouldupdatetitle
-[1408]: #parameters-449
-[1409]: #iscustomtitle
-[1410]: #parameters-450
-[1411]: #gettitleplaceholder
-[1412]: #parameters-451
-[1413]: #freename
-[1414]: #parameters-452
-[1415]: #-41
-[1416]: #utilstouch
-[1417]: #hastouchkeyboard
-[1418]: #submitonenter
-[1419]: #parameters-453
-[1420]: #utilstrash
-[1421]: #trash_kept_ms
-[1422]: #trash_kept_ms-1
-[1423]: #expired
-[1424]: #parameters-454
-[1425]: #trashedids
-[1426]: #parameters-455
-[1427]: #known
-[1428]: #known-1
-[1429]: #-42
-[1430]: #outoftrash
-[1431]: #parameters-456
-[1432]: #utilsturns
-[1433]: #turn
-[1434]: #properties-25
-[1435]: #commandof
-[1436]: #parameters-457
-[1437]: #groupturns
-[1438]: #parameters-458
-[1439]: #turns
-[1440]: #compactedruns
-[1441]: #parameters-459
-[1442]: #textlines
-[1443]: #parameters-460
-[1444]: #utilsunzip
-[1445]: #mib
-[1446]: #toolargeerror
-[1447]: #unzipwithin
-[1448]: #parameters-461
-[1449]: #utilsversions
-[1450]: #pause_ms
-[1451]: #pause_ms-1
-[1452]: #pause_ms-2
-[1453]: #stretch_ms
-[1454]: #daily_for_ms
-[1455]: #dayof
-[1456]: #parameters-462
-[1457]: #weekof
-[1458]: #parameters-463
-[1459]: #thinned
-[1460]: #parameters-464
-[1461]: #clashed
-[1462]: #doc_clashed
-[1463]: #taken_before
-[1464]: #model
-[1465]: #utilsvisibility
-[1466]: #fields
-[1467]: #fields-1
-[1468]: #fields-2
-[1469]: #chatmark
-[1470]: #chatmarks
-[1471]: #shown
-[1472]: #markof
-[1473]: #parameters-465
-[1474]: #-43
-[1475]: #withmark
-[1476]: #parameters-466
-[1477]: #chatvisibility
-[1478]: #parameters-467
-[1479]: #settle
-[1480]: #parameters-468
-[1481]: #sees
-[1482]: #parameters-469
-[1483]: #hiddeneverywhere
-[1484]: #parameters-470
-[1485]: #markfor
-[1486]: #parameters-471
-[1487]: #utilswebkit
-[1488]: #iswebkit
-[1489]: #parameters-472
-[1490]: #utilswordcount
-[1491]: #picture
-[1492]: #editorsuggestiontext
-[1493]: #close
-[1494]: #close-1
-[1495]: #inserted
-[1496]: #deleted-4
-[1497]: #holdssuggestions
-[1498]: #parameters-473
-[1499]: #seenmarkdown
-[1500]: #parameters-474
-[1501]: #textasitstands
-[1502]: #parameters-475
-[1503]: #withoutsuggestionmarkup
-[1504]: #parameters-476
-[1505]: #turned
-[1506]: #properties-26
-[1507]: #reading
-[1508]: #properties-27
-[1509]: #written
-[1510]: #parameters-477
-[1511]: #written-1
-[1512]: #filter
-[1513]: #filter-1
-[1514]: #readingof
-[1515]: #parameters-478
-[1516]: #blocks
-[1517]: #held
-[1518]: #says
-[1519]: #endof
+[1263]: #tabsof
+[1264]: #parameters-398
+[1265]: #tabspatch
+[1266]: #parameters-399
+[1267]: #normalizetabs
+[1268]: #parameters-400
+[1269]: #opentab
+[1270]: #parameters-401
+[1271]: #keeptab
+[1272]: #parameters-402
+[1273]: #movetab
+[1274]: #parameters-403
+[1275]: #without
+[1276]: #parameters-404
+[1277]: #closetab
+[1278]: #parameters-405
+[1279]: #closetabs
+[1280]: #parameters-406
+[1281]: #droptabs
+[1282]: #parameters-407
+[1283]: #lastclosed
+[1284]: #parameters-408
+[1285]: #tabbeside
+[1286]: #parameters-409
+[1287]: #tabat
+[1288]: #parameters-410
+[1289]: #tabnames
+[1290]: #parameters-411
+[1291]: #tail
+[1292]: #parameters-412
+[1293]: #utilstarwriter
+[1294]: #block
+[1295]: #name_most
+[1296]: #size_most
+[1297]: #tarwriter
+[1298]: #header
+[1299]: #parameters-413
+[1300]: #put
+[1301]: #parameters-414
+[1302]: #octal
+[1303]: #parameters-415
+[1304]: #record
+[1305]: #parameters-416
+[1306]: #padding
+[1307]: #parameters-417
+[1308]: #tarwriter-1
+[1309]: #parameters-418
+[1310]: #begin
+[1311]: #parameters-419
+[1312]: #utilstex
+[1313]: #tex
+[1314]: #display
+[1315]: #math_block
+[1316]: #single
+[1317]: #math_inline
+[1318]: #found-2
+[1319]: #properties-24
+[1320]: #trimtex
+[1321]: #parameters-420
+[1322]: #foundin
+[1323]: #parameters-421
+[1324]: #formulaat
+[1325]: #parameters-422
+[1326]: #mayholdformula
+[1327]: #parameters-423
+[1328]: #replaceformulas
+[1329]: #parameters-424
+[1330]: #utilstitlevalidation
+[1331]: #normalizetitle
+[1332]: #parameters-425
+[1333]: #shouldupdatetitle
+[1334]: #parameters-426
+[1335]: #iscustomtitle
+[1336]: #parameters-427
+[1337]: #gettitleplaceholder
+[1338]: #parameters-428
+[1339]: #freename
+[1340]: #parameters-429
+[1341]: #-32
+[1342]: #utilstouch
+[1343]: #hastouchkeyboard
+[1344]: #submitonenter
+[1345]: #parameters-430
+[1346]: #utilstrash
+[1347]: #trash_kept_ms
+[1348]: #trash_kept_ms-1
+[1349]: #expired
+[1350]: #parameters-431
+[1351]: #trashedids
+[1352]: #parameters-432
+[1353]: #known
+[1354]: #known-1
+[1355]: #-33
+[1356]: #outoftrash
+[1357]: #parameters-433
+[1358]: #utilsturns
+[1359]: #turn
+[1360]: #properties-25
+[1361]: #commandof
+[1362]: #parameters-434
+[1363]: #groupturns
+[1364]: #parameters-435
+[1365]: #turns
+[1366]: #compactedruns
+[1367]: #parameters-436
+[1368]: #textlines
+[1369]: #parameters-437
+[1370]: #utilsunzip
+[1371]: #mib
+[1372]: #toolargeerror
+[1373]: #unzipwithin
+[1374]: #parameters-438
+[1375]: #utilsversions
+[1376]: #pause_ms
+[1377]: #pause_ms-1
+[1378]: #pause_ms-2
+[1379]: #stretch_ms
+[1380]: #daily_for_ms
+[1381]: #dayof
+[1382]: #parameters-439
+[1383]: #weekof
+[1384]: #parameters-440
+[1385]: #thinned
+[1386]: #parameters-441
+[1387]: #clashed
+[1388]: #doc_clashed
+[1389]: #taken_before
+[1390]: #model
+[1391]: #utilsvisibility
+[1392]: #fields
+[1393]: #fields-1
+[1394]: #fields-2
+[1395]: #chatmark
+[1396]: #chatmarks
+[1397]: #shown
+[1398]: #markof
+[1399]: #parameters-442
+[1400]: #-34
+[1401]: #withmark
+[1402]: #parameters-443
+[1403]: #chatvisibility
+[1404]: #parameters-444
+[1405]: #settle
+[1406]: #parameters-445
+[1407]: #sees
+[1408]: #parameters-446
+[1409]: #hiddeneverywhere
+[1410]: #parameters-447
+[1411]: #markfor
+[1412]: #parameters-448
+[1413]: #utilswebkit
+[1414]: #iswebkit
+[1415]: #parameters-449
+[1416]: #utilswordcount
+[1417]: #picture
+[1418]: #editorsuggestiontext
+[1419]: #close
+[1420]: #close-1
+[1421]: #inserted
+[1422]: #deleted-4
+[1423]: #holdssuggestions
+[1424]: #parameters-450
+[1425]: #seenmarkdown
+[1426]: #parameters-451
+[1427]: #textasitstands
+[1428]: #parameters-452
+[1429]: #withoutsuggestionmarkup
+[1430]: #parameters-453
+[1431]: #turned
+[1432]: #properties-26
+[1433]: #reading
+[1434]: #properties-27
+[1435]: #written
+[1436]: #parameters-454
+[1437]: #written-1
+[1438]: #filter
+[1439]: #filter-1
+[1440]: #readingof
+[1441]: #parameters-455
+[1442]: #blocks
+[1443]: #held
+[1444]: #says
+[1445]: #endof
+[1446]: #parameters-456
+[1447]: #editormarkdown
+[1448]: #formulainline
+[1449]: #parameters-457
+[1450]: #formulainline-1
+[1451]: #parameters-458
+[1452]: #closeon
+[1453]: #parameters-459
+[1454]: #formulablock
+[1455]: #parameters-460
+[1456]: #cellsin
+[1457]: #parameters-461
+[1458]: #tokenizerof
+[1459]: #block-1
+[1460]: #block-2
+[1461]: #-35
+[1462]: #-36
+[1463]: #tail-1
+[1464]: #room
+[1465]: #delimited
+[1466]: #spacesasneighbours
+[1467]: #parameters-462
+[1468]: #children
+[1469]: #children-1
+[1470]: #linearserializer
+[1471]: #serialize
+[1472]: #parameters-463
+[1473]: #write
+[1474]: #parameters-464
+[1475]: #-37
+[1476]: #dollar_marks
+[1477]: #dollar_marks-1
+[1478]: #dollarsresolved
+[1479]: #parameters-465
+[1480]: #opensformula
+[1481]: #parameters-466
+[1482]: #dollarsin
+[1483]: #parameters-467
+[1484]: #-38
+[1485]: #-39
+[1486]: #between_dollars
+[1487]: #writtenformula
+[1488]: #parameters-468
+[1489]: #writtenformulablock
+[1490]: #parameters-469
+[1491]: #entity
+[1492]: #autolink
+[1493]: #escapemore
+[1494]: #parameters-470
+[1495]: #endsline
+[1496]: #parameters-471
+[1497]: #withblocksuggestions
+[1498]: #parameters-472
+[1499]: #withblocksuggestions-1
+[1500]: #parameters-473
+[1501]: #type
+[1502]: #type-1
+[1503]: #-40
+[1504]: #-41
+[1505]: #serializer
+[1506]: #-42
+[1507]: #-43
+[1508]: #cells
+[1509]: #rowof
+[1510]: #parameters-474
+[1511]: #ruleof
+[1512]: #parameters-475
+[1513]: #parsemarkdown
+[1514]: #parameters-476
+[1515]: #serializemarkdown
+[1516]: #parameters-477
+[1517]: #settlemarkdown
+[1518]: #parameters-478
+[1519]: #appendblocks
 [1520]: #parameters-479
 [1521]: #editorsuggestions
 [1522]: #suggestion_markup
@@ -13588,12 +13588,12 @@ Type: [Array][1711]\<BlobPart>
 [1716]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
 [1717]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
 [1718]: https://developer.mozilla.org/docs/Web/HTML/Element
-[1719]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
-[1720]: https://developer.mozilla.org/docs/Web/API/Blob
-[1721]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[1722]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Int32Array
-[1723]: https://developer.mozilla.org/docs/Web/API/Element
-[1724]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/WeakMap
-[1725]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RangeError
-[1726]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
-[1727]: https://developer.mozilla.org/docs/Web/API/KeyboardEvent
+[1719]: https://developer.mozilla.org/docs/Web/API/Blob
+[1720]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[1721]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Int32Array
+[1722]: https://developer.mozilla.org/docs/Web/API/Element
+[1723]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/WeakMap
+[1724]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RangeError
+[1725]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
+[1726]: https://developer.mozilla.org/docs/Web/API/KeyboardEvent
+[1727]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
