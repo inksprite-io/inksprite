@@ -18,6 +18,7 @@ const { mockApi, toastAction } = await vi.hoisted(async () => {
       open: vi.fn(),
       keep: vi.fn(),
       closeTab: vi.fn(),
+      moveTab: vi.fn(),
       get: vi.fn(),
       titlesOf: vi.fn(id => [id === 'doc_2' ? 'Two' : 'Untitled']),
       pathOf: vi.fn(id => (id === 'doc_2' ? 'Two' : 'Untitled')),
@@ -272,6 +273,12 @@ describe('EditorPanel', () => {
 
     await wrapper.find('[data-tab-id="doc_1"] button').trigger('click')
     expect(mockApi.closeTab).toHaveBeenCalledWith('doc_1')
+  })
+
+  it('puts a tab dragged along the strip where it was let go of, through the document API', () => {
+    const wrapper = mountPanel({ open: ['doc_1', 'doc_2'], active: 'doc_1' })
+    wrapper.findComponent({ name: 'TabStrip' }).vm.$emit('move', 'doc_2', 0)
+    expect(mockApi.moveTab).toHaveBeenCalledWith('doc_2', 0)
   })
 
   /** A tab's menu entry for switching kind, taken from the tab strip. */

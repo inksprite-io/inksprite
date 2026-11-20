@@ -184,7 +184,7 @@
       :style="{ '--tree-indent': `${(depth + 1) * 12 + 4}px` }"
       :sort="ordered"
       :delay-on-touch-only="true"
-      :delay="120"
+      :delay="HOLD_TO_DRAG_MS"
       :animation="200"
       :empty-insert-threshold="30"
       :move="onMove"
@@ -240,7 +240,7 @@ import { chatVisibility, markOf, withMark } from '@/utils/visibility.js'
 import { useDocuments } from '@/composables/useDocuments'
 import { useDriveSync } from '@/composables/useDriveSync.js'
 import { useScreenSize } from '@/composables/useScreenSize'
-import { useLongPress } from '@/composables/useLongPress.js'
+import { HOLD_TO_DRAG_MS, useLongPress } from '@/composables/useLongPress.js'
 import { OPEN_AFTER, useTreeDrop } from '@/composables/useTreeDrop.js'
 import { useTreeHistory } from '@/composables/useTreeHistory.js'
 import { useSharedDocuments } from '@/composables/useSharedDocuments.js'

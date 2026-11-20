@@ -8,7 +8,8 @@
  * - **useAIChat** - A chat turn: context, request, tool calls, and streaming into a message; one per chat, so a reply outlives the view showing it; `askInThread` asks its model something at the end of the conversation in place of a turn (a summary)
  * - **useChatActivity** - Which chats the model is working in, app-wide, and word when it stops
  * - **useChatTabs** - A project's chat tabs: open, showing, the history closing goes back through, the chat
- *   closed last opened again, the caret asked for in the one showing, and unread chats
+ *   closed last opened again, one put at another place, the caret asked for in the one showing, and
+ *   unread chats
  * - **useChatPlaces** - Where the writer was in each chat they left, for its tab coming back
  * - **useAIConfig** - AI configuration (provider + model)
  * - **useConnections** - The AI connections the writer has: which are theirs, how each answered last, and adding, checking and removing one
@@ -67,7 +68,8 @@
  *   web), and opening one
  * - **usePictureViewer** - The picture shown at its own size over the whole window, from anywhere
  * - **usePlainText** - Turn a document plain or back, with an undo when that rewrote its text
- * - **useLongPress** - A finger held still on something, for what a right-click opens elsewhere
+ * - **useLongPress** - A finger held still on something, for what a right-click opens elsewhere, and how
+ *   long one is held before it drags a row of the outline or a tab
  * - **useTreeDrop** - A document dragged onto a folder's row goes into the folder, and a shut
  *   one held over opens; the folder a drop would go into, shown whole
  * - **useTreeHistory** - Command-Z and Shift-Command-Z for what the writer does in the outline:

@@ -40,7 +40,7 @@
         filter="button"
         :prevent-on-filter="false"
         :delay-on-touch-only="true"
-        :delay="120"
+        :delay="HOLD_TO_DRAG_MS"
         :animation="150"
         ghost-class="opacity-40"
         :set-data="setDragData"
@@ -165,6 +165,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import ContextMenu from 'primevue/contextmenu'
 import Draggable from 'vuedraggable'
 import TerminalIcon from '../terminal/TerminalIcon.vue'
+import { HOLD_TO_DRAG_MS } from '@/composables/useLongPress.js'
 
 /**
  * A panel's strip of tabs: the open documents above the editor, or the open

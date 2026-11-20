@@ -19,6 +19,13 @@ import { onBeforeUnmount } from 'vue'
 /** How long a finger has to stay down to be a long press. iOS takes about this long. */
 export const LONG_PRESS_MS = 500
 
+/**
+ * How long a finger has to stay down on a row of the outline, or a tab, before
+ * moving drags it. A finger that moves sooner is scrolling. Well short of a
+ * long press, so a drag is under way before the menu would open.
+ */
+export const HOLD_TO_DRAG_MS = 120
+
 /** How far a finger can wander, in pixels, and still be held still. */
 const SLOP = 10
 

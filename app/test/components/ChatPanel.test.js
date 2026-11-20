@@ -174,6 +174,23 @@ describe('ChatPanel', () => {
     expect(shown(wrapper)).toBe(two.id)
   })
 
+  it('puts a tab dragged along the strip where it was let go of, and keeps the chat showing', async () => {
+    const one = store.createChat('story_1', 'One')
+    const two = store.createChat('story_1', 'Two')
+    const wrapper = await mountPanel()
+    const tabs = useChatTabs('story_1')
+    tabs.open(one.id)
+    tabs.open(two.id)
+    await flushPromises()
+    const before = strip(wrapper)
+
+    wrapper.findComponent({ name: 'TabStrip' }).vm.$emit('move', two.id, 0)
+    await flushPromises()
+
+    expect(strip(wrapper)).toEqual([two.id, ...before.filter(id => id !== two.id)])
+    expect(shown(wrapper)).toBe(two.id)
+  })
+
   it('moves on when the chat it was showing is deleted', async () => {
     const remaining = store.createChat('story_1', 'Keeps')
     const doomed = store.createChat('story_1', 'Goes')

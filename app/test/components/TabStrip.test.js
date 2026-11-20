@@ -196,6 +196,73 @@ describe('TabStrip', () => {
     expect(mountStrip().find('[data-end]').exists()).toBe(false)
   })
 
+  describe('dragging a tab', () => {
+    /** The list the tabs are in, which says where one was let go of. */
+    const list = wrapper => wrapper.findComponent({ name: 'Draggable' })
+
+    /**
+     * Press the mouse on something in the strip, and let it go again.
+     * @returns {boolean[]} Which tabs the list took up to drag, while it was down
+     */
+    const press = (wrapper, target) => {
+      const pressed = { bubbles: true, cancelable: true, button: 0 }
+      target.element.dispatchEvent(new window.PointerEvent('pointerdown', pressed))
+      const taken = wrapper.findAll('[role="tab"]').map(t => t.classes('sortable-chosen'))
+      document.dispatchEvent(new window.PointerEvent('pointerup', { bubbles: true }))
+      document.dispatchEvent(new window.MouseEvent('mouseup', { bubbles: true }))
+      return taken
+    }
+
+    it('asks for a tab to be put where it was let go of', () => {
+      const wrapper = mountStrip()
+      list(wrapper).vm.$emit('change', { moved: { element: items[1], oldIndex: 1, newIndex: 0 } })
+      expect(wrapper.emitted('move')).toEqual([['doc_2', 0]])
+    })
+
+    it('leaves the tabs as it was given them, for the panel to move', () => {
+      const wrapper = mountStrip()
+      list(wrapper).vm.$emit('change', { moved: { element: items[1], oldIndex: 1, newIndex: 0 } })
+      expect(wrapper.findAll('[role="tab"]').map(t => t.attributes('data-tab-id'))).toEqual([
+        'doc_1',
+        'doc_2',
+      ])
+    })
+
+    it('carries nothing a document would take as text', () => {
+      const carried = new Map()
+      const given = list(mountStrip()).vm.$attrs
+      const setData = given.setData ?? given['set-data']
+      setData({ setData: (type, value) => carried.set(type, value) })
+
+      expect(carried.size).toBe(1)
+      const [type] = [...carried.keys()]
+      expect(type).not.toMatch(/^text/i)
+      expect(carried.get(type)).not.toBe('')
+    })
+
+    it('takes up a tab pressed on, and none pressed on by its close button', () => {
+      const wrapper = mount(TabStrip, {
+        props: { items, activeId: 'doc_1' },
+        global: { plugins: [PrimeVue] },
+        attachTo: document.body,
+      })
+
+      expect(press(wrapper, tab(wrapper, 'doc_2'))).toEqual([false, true])
+      expect(press(wrapper, tab(wrapper, 'doc_2').find('button'))).toEqual([false, false])
+      // And nothing is still held once the mouse is up.
+      expect(wrapper.find('.sortable-chosen').exists()).toBe(false)
+
+      wrapper.unmount()
+    })
+
+    it('still closes a tab from its button', async () => {
+      const wrapper = mountStrip()
+      await tab(wrapper, 'doc_2').find('button').trigger('click')
+      expect(wrapper.emitted('close')).toEqual([['doc_2']])
+      expect(wrapper.emitted('move')).toBeUndefined()
+    })
+  })
+
   describe('scrolling the strip', () => {
     /** A strip wider than its room, the way a full one is. */
     const overflowing = wrapper => {
