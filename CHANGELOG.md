@@ -8,9 +8,46 @@ for its tag at the top of the release's notes.
 
 ## v0.1.0-dev.30
 
-Security fixes after a review of the app and the sync service, the model
-asking before it reads some pages, tools set once for every chat, and pages
-read in the desktop app with no search service.
+A terminal in the desktop app and keys for its tabs, tabs you can drag,
+security fixes after a review of the app and the sync service, the model
+asking before it reads some pages, and tools set once for every chat.
+
+The desktop app:
+
+- **Terminal** is a new extension, off until you switch it on in
+  **Settings** › **Extensions**: your own shell in a tab beside your chats.
+  A terminal belongs to its project, and keeps running while another
+  project is open. No chat can type in one or read one.
+- Keys for tabs, as a browser has for its own: Command-N for a new document,
+  Command-T for a new chat, Command-W to close the tab, Shift-Command-T to
+  reopen the one you closed last, Control-Tab and Command-1 to 9 to go from
+  tab to tab, Command-O for Projects… and Command-comma for the settings
+  (Control for Command on Windows and Linux). Closing, reopening and going
+  from tab to tab work on the panel you're in, the editor or the chat.
+  Command-W used to close the window, which is now Shift-Command-W.
+
+Tabs:
+
+- Drag a tab to reorder the tabs, in the editor and the chat.
+- A chat you click in the chat list opens in a tab of its own and stays
+  open. It used to open in italics, and the next chat you clicked took its
+  place.
+- **New document** is a plus at the end of the editor's tabs.
+
+Search:
+
+- The search across a project opens from the magnifier at the top of the
+  outline, and shows in the outline's place until you close it. It was a
+  list of its own among the icons at the far left, and in the **⋯** menu on
+  a phone. Shift-Command-F (Shift-Control-F on Windows and Linux) opens it
+  as before.
+
+Suggestions:
+
+- A chat that reads a document is told of the suggestions waiting in it,
+  whoever made them, and what's been said on each. So you can ask one chat
+  about another's suggestion, or reply to a suggestion and have the model
+  read your reply.
 
 Security:
 
@@ -34,6 +71,9 @@ Security:
   which is now `inksprite.log`.
 - The desktop app is on Electron 44.11.3, and dependencies with advisories
   against them are updated.
+- Someone in a linked Google Doc, or in a project you share, who is named
+  "writer" or "model" is no longer shown to the model under that bare name,
+  which it could take for you or for itself.
 
 The web:
 
@@ -74,6 +114,14 @@ Also:
   without the app asking OpenRouter.
 - The note under a command message's edit box and the words beside `/tarot`
   and `/name` are gone.
+- Going back from the plain text editor no longer shows a message when the
+  editor rewrites some of your Markdown. What you typed is kept as a version.
+- The trash opens from the menu at the top of the outline, as **Open
+  trash…**. It is no longer on a project's own menu.
+- The model's edits to a long document that repeats itself a lot no longer
+  freeze the app.
+- The guide has pages on Keyboard Shortcuts and the Terminal, and a section
+  on searching a project.
 
 ## v0.1.0-dev.29
 
