@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 const tools = vi.hoisted(() => ({ toolsFor: vi.fn(), callTool: vi.fn() }))
 vi.mock('@/apps/tools.js', () => tools)
 
-import { INSTRUCTIONS, PROTOCOL_VERSIONS, answerRequest } from '@/apps/protocol.js'
+import { PROTOCOL_VERSIONS, answerRequest, instructionsFor } from '@/apps/protocol.js'
 
 const APP = { id: 'app_1', name: 'Claude Code', projects: ['story_a'], edit: 'off', comment: false }
 
@@ -46,9 +46,28 @@ describe('answerRequest', () => {
         protocolVersion: '2025-06-18',
         capabilities: { tools: {} },
         serverInfo: { name: 'inksprite', version: expect.any(String) },
-        instructions: INSTRUCTIONS,
+        instructions: instructionsFor(APP),
       },
     })
+  })
+
+  it('tells the app what its connection may do, and no more', () => {
+    const reads = instructionsFor(APP)
+    expect(reads).toContain('to list, search and read their documents')
+    expect(reads).not.toMatch(/edit_document|add_comment/)
+
+    const edits = instructionsFor({ ...APP, edit: 'editing' })
+    expect(edits).toContain('to read and write their documents')
+    expect(edits).toContain('edit_document')
+    expect(edits).not.toContain('add_comment')
+
+    const comments = instructionsFor({ ...APP, comment: true })
+    expect(comments).toContain('add_comment')
+    expect(comments).toContain("carries this connection's name")
+    expect(comments).not.toContain('edit_document')
+
+    // Suggesting is not there yet: such a connection is told of reading.
+    expect(instructionsFor({ ...APP, edit: 'suggesting' })).toBe(reads)
   })
 
   it('speaks the app’s version of the protocol when it has it, and its newest otherwise', async () => {

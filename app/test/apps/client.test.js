@@ -11,7 +11,7 @@ import { appDoor } from '../../electron/src/appServer.js'
 const tools = vi.hoisted(() => ({ toolsFor: vi.fn(), callTool: vi.fn() }))
 vi.mock('@/apps/tools.js', () => tools)
 
-import { INSTRUCTIONS, answerRequest } from '@/apps/protocol.js'
+import { answerRequest, instructionsFor } from '@/apps/protocol.js'
 
 const CONNECTION = {
   id: 'app_1',
@@ -95,7 +95,7 @@ describe('a client through the door', () => {
 
     expect(client.getServerVersion()).toMatchObject({ name: 'inksprite' })
     expect(client.getServerCapabilities()).toEqual({ tools: {} })
-    expect(client.getInstructions()).toBe(INSTRUCTIONS)
+    expect(client.getInstructions()).toBe(instructionsFor(CONNECTION))
     await client.close()
   })
 

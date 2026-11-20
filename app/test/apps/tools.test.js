@@ -34,13 +34,17 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
 const STORY = 'story_1'
 
+/** A connection that only reads. */
 const APP = {
   id: 'app_1',
   name: 'Claude Code',
   projects: [STORY],
-  edit: 'suggesting',
-  comment: true,
+  edit: 'off',
+  comment: false,
 }
+
+/** One that edits and comments. */
+const WRITER = { ...APP, edit: 'editing', comment: true }
 
 const signal = new AbortController().signal
 
@@ -48,7 +52,7 @@ const signal = new AbortController().signal
 const parts = answer => answer.result.content.map(part => part.text)
 
 describe('toolsFor', () => {
-  it('offers the projects’ list and the tools that read, each read-only', () => {
+  it('offers a connection that only reads the projects’ list and the tools that read', () => {
     const tools = toolsFor(APP)
     expect(tools.map(tool => tool.name)).toEqual([
       'list_projects',
@@ -63,24 +67,80 @@ describe('toolsFor', () => {
     }
   })
 
+  it('offers the tools that edit to a connection that edits', () => {
+    const names = toolsFor({ ...APP, edit: 'editing' }).map(tool => tool.name)
+    expect(names).toEqual([
+      'list_projects',
+      'list_documents',
+      'read_document',
+      'describe_document',
+      'search_documents',
+      'create_document',
+      'create_folder',
+      'update_document',
+      'edit_document',
+      'append_document',
+      'move_document',
+      'delete_document',
+    ])
+  })
+
+  it('offers none of them to one that suggests, until suggesting is there', () => {
+    expect(toolsFor({ ...APP, edit: 'suggesting' })).toEqual(toolsFor(APP))
+  })
+
+  it('offers the tools that comment to a connection that comments', () => {
+    const names = toolsFor({ ...APP, comment: true }).map(tool => tool.name)
+    expect(names.slice(5)).toEqual([
+      'list_comments',
+      'add_comment',
+      'reply_comment',
+      'resolve_comment',
+    ])
+  })
+
+  it('says which tools change nothing, which only add, and which may take away', () => {
+    const hints = Object.fromEntries(toolsFor(WRITER).map(tool => [tool.name, tool.annotations]))
+    expect(hints.list_comments).toEqual({ readOnlyHint: true })
+    for (const name of ['create_document', 'create_folder', 'append_document', 'add_comment']) {
+      expect(hints[name], name).toEqual({ readOnlyHint: false, destructiveHint: false })
+    }
+    for (const name of ['edit_document', 'update_document', 'move_document', 'delete_document']) {
+      expect(hints[name], name).toEqual({ readOnlyHint: false, destructiveHint: true })
+    }
+  })
+
   it('has every document tool take the project, as well as what it takes of a chat', () => {
-    const [list, ...documents] = toolsFor(APP)
+    const [list, ...documents] = toolsFor(WRITER)
     expect(list.inputSchema.properties).toEqual({})
     for (const tool of documents) {
-      expect(Object.keys(tool.inputSchema.properties)[0]).toBe('project')
-      expect(tool.inputSchema.required || []).not.toContain('project')
+      expect(Object.keys(tool.inputSchema.properties)[0], tool.name).toBe('project')
+      expect(tool.inputSchema.required || [], tool.name).not.toContain('project')
     }
     const read = documents.find(tool => tool.name === 'read_document')
     expect(Object.keys(read.inputSchema.properties)).toContain('section')
     expect(read.inputSchema.required).toEqual(['path'])
   })
 
-  it('says nothing of what only a chat has: its conversation, its block, tools not offered', () => {
-    for (const tool of toolsFor(APP)) {
-      expect(tool.description, tool.name).not.toMatch(
-        /explore_documents|project block|conversation|use_skill|still above/
+  it('says nothing of what only a chat has: its conversation, its block, its asking first', () => {
+    for (const tool of toolsFor(WRITER)) {
+      const words = `${tool.description} ${JSON.stringify(tool.inputSchema)}`
+      expect(words, tool.name).not.toMatch(
+        /explore_documents|project block|conversation|use_skill|still above|in the chat|approves changes first|\bchat\b/
       )
     }
+  })
+
+  it('lets an edit be several, or of every place a passage appears', () => {
+    const edit = toolsFor(WRITER).find(tool => tool.name === 'edit_document')
+    const { properties, required } = edit.inputSchema
+
+    expect(Object.keys(properties)).toEqual(['project', 'path', 'old', 'new', 'all', 'edits'])
+    expect(required).toEqual(['path'])
+    expect(properties.all.type).toBe('boolean')
+    expect(properties.edits.items.required).toEqual(['old', 'new'])
+    expect(Object.keys(properties.edits.items.properties)).toEqual(['old', 'new', 'all'])
+    expect(edit.description).toContain('`edits`')
   })
 })
 
@@ -117,6 +177,19 @@ describe('toResult', () => {
       '{"comments":[{"id":"c1","passage":"quoted"}]}',
     ])
     expect(answer.isError).toBeUndefined()
+  })
+
+  it('sends how a write was stored as it reads, after what is said of the write', () => {
+    const answer = toResult({
+      success: true,
+      document: { path: 'notes/Plan' },
+      stored: '- one\n- two',
+      note: 'Quote from that.',
+    })
+    expect(answer.content.map(part => part.text)).toEqual([
+      '{"success":true,"document":{"path":"notes/Plan"},"note":"Quote from that."}',
+      '- one\n- two',
+    ])
   })
 
   it('sends anything else as JSON', () => {
@@ -238,5 +311,132 @@ describe('callTool', () => {
     const answer = await callTool(APP, 'read_document', { path: 'notes/Nothing' }, signal)
     expect(answer.result.isError).toBe(true)
     expect(parts(answer)[0]).toContain('No document at "notes/Nothing"')
+  })
+
+  it('refuses a tool the connection is not offered, changing nothing', async () => {
+    const edit = await callTool(
+      APP,
+      'edit_document',
+      { path: 'notes/Plan', old: 'rope', new: 'a ladder' },
+      signal
+    )
+    const comment = await callTool(
+      APP,
+      'add_comment',
+      { path: 'notes/Plan', passage: 'rope', text: 'Why rope?' },
+      signal
+    )
+
+    expect(edit.result).toEqual({
+      content: [{ type: 'text', text: 'Unknown tool: edit_document' }],
+      isError: true,
+    })
+    expect(comment.result.isError).toBe(true)
+    expect(store.getDocument('doc_plan').content).toBe('The vault opens at "noon".\n\nBring rope.')
+  })
+
+  it('writes for a connection that edits: a document made, added to, changed and moved', async () => {
+    const made = await callTool(
+      WRITER,
+      'create_document',
+      { path: 'notes/Crew', content: 'Mara picks locks.' },
+      signal
+    )
+    expect(JSON.parse(parts(made)[0])).toMatchObject({
+      success: true,
+      document: { path: 'notes/Crew' },
+    })
+
+    await callTool(WRITER, 'append_document', { path: 'notes/Crew', text: 'Tov drives.' }, signal)
+    await callTool(
+      WRITER,
+      'edit_document',
+      { path: 'notes/Crew', old: 'picks locks', new: 'opens the vault' },
+      signal
+    )
+    const read = await callTool(WRITER, 'read_document', { path: 'notes/Crew' }, signal)
+    expect(parts(read)[1]).toBe('Mara opens the vault.\n\nTov drives.')
+
+    await callTool(WRITER, 'move_document', { path: 'notes/Crew', to: 'notes/The crew' }, signal)
+    const listing = parts(await callTool(WRITER, 'list_documents', {}, signal))[0]
+    expect(listing).toContain('notes/The crew')
+
+    await callTool(WRITER, 'delete_document', { path: 'notes/The crew' }, signal)
+    expect(parts(await callTool(WRITER, 'list_documents', {}, signal))[0]).not.toContain('crew')
+  })
+
+  it('never has a write wait on the writer, there being no chat to ask in', async () => {
+    const made = await callTool(
+      WRITER,
+      'create_document',
+      { path: 'notes/Crew', content: 'Mara.' },
+      signal
+    )
+    expect(parts(made)[0]).not.toContain('proposed')
+    expect(parts(await callTool(WRITER, 'list_documents', {}, signal))[0]).toContain('notes/Crew')
+  })
+
+  it('makes several edits in one call, through the tool as an app has it', async () => {
+    const answer = await callTool(
+      WRITER,
+      'edit_document',
+      {
+        path: 'notes/Plan',
+        edits: [
+          { old: 'noon', new: 'midnight' },
+          { old: 'rope', new: 'a ladder' },
+        ],
+      },
+      signal
+    )
+
+    expect(JSON.parse(parts(answer)[0])).toMatchObject({ success: true, edits: 2 })
+    expect(store.getDocument('doc_plan').content).toBe(
+      'The vault opens at "midnight".\n\nBring a ladder.'
+    )
+  })
+
+  it('comments under the connection’s name', async () => {
+    const added = await callTool(
+      WRITER,
+      'add_comment',
+      { path: 'notes/Plan', passage: 'Bring rope', text: 'How much?' },
+      signal
+    )
+    const { comment } = JSON.parse(parts(added)[0])
+    await callTool(
+      WRITER,
+      'reply_comment',
+      { path: 'notes/Plan', id: comment, text: 'Thirty metres.' },
+      signal
+    )
+
+    const thread = store.getDocument('doc_plan').comments[comment]
+    expect(thread.posts.map(post => [post.author, post.name, post.text])).toEqual([
+      ['model', 'Claude Code', 'How much?'],
+      ['model', 'Claude Code', 'Thirty metres.'],
+    ])
+
+    const listed = parts(await callTool(WRITER, 'list_comments', {}, signal))[0]
+    expect(listed).toContain('"author":"Claude Code"')
+
+    await callTool(WRITER, 'resolve_comment', { path: 'notes/Plan', id: comment }, signal)
+    expect(store.getDocument('doc_plan').comments[comment].status).toBe('resolved')
+  })
+
+  it('says how a write was stored where the editor wrote it another way', async () => {
+    const answer = await callTool(
+      WRITER,
+      'append_document',
+      { path: 'notes/Plan', text: '* rope\n* a lamp' },
+      signal
+    )
+
+    const [about, stored] = parts(answer)
+    expect(JSON.parse(about)).toMatchObject({
+      success: true,
+      note: expect.stringContaining('`stored`'),
+    })
+    expect(stored).toBe('- rope\n- a lamp')
   })
 })

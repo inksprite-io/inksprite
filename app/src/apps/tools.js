@@ -4,8 +4,10 @@
  *
  * They are the document tools a chat's model has (`ai/tools/documents.js`),
  * by their names, each taking the project as well, since an app has several
- * where a chat has one, and `list_projects` for what those are. So far the
- * reading ones: listing, reading, describing and searching.
+ * where a chat has one, and `list_projects` for what those are. Which an app
+ * is offered is its connection's to say, by what the tools do with the
+ * documents, as a profile says it: it reads them always, edits them where
+ * the connection edits, and comments on them where it comments.
  *
  * A chat's model gets more than its tools: the project block on every turn,
  * and a conversation the app can see. An app's gets only what a call
@@ -19,7 +21,16 @@
  *   after what is said about it, not as a string inside JSON: an edit quotes
  *   it exactly, and escaped line breaks and quotes get in the way of that.
  * - **Words written for outside.** Where a tool's description speaks of the
- *   project block or of tools an app isn't offered, the app is given another.
+ *   project block, the chat, or tools an app isn't offered, the app is given
+ *   another.
+ * - **Several edits in a call, and how the text was stored** (`./writes.js`).
+ * - **A connection is who its comments are by**: its posts are a model's
+ *   under the connection's name, which the Comments tab and other readers
+ *   show.
+ *
+ * Nothing waits on the writer in a chat here, there being none: a call is
+ * never handed `propose`, so what the connection may do, it does. The trash
+ * and a document's versions take it back.
  *
  * Hidden documents are not in an app's project, as they are not in a
  * chat's: hiding keeps a document from models.
@@ -27,6 +38,7 @@
 
 import { toolRegistry } from '@/ai/tools/index.js'
 import { findProject, inProject, projectsOf } from './projects.js'
+import { answeringStored, editMany } from './writes.js'
 
 /** @typedef {import('@/platform/apps.js').AskingApp} AskingApp */
 
@@ -37,7 +49,7 @@ import { findProject, inProject, projectsOf } from './projects.js'
  * @property {string} name
  * @property {string} description
  * @property {Record<string, any>} inputSchema
- * @property {{readOnlyHint?: boolean}} [annotations]
+ * @property {{readOnlyHint?: boolean, destructiveHint?: boolean}} [annotations]
  */
 
 /**
@@ -56,24 +68,132 @@ export const LIST_PROJECTS = 'list_projects'
  */
 const READING = ['list_documents', 'read_document', 'describe_document', 'search_documents']
 
+/** Those that change the documents, for a connection that edits. */
+const EDITING = [
+  'create_document',
+  'create_folder',
+  'update_document',
+  'edit_document',
+  'append_document',
+  'move_document',
+  'delete_document',
+]
+
+/** Those that comment, for a connection that comments. */
+const COMMENTING = ['list_comments', 'add_comment', 'reply_comment', 'resolve_comment']
+
+/** Those that change nothing. */
+const READ_ONLY = new Set([...READING, 'list_comments'])
+
+/** Those that only add, and take nothing away. */
+const ADDING = new Set([
+  'create_document',
+  'create_folder',
+  'append_document',
+  'add_comment',
+  'reply_comment',
+])
+
+/** Those that write a document's text, whose answer says how it was stored. */
+const WRITES_TEXT = new Set([
+  'create_document',
+  'update_document',
+  'edit_document',
+  'append_document',
+])
+
+/**
+ * A text with a sentence taken out of it.
+ * @param {string} text
+ * @param {string} sentence
+ */
+const without = (text, sentence) => text.replace(`${sentence} `, '').replace(sentence, '')
+
+/** What `edit_document` says of itself to an app, which may send several edits. */
+const EDIT_OUTSIDE =
+  "Change passages of a document, leaving the rest exactly as it is. Give a passage as it reads now (`old`) and what it should read instead (`new`); for several changes, give them as `edits`, which are made in order and all together or not at all. This is how to revise: it sends only what changes, so prefer it over update_document for anything short of a rewrite. A passage has to match the document exactly and exactly once, so quote it as read_document gave it and include enough of it to be unique; with `all`, every place it appears is changed, as for a term renamed. The writer's comment markup can be left out. A comment whose highlighted words an edit changes is resolved with it, and the result lists any it resolved; a comment whose words come through unchanged stays on them."
+
 /**
  * What a tool says of itself to an app, where what it says to a chat's model
- * wouldn't be true there: given what it says to the chat.
- * @type {Record<string, (chat: string) => string>}
+ * wouldn't be true there: given the tool as the chat has it, the description
+ * or the parameters that differ.
+ * @type {Record<string, (chat: {description: string, parameters: Record<string, any>}) => {description?: string, parameters?: Record<string, any>}>}
  */
 const SAID_OUTSIDE = {
-  list_documents: chat =>
-    chat.replace(
+  list_documents: ({ description }) => ({
+    description: description.replace(
       'a description written for you from its text by explore_documents',
       'a description written from its text'
     ),
-  read_document: () =>
-    'Read a document. Its text comes after what is said about it, as it is written: Markdown. A document up to about 7,000 words comes whole; a longer one comes one slice at a time, with `next` for the offset to go on from and its top sections with their links. For a long document, look at its sections with describe_document first and read the ones you need with `section`, rather than paging through it. The open comments on what was read are listed after it, each with the passage it is on. The user may be writing in it: what a read gives is the text as it stood then. A source file in a repository comes with its line numbers, and is read by line with `line` and `until`.',
-  describe_document: chat =>
-    chat.replace(
+  }),
+  read_document: () => ({
+    description:
+      'Read a document. Its text comes after what is said about it, as it is written: Markdown. A document up to about 7,000 words comes whole; a longer one comes one slice at a time, with `next` for the offset to go on from and its top sections with their links. For a long document, look at its sections with describe_document first and read the ones you need with `section`, rather than paging through it. The open comments on what was read are listed after it, each with the passage it is on. The user may be writing in it: what a read gives is the text as it stood then. A source file in a repository comes with its line numbers, and is read by line with `line` and `until`.',
+  }),
+  describe_document: ({ description }) => ({
+    description: description.replace(
       'Where explore_documents wrote a description of the document from its text',
       'Where a description of the document has been written from its text'
     ),
+  }),
+  edit_document: ({ parameters }) => {
+    const { path, old, new: becomes } = parameters.properties
+    const all = {
+      type: 'boolean',
+      description:
+        'Change every place the passage appears, not only one: for a term renamed. Without it, a passage that appears more than once is refused.',
+    }
+    return {
+      description: EDIT_OUTSIDE,
+      parameters: {
+        type: 'object',
+        properties: {
+          path,
+          old,
+          new: becomes,
+          all,
+          edits: {
+            type: 'array',
+            description:
+              'Several changes in one call, in place of `old` and `new`: each made to the text the ones before it left, and all of them or none.',
+            items: {
+              type: 'object',
+              properties: { old, new: becomes, all },
+              required: ['old', 'new'],
+            },
+          },
+        },
+        required: ['path'],
+      },
+    }
+  },
+  append_document: ({ parameters }) => ({
+    parameters: {
+      ...parameters,
+      properties: {
+        ...parameters.properties,
+        text: { type: 'string', description: 'The text to add, in Markdown.' },
+      },
+    },
+  }),
+  move_document: ({ description }) => ({
+    description: without(
+      description,
+      'When the writer approves changes first, the call proposes the move instead, and nothing moves until they accept it in the chat; the result says which it was.'
+    ),
+  }),
+  delete_document: ({ description }) => ({
+    description: without(
+      description,
+      'When the writer approves changes first, the call proposes the delete instead, and nothing is deleted until they accept it in the chat; the result says which it was.'
+    ),
+  }),
+  add_comment: ({ description }) => ({
+    description: description.replace(
+      'Anything else goes in the chat, or is the edit itself.',
+      'Anything else goes in what you tell the user, or is the edit itself.'
+    ),
+  }),
 }
 
 /** The argument every document tool takes of an app. */
@@ -93,23 +213,42 @@ const LIST_PROJECTS_TOOL = {
 }
 
 /**
+ * The document tools an app is offered, by name: those that read, and those
+ * of what else its connection may do.
+ *
+ * @param {AskingApp} app
+ * @returns {string[]}
+ */
+const offered = app => [
+  ...READING,
+  ...(app.edit === 'editing' ? EDITING : []),
+  ...(app.comment ? COMMENTING : []),
+]
+
+/**
  * The tools an app is offered.
  *
- * @param {AskingApp} _app - What it may do decides, once there is more than reading
+ * @param {AskingApp} app
  * @returns {AppTool[]}
  */
-export function toolsFor(_app) {
-  const reading = toolRegistry.getDefinitionsFor(READING).map(definition => {
-    const { name, description, parameters } = definition.function
-    const schema = /** @type {Record<string, any>} */ (parameters)
+export function toolsFor(app) {
+  const documents = toolRegistry.getDefinitionsFor(offered(app)).map(definition => {
+    const chat = definition.function
+    const outside = SAID_OUTSIDE[chat.name]?.({
+      description: chat.description,
+      parameters: /** @type {Record<string, any>} */ (chat.parameters),
+    })
+    const schema = /** @type {Record<string, any>} */ (outside?.parameters ?? chat.parameters)
     return {
-      name,
-      description: SAID_OUTSIDE[name]?.(description) ?? description,
+      name: chat.name,
+      description: outside?.description ?? chat.description,
       inputSchema: { ...schema, properties: { project: PROJECT, ...schema.properties } },
-      annotations: { readOnlyHint: true },
+      annotations: READ_ONLY.has(chat.name)
+        ? { readOnlyHint: true }
+        : { readOnlyHint: false, destructiveHint: !ADDING.has(chat.name) },
     }
   })
-  return [LIST_PROJECTS_TOOL, ...reading]
+  return [LIST_PROJECTS_TOOL, ...documents]
 }
 
 /** @param {string} text */
@@ -143,6 +282,11 @@ export function toResult(value) {
       ],
     }
   }
+  // How a write was stored, as it reads: to quote from, as a read's text is.
+  if (typeof answer.stored === 'string') {
+    const { stored, ...about } = answer
+    return { content: [said(JSON.stringify(about)), said(stored)] }
+  }
   return { content: [said(JSON.stringify(answer))] }
 }
 
@@ -174,12 +318,21 @@ export async function callTool(app, name, args, signal) {
   if ('error' in project) return { result: toResult(project) }
 
   const tool = toolRegistry.tools.get(name)
-  if (!tool) return { result: toResult({ error: `Unknown tool: ${name}` }) }
+  if (!tool || !offered(app).includes(name)) {
+    return { result: toResult({ error: `Unknown tool: ${name}` }) }
+  }
+  // The connection's own id where a chat's goes: no chat is found by it, so
+  // only what is hidden outright is left out. Its name is who its comments
+  // are by.
+  const context = { storyId: project.id, chatId: `app:${app.id}`, postsAs: app.name, signal }
+  const run = () =>
+    name === 'edit_document' && (Array.isArray(rest.edits) || rest.all === true)
+      ? editMany(rest, context)
+      : tool.execute(rest, context)
+
   const ran = await inProject(project.id, async () => {
     try {
-      // The connection's own id where a chat's goes: no chat is found by
-      // it, so only what is hidden outright is left out.
-      return await tool.execute(rest, { storyId: project.id, chatId: `app:${app.id}`, signal })
+      return WRITES_TEXT.has(name) ? await answeringStored(name, rest, context, run) : await run()
     } catch (error) {
       console.error(`${name} failed for a connected app:`, error)
       return { error: `${name} couldn't be run.` }

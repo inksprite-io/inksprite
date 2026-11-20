@@ -85,6 +85,18 @@ describe('useConnectedApps', () => {
     expect(apps.state.value.connections[0].name).toBe('The agent')
   })
 
+  it('says how a connection may edit, and whether it comments', async () => {
+    const apps = useConnectedApps()
+
+    await apps.setEdit('app_1', 'editing')
+    expect(platform.updateApp).toHaveBeenLastCalledWith('app_1', { edit: 'editing' })
+    expect(apps.state.value.connections[0].edit).toBe('editing')
+
+    await apps.setComment('app_1', false)
+    expect(platform.updateApp).toHaveBeenLastCalledWith('app_1', { comment: false })
+    expect(apps.state.value.connections[0].comment).toBe(false)
+  })
+
   it('removes a connection, and reads again whether anything is listened for', async () => {
     platform.listApps.mockResolvedValue(listed([]))
     const apps = useConnectedApps()

@@ -603,7 +603,9 @@
  * @typedef {Object} CommentPost
  * @property {string} author - `writer`, `model`, or `person`: someone else,
  *   in a Google Doc the document is linked to
- * @property {string} [name] - A person's, as Google shows it
+ * @property {string} [name] - A person's, as Google shows it; or, on a
+ *   model's post, the connected app that said it, by its connection's name
+ *   (see `apps/tools.js`). A chat's own model's posts have none.
  * @property {string} [user] - A person's id at Google
  * @property {number} [by] - The sync account a writer's post was written as,
  *   where the device was signed in: in a project shared, who of them said it

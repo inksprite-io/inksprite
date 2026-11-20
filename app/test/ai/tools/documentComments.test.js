@@ -313,6 +313,44 @@ describe('comments', () => {
     })
   })
 
+  describe('said by a connected app', () => {
+    it('carries the name of who is asking on what it says, and none in a chat', async () => {
+      const document = chapter()
+      const app = { ...context, postsAs: 'Claude Code' }
+
+      const added = await executeAddComment(
+        { path: 'Chapter 1', passage: 'to the door', text: 'Which door?' },
+        app
+      )
+      await executeReplyComment({ path: 'Chapter 1', id: 'cabcd1', text: 'Shortened it.' }, app)
+      await executeReplyComment({ path: 'Chapter 1', id: 'cabcd1', text: 'Mine.' }, context)
+
+      expect(threads(document.id)[added.comment].posts).toEqual([
+        expect.objectContaining({ author: 'model', name: 'Claude Code', text: 'Which door?' }),
+      ])
+      const [, fromApp, fromChat] = threads(document.id).cabcd1.posts
+      expect(fromApp).toMatchObject({ author: 'model', name: 'Claude Code' })
+      expect(fromChat.author).toBe('model')
+      expect('name' in fromChat).toBe(false)
+    })
+
+    it('is read by a model under that name, and the chat’s own as the model’s', async () => {
+      chapter()
+      await executeReplyComment(
+        { path: 'Chapter 1', id: 'cabcd1', text: 'Shortened it.' },
+        { ...context, postsAs: 'Claude Code' }
+      )
+      await executeReplyComment({ path: 'Chapter 1', id: 'cabcd1', text: 'Mine.' }, context)
+
+      const { comments } = await executeListComments({ path: 'Chapter 1' }, context)
+      const thread = comments.find(comment => comment.id === 'cabcd1')
+      expect(thread.posts.slice(1)).toEqual([
+        { author: 'Claude Code', text: 'Shortened it.' },
+        { author: 'model', text: 'Mine.' },
+      ])
+    })
+  })
+
   describe('reply_comment', () => {
     it('adds the reply to the thread, and a rewind takes it back', async () => {
       const document = chapter()

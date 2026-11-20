@@ -7,6 +7,7 @@
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { heldProjects, holdsProject, letGoOfProject, takeProject } from '@/platform/windows.js'
+import { saveNow } from '@/composables/useSaveBeforeClosing.js'
 
 /** @typedef {import('@/platform/apps.js').AskingApp} AskingApp */
 
@@ -90,9 +91,10 @@ const turns = new Map()
  * Do something in a project, in this window, if this is the window to do it
  * in. The window that has the project open does it. With the project in no
  * window, this one takes it for as long as the work takes, as a job does
- * (`platform/windows.js`), reading it afresh if it hadn't had it. A window
- * that can't, because another has the project or has had it since this one
- * did, passes, and says which.
+ * (`platform/windows.js`), reading it afresh if it hadn't had it, and saves
+ * what the work wrote before letting go, for the next window to read. A
+ * window that can't, because another has the project or has had it since
+ * this one did, passes, and says which.
  *
  * What is done in one project is done one thing at a time, in the order
  * asked: an app sends several calls at once, and two that write must not
@@ -128,11 +130,17 @@ async function holding(storyId, work) {
   const reason = /** @type {const} */ (`app:${++calls}`)
   const { held, stale, first } = await takeProject(storyId, reason)
   if (!held) return { pass: 'elsewhere' }
+  let worked = false
   try {
     if (stale) return { pass: 'behind' }
     if (first) await useStoriesStore().readAfresh(storyId)
+    worked = true
     return { value: await work() }
   } finally {
+    // Open here, it stays, and is saved as anything typed in it is.
+    if (worked && !holdsProject(storyId, 'open')) {
+      await saveNow().catch(error => console.error('Failed to save a connected app’s work:', error))
+    }
     letGoOfProject(storyId, reason)
   }
 }

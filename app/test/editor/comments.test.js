@@ -653,6 +653,10 @@ describe('authorOf', () => {
     expect(authorOf({ author: 'person', name: 'Ana Marsh' })).toBe('Ana Marsh')
     expect(authorOf({ author: 'person' })).toBe('Someone')
   })
+
+  it('names a connected app by its connection’s name', () => {
+    expect(authorOf({ author: 'model', name: 'Claude Code' })).toBe('Claude Code')
+  })
 })
 
 describe('suggesterOf', () => {

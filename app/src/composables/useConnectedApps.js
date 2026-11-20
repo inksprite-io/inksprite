@@ -51,6 +51,8 @@ export const claudeCodeCommand = (port, token) =>
  *   add: (name: string) => Promise<AppConnection>,
  *   rename: (id: string, name: string) => Promise<void>,
  *   setProject: (id: string, storyId: string, ticked: boolean) => Promise<void>,
+ *   setEdit: (id: string, edit: AppConnection['edit']) => Promise<void>,
+ *   setComment: (id: string, comment: boolean) => Promise<void>,
  *   remove: (id: string) => Promise<void>,
  *   setPort: (port: number) => Promise<void>,
  * }}
@@ -110,6 +112,26 @@ export function useConnectedApps() {
   }
 
   /**
+   * Say how a connection may change the documents' text.
+   *
+   * @param {string} id
+   * @param {AppConnection['edit']} edit
+   */
+  const setEdit = async (id, edit) => {
+    place(await updateApp(id, { edit }))
+  }
+
+  /**
+   * Say whether a connection may comment.
+   *
+   * @param {string} id
+   * @param {boolean} comment
+   */
+  const setComment = async (id, comment) => {
+    place(await updateApp(id, { comment }))
+  }
+
+  /**
    * Remove a connection: its app is let in no more.
    * @param {string} id
    */
@@ -126,5 +148,5 @@ export function useConnectedApps() {
     state.value = await setAppsPort(port)
   }
 
-  return { state, load, add, rename, setProject, remove, setPort }
+  return { state, load, add, rename, setProject, setEdit, setComment, remove, setPort }
 }

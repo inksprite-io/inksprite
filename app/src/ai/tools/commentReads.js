@@ -72,8 +72,9 @@ export function placedAsRead(stored, names, chatId = null) {
 
 /**
  * What has been said on a thread, by whom, as the model reads it: someone in
- * a linked Google Doc by the name Google shows, and in a project shared,
- * someone the writer shares it with by the name they show.
+ * a linked Google Doc by the name Google shows, a connected app by its
+ * connection's name, and in a project shared, someone the writer shares it
+ * with by the name they show.
  *
  * @param {import('@/types/models.js').CommentThread} thread
  * @param {import('@/cards/macros.js').Names|null} names
@@ -86,7 +87,9 @@ export const postsOf = (thread, names, people = null) =>
         ? post.name || 'someone'
         : post.author === 'writer' && people && !isMine(post, people)
           ? nameOf(post, people)
-          : post.author,
+          : post.author === 'model' && post.name
+            ? post.name
+            : post.author,
     text: substitute(post.text, names),
   }))
 

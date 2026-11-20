@@ -27,15 +27,31 @@ const INVALID_PARAMS = -32602
 
 /**
  * What an app's model is told as it connects: what a chat's model would have
- * from the project block and its prompt.
+ * from the project block and its prompt, as far as the connection goes.
+ *
+ * @param {AskingApp} app
+ * @returns {string}
  */
-export const INSTRUCTIONS = [
-  'inksprite is a writing app. This server gives you the projects its user has opened to you, to list, search and read their documents.',
-  '- A project is a tree of documents and folders. list_projects names the projects, and every other tool takes one as `project`.',
-  '- A document is addressed by its path from the top of its project, as list_documents gives it: "Designs/Sync". A path has no file extension.',
-  '- Documents are Markdown. A link from one to another is the path from the linking document, ending in .md.',
-  '- The user may be writing while you work. Read a document again before relying on what an earlier read said.',
-].join('\n')
+export function instructionsFor(app) {
+  const edits = app.edit === 'editing'
+  return [
+    `inksprite is a writing app. This server gives you the projects its user has opened to you, to ${edits ? 'read and write' : 'list, search and read'} their documents. The tools call the user the writer.`,
+    '- A project is a tree of documents and folders. list_projects names the projects, and every other tool takes one as `project`.',
+    '- A document is addressed by its path from the top of its project, as list_documents gives it: "Designs/Sync". A path has no file extension.',
+    '- Documents are Markdown. A link from one to another is the path from the linking document, ending in .md.',
+    '- The user may be writing while you work. Read a document again before relying on what an earlier read said.',
+    ...(edits
+      ? [
+          '- What you write is in the document at once, where the user sees it, and inksprite keeps a version of the text from before. edit_document changes passages and leaves the rest; append_document adds to the end; update_document rewrites the whole.',
+        ]
+      : []),
+    ...(app.comment
+      ? [
+          "- A comment is on a passage, for the user to read beside it: add_comment for what you have to say about a document, reply_comment and resolve_comment for comments that are there. On a comment, `writer` is the user, `model` is inksprite's own assistant, and what you say carries this connection's name.",
+        ]
+      : []),
+  ].join('\n')
+}
 
 /**
  * @param {unknown} id
@@ -69,7 +85,7 @@ export async function answerRequest(message, { app, signal }) {
         protocolVersion: PROTOCOL_VERSIONS.includes(asked) ? asked : PROTOCOL_VERSIONS[0],
         capabilities: { tools: {} },
         serverInfo: { name: 'inksprite', version: import.meta.env.VITE_APP_VERSION || 'dev' },
-        instructions: INSTRUCTIONS,
+        instructions: instructionsFor(app),
       })
     }
     case 'ping':

@@ -1596,6 +1596,20 @@ export async function executeListComments(args, context) {
   return { comments }
 }
 
+/**
+ * A post as a tool's caller makes one: the model's, under the name of who is
+ * asking where that isn't the chat's own model (a connected app, by its
+ * connection's name).
+ *
+ * @param {ToolContext} context
+ * @param {string} said
+ * @returns {import('@/types/models.js').CommentPost}
+ */
+const postBy = (context, said) => ({
+  ...newPost('model', said),
+  ...(context.postsAs ? { name: context.postsAs } : {}),
+})
+
 /** @type {ToolDefinition} */
 export const addCommentDefinition = {
   type: /** @type {const} */ ('function'),
@@ -1670,7 +1684,7 @@ export async function executeAddComment(args, context) {
     }
   }
 
-  const thread = newThread(newPost('model', said), passage)
+  const thread = newThread(postBy(context, said), passage)
   /** @type {CommentChange[]} */
   const comments = [{ id, before: null, after: thread }]
   if (context.propose) {
@@ -1748,7 +1762,7 @@ export async function executeReplyComment(args, context) {
   const thread = api.threadsOf(document.id)?.[args.id]
   if (!thread) return noComment(args)
 
-  const after = { ...thread, posts: [...thread.posts, newPost('model', said)] }
+  const after = { ...thread, posts: [...thread.posts, postBy(context, said)] }
   /** @type {CommentChange[]} */
   const comments = [{ id: args.id, before: thread, after }]
   api.changeThreads(document.id, comments, false)

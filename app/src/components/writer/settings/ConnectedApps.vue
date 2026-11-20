@@ -109,6 +109,30 @@
           </div>
         </div>
 
+        <!-- What it may do in them besides read, as a chat's tools say it. -->
+        <div class="flex flex-col gap-1" data-app-may>
+          <div
+            v-for="row in mayOf(one)"
+            :key="row.id"
+            class="flex items-center gap-2"
+            :data-app-row="row.id"
+          >
+            <span class="flex-1 min-w-0 text-xs font-medium text-surface-700 dark:text-surface-200">
+              {{ row.label }}
+            </span>
+            <Select
+              :model-value="row.value"
+              :options="row.options"
+              option-label="label"
+              option-value="value"
+              :aria-label="row.label"
+              size="small"
+              class="flex-none w-48 dark:!bg-surface-900"
+              @update:model-value="row.set"
+            />
+          </div>
+        </div>
+
         <!-- What the app is set up with: the command for Claude Code, and the
              address and token on their own for any other. -->
         <div class="flex flex-col gap-1" data-app-setup>
@@ -162,6 +186,7 @@ import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import CardList from '@/components/common/CardList.vue'
 import CardItem from '@/components/common/CardItem.vue'
 import HeaderButton from '../layout/HeaderButton.vue'
@@ -170,6 +195,7 @@ import { appAddress, claudeCodeCommand, useConnectedApps } from '@/composables/u
 import { useProjects } from '@/composables/useProjects.js'
 import { useToast } from '@/composables/useToast'
 import { formatRelativeTime } from '@/utils/formatters.js'
+import { OFF_ON } from '@/composables/useToolSettings.js'
 
 /** @typedef {import('@/platform/apps.js').AppConnection} AppConnection */
 
@@ -177,7 +203,8 @@ import { formatRelativeTime } from '@/utils/formatters.js'
  * Settings → Connections → Connected apps, in the desktop app: the other
  * apps on this computer the writer has let into their projects, a coding
  * agent first. A card for each, with its name, the projects ticked for it,
- * what to set the app up with, and when it last asked anything, under the
+ * what it may do in them besides read (edit, comment), what to set the app
+ * up with, and when it last asked anything, under the
  * port they all come in on. An app is let in only to the projects ticked,
  * and none is to start with. See
  * composables/useConnectedApps.js and `.llm/mcp_server_design.md`.
@@ -192,6 +219,8 @@ const {
   add: addApp,
   rename,
   setProject,
+  setEdit,
+  setComment,
   remove: removeApp,
   setPort,
 } = useConnectedApps()
@@ -234,8 +263,56 @@ const projectsLine = one => {
   const names = projects.rows.value
     .filter(project => one.projects.includes(project.id))
     .map(project => project.name)
-  return names.length > 0 ? names.join(', ') : 'No projects'
+  const line = names.length > 0 ? names.join(', ') : 'No projects'
+  return one.edit === 'editing' ? `${line} · Editing` : line
 }
+
+/**
+ * How a connection may change text. Suggesting waits on its changes being
+ * laid out in the text for the writer to settle; until then a connection
+ * kept as suggesting edits nothing, and reads as Off.
+ * @type {import('@/composables/useToolSettings.js').Option[]}
+ */
+const OFF_EDITING = [
+  { label: 'Off', value: 'off' },
+  { label: 'Editing', value: 'editing' },
+]
+
+/**
+ * Run a change to what a connection may do, saying so if it isn't kept.
+ * @param {() => Promise<void>} change
+ */
+const allowing = async change => {
+  try {
+    await change()
+  } catch (error) {
+    console.error('Failed to change what a connected app may do:', error)
+    toast.error("What the app may do couldn't be changed.")
+  }
+}
+
+/**
+ * What a connection may do with the documents besides read them, a row
+ * each, as the chat's tools have them.
+ *
+ * @param {AppConnection} one
+ */
+const mayOf = one => [
+  {
+    id: 'edit',
+    label: 'Edit',
+    options: OFF_EDITING,
+    value: one.edit === 'editing' ? 'editing' : 'off',
+    set: (/** @type {'off'|'editing'} */ edit) => allowing(() => setEdit(one.id, edit)),
+  },
+  {
+    id: 'comment',
+    label: 'Comment',
+    options: OFF_ON,
+    value: one.comment ? 'on' : 'off',
+    set: (/** @type {'on'|'off'} */ on) => allowing(() => setComment(one.id, on === 'on')),
+  },
+]
 
 // Adding: a name, then its card open on the projects to tick.
 const adding = ref(false)

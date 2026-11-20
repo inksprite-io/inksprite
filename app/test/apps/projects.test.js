@@ -38,6 +38,9 @@ const windows = vi.hoisted(() => ({
 }))
 vi.mock('@/platform/windows.js', () => windows)
 
+const saving = vi.hoisted(() => ({ saveNow: vi.fn(async () => {}) }))
+vi.mock('@/composables/useSaveBeforeClosing.js', () => saving)
+
 import { findProject, inProject, projectsOf } from '@/apps/projects.js'
 
 const app = (projects = ['story_a', 'story_b']) => ({
@@ -50,6 +53,8 @@ const app = (projects = ['story_a', 'story_b']) => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
+  saving.saveNow.mockReset().mockResolvedValue(undefined)
+  windows.letGoOfProject.mockReset()
   stories.known = new Map([
     ['story_a', { id: 'story_a' }],
     ['story_b', { id: 'story_b' }],
@@ -161,6 +166,39 @@ describe('inProject', () => {
     expect(stories.readAfresh).not.toHaveBeenCalled()
   })
 
+  it('saves what the work wrote before letting go, for the next window to read', async () => {
+    /** @type {string[]} */
+    const order = []
+    saving.saveNow.mockImplementation(async () => {
+      order.push('saved')
+    })
+    windows.letGoOfProject.mockImplementation(() => {
+      order.push('let go')
+    })
+
+    await inProject('story_a', async () => {
+      order.push('worked')
+    })
+
+    expect(order).toEqual(['worked', 'saved', 'let go'])
+  })
+
+  it('leaves the saving to the window when the project is open in it', async () => {
+    windows.holdsProject.mockImplementation((_, reason) => reason === 'open')
+    await inProject('story_a', async () => 1)
+    expect(saving.saveNow).not.toHaveBeenCalled()
+    expect(windows.letGoOfProject).toHaveBeenCalledTimes(1)
+  })
+
+  it('lets go all the same when the saving fails', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    saving.saveNow.mockRejectedValue(new Error('disk full'))
+
+    expect(await inProject('story_a', async () => 'done')).toEqual({ value: 'done' })
+    expect(windows.letGoOfProject).toHaveBeenCalledTimes(1)
+    error.mockRestore()
+  })
+
   it('reads the project afresh when this window had not had it', async () => {
     windows.takeProject.mockResolvedValue({ held: true, stale: false, first: true })
     const work = vi.fn(async () => {
@@ -185,6 +223,7 @@ describe('inProject', () => {
 
     expect(await inProject('story_a', work)).toEqual({ pass: 'behind' })
     expect(work).not.toHaveBeenCalled()
+    expect(saving.saveNow).not.toHaveBeenCalled()
     expect(windows.letGoOfProject).toHaveBeenCalledTimes(1)
   })
 

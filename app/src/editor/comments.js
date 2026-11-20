@@ -571,9 +571,10 @@ export function newPost(author, text, now = Date.now()) {
 }
 
 /**
- * Who said a post, as the writer reads it: You, the Assistant, the person
- * by name, from a linked Google Doc, or, in a project shared, the one of
- * them who wrote it by the name they show.
+ * Who said a post, as the writer reads it: You, the Assistant, a connected
+ * app by its connection's name, the person by name, from a linked Google
+ * Doc, or, in a project shared, the one of them who wrote it by the name
+ * they show.
  *
  * @param {{author: string, name?: string, by?: number}} post
  * @param {import('@/cloud/people.js').People|null} [people] - Where the project is shared
@@ -584,7 +585,7 @@ export function authorOf(post, people = null) {
     return !people || isMine(post, people) ? 'You' : nameOf(post, people)
   }
   if (post.author === 'person') return post.name || 'Someone'
-  return 'Assistant'
+  return post.name || 'Assistant'
 }
 
 /**
