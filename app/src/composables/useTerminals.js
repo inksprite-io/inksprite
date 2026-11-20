@@ -12,7 +12,8 @@
  * So every window hears what becomes of every terminal, and keeps them all.
  *
  * A terminal ends with its project: one whose project this window has seen
- * go, to the trash or for good, is ended here.
+ * go, to the trash or for good, is ended here. And the first made in a
+ * project not saved yet saves it, as a chat does.
  */
 import { reactive, ref, watchEffect } from 'vue'
 import {
@@ -24,12 +25,15 @@ import {
   terminalSeen,
 } from '@/platform/terminal.js'
 import { useStoriesStore } from '@/stores/storiesStore.js'
+import { useSyncStore } from '@/stores/syncStore.js'
 
 /**
  * @typedef {Object} TerminalInfo
  * @property {string} id
  * @property {string} project - The project it is in, by its id
  * @property {string} title - What the program in it calls it; empty until one does
+ * @property {boolean} rang - Whether it rang its bell, as a program does when
+ *   it wants the writer, and hasn't been looked at since
  */
 
 /**
@@ -41,15 +45,13 @@ import { useStoriesStore } from '@/stores/storiesStore.js'
  * @property {(project: string) => Promise<string>} create - Make one in a
  *   project, and say its id
  * @property {(id: string) => void} close - End one, and what runs in it
- * @property {(id: string) => boolean} rang - Whether it rang its bell, as a
- *   program does when it wants the writer, and hasn't been looked at since
+ * @property {(id: string) => boolean} rang - Whether it rang its bell and
+ *   hasn't been looked at since
  * @property {(id: string) => void} seen - It has been looked at
  */
 
 /** @type {Map<string, TerminalInfo>} */
 const terminals = reactive(new Map())
-/** Those that rang and haven't been looked at since. @type {Set<string>} */
-const rung = reactive(new Set())
 const ready = ref(false)
 let started = false
 /** What stops the watch for projects that go. @type {(() => void)|null} */
@@ -81,7 +83,7 @@ export function onTerminalEnded(listener) {
  */
 function onEvent(id, event) {
   if (event.type === 'made') {
-    if (!terminals.has(id)) terminals.set(id, { id, project: event.project, title: '' })
+    know(id, event.project)
     return
   }
   const terminal = terminals.get(id)
@@ -89,22 +91,39 @@ function onEvent(id, event) {
   if (event.type === 'title') {
     terminal.title = event.title
   } else if (event.type === 'bell') {
-    rung.add(id)
+    terminal.rang = true
   } else if (event.type === 'seen') {
-    rung.delete(id)
+    terminal.rang = false
   } else if (event.type === 'exit') {
     for (const listener of endedListeners) listener(id, terminal.project, event.failed === true)
-    forget(id)
+    terminals.delete(id)
   }
 }
 
 /**
+ * Keep a terminal just made, unless it is known already: the window that
+ * makes one is told of it as every window is, and by the call's answer too.
+ *
  * @param {string} id
- * @returns {boolean} Whether it was known here
+ * @param {string} project
  */
-function forget(id) {
-  rung.delete(id)
-  return terminals.delete(id)
+function know(id, project) {
+  if (!terminals.has(id)) terminals.set(id, { id, project, title: '', rang: false })
+}
+
+/**
+ * Make a terminal in a project, and say its id. A project not saved yet is
+ * saved by it, as by a chat: there would be no project to find the terminal
+ * in again.
+ *
+ * @param {string} project
+ * @returns {Promise<string>}
+ */
+async function create(project) {
+  const id = await createTerminal(project)
+  know(id, project)
+  useSyncStore().start(project)
+  return id
 }
 
 /**
@@ -113,8 +132,20 @@ function forget(id) {
  * @param {string} id
  */
 function close(id) {
-  if (!forget(id)) return
+  if (!terminals.delete(id)) return
   closeTerminal(id).catch(error => console.error('A terminal could not be ended:', error))
+}
+
+/**
+ * A terminal that rang has been looked at, which every window is then told.
+ *
+ * @param {string} id
+ */
+function seen(id) {
+  const terminal = terminals.get(id)
+  if (!terminal?.rang) return
+  terminal.rang = false
+  terminalSeen(id).catch(error => console.error('A terminal could not be marked seen:', error))
 }
 
 /**
@@ -148,8 +179,7 @@ function start() {
   listTerminals()
     .then(list => {
       for (const { id, project, title, rang } of list) {
-        terminals.set(id, { id, project, title })
-        if (rang) rung.add(id)
+        terminals.set(id, { id, project, title, rang: rang === true })
       }
     })
     .catch(error => console.error('The terminals could not be listed:', error))
@@ -165,10 +195,21 @@ export function clearTerminals() {
   stopWatching?.()
   stopWatching = null
   terminals.clear()
-  rung.clear()
   endedListeners.clear()
   ready.value = false
   started = false
+}
+
+/** @type {TerminalsApi} */
+const api = {
+  ready,
+  get: id => terminals.get(id),
+  of: project =>
+    [...terminals.values()].filter(terminal => terminal.project === project).map(({ id }) => id),
+  create,
+  close,
+  rang: id => terminals.get(id)?.rang === true,
+  seen,
 }
 
 /**
@@ -178,25 +219,5 @@ export function clearTerminals() {
  */
 export function useTerminals() {
   start()
-
-  /** @type {TerminalsApi['create']} */
-  const create = async project => {
-    const id = await createTerminal(project)
-    if (!terminals.has(id)) terminals.set(id, { id, project, title: '' })
-    return id
-  }
-
-  return {
-    ready,
-    get: id => terminals.get(id),
-    of: project =>
-      [...terminals.values()].filter(terminal => terminal.project === project).map(({ id }) => id),
-    create,
-    close,
-    rang: id => rung.has(id),
-    seen: id => {
-      if (!rung.delete(id)) return
-      terminalSeen(id).catch(error => console.error('A terminal could not be marked seen:', error))
-    },
-  }
+  return api
 }

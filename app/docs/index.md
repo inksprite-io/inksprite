@@ -155,6 +155,7 @@ Where the app's rows are kept, and the only module that reads and writes the dat
 What differs between the app in a browser and the app in its desktop window (Electron, in `electron/`):
 
 - Requests to servers: the page's own in a browser, made from the native side in the desktop app, where no server refuses them for their origin
+- Terminals, in the desktop app: a shell made in a project, listed and ended by the page, and typed into only from a frame of another origin (`electron/terminal/`) that the page can't reach into
 
 ### 🔌 [Apps](./apps.md)
 
@@ -264,7 +265,8 @@ Frontend (Vue 3 + Vite)
 │   └── open - Which storage the app opens with, and the projects moved in
 ├── Platform (src/platform)
 │   ├── fetch - Requests to servers, from the page or from the desktop app's native side
-│   └── library - The desktop app's projects folder, and its files
+│   ├── library - The desktop app's projects folder, and its files
+│   └── terminal - The desktop app's terminals, and what passes between the page and a terminal's frame
 ├── Apps (src/apps)
 │   ├── protocol - MCP's requests answered, as far as tools go
 │   ├── tools - The tools an app is offered, and a call to one run

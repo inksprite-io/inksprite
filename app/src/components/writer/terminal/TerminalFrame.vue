@@ -27,8 +27,7 @@
 /* global getComputedStyle, KeyboardEvent, MouseEvent, MutationObserver */
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { usePagePress } from '@/composables/usePagePress.js'
-import { TERMINAL_ORIGIN, terminalFrameUrl } from '@/platform/terminal.js'
-import { appShortcutFrom } from '@/utils/terminalFrame.js'
+import { TERMINAL_ORIGIN, appShortcutFrom, terminalFrameUrl } from '@/platform/terminal.js'
 
 /**
  * A terminal, in its frame. The frame's page is the desktop app's own and

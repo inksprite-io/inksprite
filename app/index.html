@@ -6,13 +6,15 @@
       The keys are in this page's database, so script that gets in runs with
       them: only the app's own scripts run. Images only from here, since one
       from elsewhere is a request that carries whatever its address says.
+      No frame but a terminal's, which only the desktop app has anything to
+      answer with (electron/src/terminals.js): the page sets no other.
       Requests aren't limited, because the writer's servers can be anywhere.
       Here rather than in a header so that the desktop app has it too;
       vercel.json adds what only a header can say.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="script-src 'self'; object-src 'none'; base-uri 'none'; img-src 'self' data: blob:"
+      content="script-src 'self'; object-src 'none'; base-uri 'none'; img-src 'self' data: blob:; frame-src terminal:"
     />
     <link rel="icon" type="image/svg+xml" href="/static/icons/inksprite_i.svg" />
     <link rel="shortcut icon" href="/static/icons/favicon.ico" />

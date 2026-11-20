@@ -122,6 +122,47 @@ describe('TabStrip', () => {
     expect(chatTab.attributes('aria-label')).toBe('System prompt, Heist')
   })
 
+  it('marks a terminal as one, with the terminal’s icon, and no other tab', () => {
+    const wrapper = mountStrip({
+      items: [
+        items[0],
+        { id: 'chat:chat_1:prompt', title: 'System prompt', chat: 'Heist' },
+        { id: 'terminal:1', title: 'Terminal', terminal: true },
+      ],
+    })
+    const terminalTab = tab(wrapper, 'terminal:1')
+    expect(terminalTab.find('svg[data-terminal]').exists()).toBe(true)
+    // Before its title, where a chat's text has the chat's mark.
+    expect(terminalTab.html().indexOf('data-terminal')).toBeLessThan(
+      terminalTab.html().indexOf('Terminal</span>')
+    )
+    expect(terminalTab.find('[data-chat]').exists()).toBe(false)
+    expect(terminalTab.find('[data-plain]').exists()).toBe(false)
+    expect(tab(wrapper, 'doc_1').find('[data-terminal]').exists()).toBe(false)
+    expect(tab(wrapper, 'chat:chat_1:prompt').find('[data-terminal]').exists()).toBe(false)
+  })
+
+  it('shows a terminal that rang with a dot, as a chat unread, and its icon still', () => {
+    const wrapper = mountStrip({
+      items: [items[0], { id: 'terminal:1', title: 'Terminal', terminal: true, mark: 'unread' }],
+    })
+    const terminalTab = tab(wrapper, 'terminal:1')
+    expect(terminalTab.find('[data-mark="unread"]').exists()).toBe(true)
+    expect(terminalTab.find('[data-terminal]').exists()).toBe(true)
+    expect(terminalTab.attributes('aria-label')).toBe('Terminal, unread')
+  })
+
+  it('says a terminal is one once a program has named its tab', () => {
+    const wrapper = mountStrip({
+      items: [
+        { id: 'terminal:1', title: 'Terminal', terminal: true },
+        { id: 'terminal:2', title: 'make watch', terminal: true },
+      ],
+    })
+    expect(tab(wrapper, 'terminal:1').attributes('aria-label')).toBe('Terminal')
+    expect(tab(wrapper, 'terminal:2').attributes('aria-label')).toBe('make watch, terminal')
+  })
+
   it('is named by its title, and not by its close button', () => {
     const wrapper = mountStrip({ items: [items[0], { ...items[1], plain: true }] })
     expect(tab(wrapper, 'doc_1').attributes('aria-label')).toBe(items[0].title)

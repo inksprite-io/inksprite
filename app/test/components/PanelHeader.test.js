@@ -61,4 +61,25 @@ describe('HeaderButton', () => {
     expect(wrapper.attributes('disabled')).toBeDefined()
     expect(wrapper.attributes('aria-busy')).toBe('true')
   })
+
+  it('holds the icon it is given in its slot, where it is given no icon class', () => {
+    const wrapper = mount(HeaderButton, {
+      props: { label: 'New terminal' },
+      slots: { default: '<svg data-icon />' },
+      global,
+    })
+    expect(wrapper.find('svg[data-icon]').exists()).toBe(true)
+    expect(wrapper.find('i').exists()).toBe(false)
+    expect(wrapper.attributes('aria-label')).toBe('New terminal')
+  })
+
+  it('spins in place of an icon from its slot too, while busy', () => {
+    const wrapper = mount(HeaderButton, {
+      props: { label: 'New terminal', loading: true },
+      slots: { default: '<svg data-icon />' },
+      global,
+    })
+    expect(wrapper.find('i').classes()).toContain('pi-spinner')
+    expect(wrapper.find('svg[data-icon]').exists()).toBe(false)
+  })
 })

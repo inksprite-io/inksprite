@@ -74,6 +74,7 @@ export default defineConfig({
 				},
 				{ label: 'Sync Between Devices', link: '/sync' },
 				{ label: 'The Desktop App', link: '/desktop' },
+				{ label: 'Terminal', link: '/terminal' },
 				{ label: 'Keyboard Shortcuts', link: '/keyboard-shortcuts' },
 				{ label: 'About', link: '/about' },
 			],

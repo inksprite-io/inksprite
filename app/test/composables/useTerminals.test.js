@@ -11,6 +11,12 @@ vi.mock('@/stores/storiesStore.js', () => ({
     reactive({ isInitialized: loaded, stories: projects, isFresh: id => fresh.value === id }),
 }))
 
+// What saves a project not saved yet.
+const startProject = vi.fn()
+vi.mock('@/stores/syncStore.js', () => ({
+  useSyncStore: () => ({ start: startProject }),
+}))
+
 const { clearTerminals, onTerminalEnded, useTerminals } = await import(
   '@/composables/useTerminals.js'
 )
@@ -27,6 +33,7 @@ beforeEach(() => {
   projects.set('story_2', {})
   fresh.value = null
   loaded.value = true
+  startProject.mockClear()
   native = {
     create: vi.fn().mockResolvedValue('terminal:new'),
     list: vi.fn().mockResolvedValue([]),
@@ -61,9 +68,12 @@ describe('useTerminals', () => {
       id: 'terminal:1',
       project: 'story_1',
       title: 'zsh',
+      rang: false,
     })
+    expect(terminals.get('terminal:2').rang).toBe(true)
     expect(terminals.rang('terminal:2')).toBe(true)
-    useTerminals()
+    // The same terminals, however often they are asked for.
+    expect(useTerminals()).toBe(terminals)
     expect(native.list).toHaveBeenCalledTimes(1)
   })
 
@@ -92,7 +102,19 @@ describe('useTerminals', () => {
       id: 'terminal:new',
       project: 'story_1',
       title: '',
+      rang: false,
     })
+  })
+
+  it('saves a project not saved yet by its first terminal, which is then found in it again', async () => {
+    await useTerminals().create('story_1')
+    expect(startProject).toHaveBeenCalledWith('story_1')
+  })
+
+  it('saves nothing for a terminal that couldn’t be made', async () => {
+    native.create.mockRejectedValue(new Error('no'))
+    await expect(useTerminals().create('story_1')).rejects.toThrow('no')
+    expect(startProject).not.toHaveBeenCalled()
   })
 
   it('hears of one made in another window, and keeps what it was told first', async () => {
@@ -133,9 +155,12 @@ describe('useTerminals', () => {
 
     say('terminal:new', { type: 'bell' })
     expect(terminals.rang('terminal:new')).toBe(true)
+    expect(terminals.get('terminal:new').rang).toBe(true)
     terminals.seen('terminal:new')
     expect(terminals.rang('terminal:new')).toBe(false)
+    expect(terminals.get('terminal:new').rang).toBe(false)
     expect(native.seen).toHaveBeenCalledWith('terminal:new')
+    expect(native.seen).toHaveBeenCalledTimes(1)
   })
 
   it('takes one as seen that another window looked at', async () => {

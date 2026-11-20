@@ -2,10 +2,12 @@
  * @module platform/terminal
  * @description In the desktop app, terminals: a shell of the writer's own in
  * a tab of a project's chat panel. A page makes one in a project, lists those
- * there are and ends one;
- * what is typed goes to the shell from a frame of another origin, which the
- * page sets in place and can't reach into, so nothing in the page can run a
- * command. See `app/electron/src/terminals.js` and `.llm/terminal_design.md`.
+ * there are and ends one; what is typed goes to the shell from a frame of
+ * another origin, which the page sets in place and can't reach into, so
+ * nothing in the page can run a command. What passes between the page and
+ * that frame is here too: how the frame is to look, in its address, and a
+ * shortcut pressed in it, read as the frame said it. See
+ * `app/electron/src/terminals.js` and `.llm/terminal_design.md`.
  */
 
 /* global URLSearchParams */
@@ -13,7 +15,10 @@ import { desktop, isDesktop } from './desktop.js'
 
 /** @typedef {import('./desktop.js').TerminalEvent} TerminalEvent */
 
-/** Where a terminal's frame is, and so its origin. */
+/**
+ * Where a terminal's frame is, and so its origin: the native side's, written
+ * out again here, as `TERMINAL_ID` is. A test holds each to the other.
+ */
 export const TERMINAL_ORIGIN = 'terminal://frame'
 
 /** What a terminal's id begins with: how its tab is told from a chat's. */
@@ -112,4 +117,27 @@ export function terminalFrameUrl(id, { dark, background, foreground, fontSize })
     fontSize: String(fontSize),
   })
   return `${TERMINAL_ORIGIN}/?${params}`
+}
+
+/**
+ * A shortcut as a frame said it was pressed, as what a key event is made
+ * from. Only one with Command held is the app's to act on: everything else
+ * typed in a terminal is its shell's. Null for anything else.
+ *
+ * @param {any} said
+ * @returns {{key: string, code: string, metaKey: true, ctrlKey: boolean, shiftKey: boolean, altKey: boolean}|null}
+ */
+export function appShortcutFrom(said) {
+  if (typeof said !== 'object' || said === null || said.metaKey !== true) return null
+  const { key, code } = said
+  if (typeof key !== 'string' || typeof code !== 'string') return null
+  if (key.length > 20 || code.length > 20) return null
+  return {
+    key,
+    code,
+    metaKey: true,
+    ctrlKey: said.ctrlKey === true,
+    shiftKey: said.shiftKey === true,
+    altKey: said.altKey === true,
+  }
 }

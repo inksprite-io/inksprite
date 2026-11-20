@@ -8,9 +8,9 @@
  *
  * It runs in every frame of the window, so that a terminal's frame can be
  * given its own bridge, `__INKSPRITE_TERMINAL__`, which is all that frame
- * gets. Only the window's own page is given `__INKSPRITE_DESKTOP__`, and any
- * other frame nothing: what listens below hears nothing there, since the
- * native side speaks to the page alone.
+ * gets. So it asks first which frame it is in. Only the window's own page is
+ * given `__INKSPRITE_DESKTOP__`, and only there does anything listen for the
+ * native side. Any other frame is given nothing, and nothing listens in it.
  */
 
 const { contextBridge, ipcRenderer } = require('electron')
@@ -18,229 +18,237 @@ const { contextBridge, ipcRenderer } = require('electron')
 /** Where a terminal's frame is (`terminals.js`). */
 const TERMINAL_ORIGIN = 'terminal://frame'
 
-/**
- * The page's listeners for a response's body, and for the browser coming
- * back from a sign-in, by the id the page gave the call.
- * @type {Map<number, (part: object) => void>}
- */
-const bodies = new Map()
-/** @type {Map<number, (query: string) => void>} */
-const returns = new Map()
-
-ipcRenderer.on('fetch:body', (_, id, part) => {
-  const listener = bodies.get(id)
-  if (!listener) return
-  if (!part.chunk) bodies.delete(id)
-  listener(part)
-})
-
-ipcRenderer.on('signIn:back', (_, id, query) => {
-  const listener = returns.get(id)
-  returns.delete(id)
-  listener?.(query)
-})
-
-/**
- * What fetches a file still only on the sync server, for each session whose
- * run is under way: the page's, which says where the file is in the library
- * once it is there (`bridge.js`).
- * @type {Map<string, (id: string) => Promise<string|null>>}
- */
-const fetchers = new Map()
-
-ipcRenderer.on('python:fetchFile', async (_, session, request, id) => {
-  let file = null
-  try {
-    file = (await fetchers.get(session)?.(id)) ?? null
-  } catch {
-    // Not fetched: Python's read of it fails.
-  }
-  ipcRenderer.send('python:fetched', request, file)
-})
-
-/**
- * What answers another app's request in this window (`appCalls.js`): the
- * page's, once it has said so. It is handed a way to say how the request is
- * stopped, should the app give up on it.
- * @type {((connection: object, message: object, onStop: (stop: () => void) => void) => Promise<object>)|null}
- */
-let answerApps = null
-/** @type {Map<number, () => void>} */
-const appStops = new Map()
-
-ipcRenderer.on('apps:call', async (_, request, connection, message) => {
-  /** @type {object} */
-  let answer = { pass: 'unready' }
-  try {
-    if (answerApps) {
-      // Nothing is handed back to the page from taking its way to stop: the
-      // bridge between the two carries plain values only.
-      answer = await answerApps(connection, message, stop => {
-        appStops.set(request, stop)
-      })
-    }
-  } catch (error) {
-    // Not answered here: another window is asked.
-    console.error('An app’s request could not be answered in this window:', error)
-  }
-  appStops.delete(request)
-  ipcRenderer.send('apps:answer', request, answer)
-})
-
-ipcRenderer.on('apps:cancel', (_, request) => appStops.get(request)?.())
-
-/**
- * What the page does before its window closes: saves. Done or not, the
- * window is told, and goes (`closing.js`).
- * @type {(() => Promise<void>)|null}
- */
-let beforeClosing = null
-
-ipcRenderer.on('window:save', async () => {
-  try {
-    await beforeClosing?.()
-  } catch {
-    // The window closes all the same.
-  }
-  ipcRenderer.send('window:saved')
-})
-
-/**
- * What the page does when the menu asks something of it: a new document,
- * the tab the writer is in closed (`menu.js`).
- * @type {((command: string, detail?: number) => void)|null}
- */
-let onMenuCommand = null
-
-ipcRenderer.on('menu:command', (_, command, detail) => onMenuCommand?.(command, detail))
-
-/**
- * What the page does when a terminal is made, named by the program in it,
- * rings, is looked at, or ends, in whichever window (`terminals.js`).
- * @type {((id: string, event: object) => void)|null}
- */
-let terminalEvents = null
-
-ipcRenderer.on('terminal:event', (_, id, event) => {
-  terminalEvents?.(id, event)
-})
-
-/**
- * Ask the native side, and throw what went wrong there as an Error.
- *
- * @param {string} channel
- * @param {...unknown} args
- */
-async function call(channel, ...args) {
-  const { value, error } = await ipcRenderer.invoke(channel, ...args)
-  if (error !== undefined) throw new Error(error)
-  return value
-}
-
-const desktop = {
-  fetch(id, request, onBody) {
-    bodies.set(id, onBody)
-    return call('fetch', id, request).catch(error => {
-      bodies.delete(id)
-      throw error
-    })
-  },
-  abortFetch: id => ipcRenderer.send('fetch:abort', id),
-
-  signIn(id, request, onReturn) {
-    returns.set(id, onReturn)
-    return call('signIn', id, request).catch(error => {
-      returns.delete(id)
-      throw error
-    })
-  },
-  stopSignIn(id) {
-    returns.delete(id)
-    ipcRenderer.send('signIn:stop', id)
-  },
-
-  openInBrowser: url => call('open', url),
-
-  openWindow: path => call('window:open', path),
-  focusWindow: () => call('window:focus'),
-
-  downloadUpdate: () => call('update:download'),
-  installUpdate: () => call('update:install'),
-
-  settingsFile: () => call('settings:file'),
-
-  beforeClosing: save => {
-    beforeClosing = save
-  },
-
-  onMenuCommand: listener => {
-    onMenuCommand = listener
-  },
-
-  python: {
-    run(session, code, options, fetchFile) {
-      if (fetchFile) fetchers.set(session, fetchFile)
-      return call('python:run', session, code, options ?? {}).finally(() => {
-        if (fetchers.get(session) === fetchFile) fetchers.delete(session)
-      })
-    },
-    stop: session => ipcRenderer.send('python:stop', session),
-  },
-
-  library: {
-    settings: () => call('library:settings'),
-    markMoved: () => call('library:moved'),
-    projects: () => call('library:projects'),
-    walk: dir => call('library:walk', dir),
-    read: paths => call('library:read', paths),
-    list: dir => call('library:list', dir),
-    readBytes: path => call('library:readBytes', path),
-    apply: ops => call('library:apply', ops),
-    reveal: path => call('library:reveal', path),
-  },
-
-  exportFolder: {
-    choose: name => call('export:choose', name),
-    write: (target, entries) => call('export:write', target, entries),
-  },
-
-  pdf: {
-    save: name => call('pdf:save', name),
-  },
-
-  terminals: {
-    create: project => call('terminal:create', project),
-    list: () => call('terminal:list'),
-    close: id => call('terminal:close', id),
-    seen: id => call('terminal:seen', id),
-    onEvent(listener) {
-      terminalEvents = listener
-    },
-  },
-
-  apps: {
-    list: () => call('apps:list'),
-    add: name => call('apps:add', name),
-    update: (id, patch) => call('apps:update', id, patch),
-    remove: id => call('apps:remove', id),
-    setPort: port => call('apps:port', port),
-    setEnabled: enabled => call('apps:enable', enabled),
-    read: (connection, document) => call('apps:read', connection, document),
-    reads: (connection, fields) => call('apps:reads', connection, fields),
-    keep: (connection, document, record) => call('apps:keep', connection, document, record),
-    forget: what => call('apps:forget', what),
-    offer: (connection, file) => call('apps:offer', connection, file),
-    // The native side listens for apps only once a page has said this: a
-    // page that doesn't offer connected apps never does (`apps.js`).
-    answer: answer => {
-      answerApps = answer
-      ipcRenderer.send('apps:answering')
-    },
-  },
-}
-
-if (process.isMainFrame) contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', desktop)
+if (process.isMainFrame) exposeDesktop()
 else if (location.origin === TERMINAL_ORIGIN) exposeTerminal()
+
+/**
+ * The window's own page's bridge, `__INKSPRITE_DESKTOP__`, and what listens
+ * for the native side on the page's behalf.
+ */
+function exposeDesktop() {
+  /**
+   * The page's listeners for a response's body, and for the browser coming
+   * back from a sign-in, by the id the page gave the call.
+   * @type {Map<number, (part: object) => void>}
+   */
+  const bodies = new Map()
+  /** @type {Map<number, (query: string) => void>} */
+  const returns = new Map()
+
+  ipcRenderer.on('fetch:body', (_, id, part) => {
+    const listener = bodies.get(id)
+    if (!listener) return
+    if (!part.chunk) bodies.delete(id)
+    listener(part)
+  })
+
+  ipcRenderer.on('signIn:back', (_, id, query) => {
+    const listener = returns.get(id)
+    returns.delete(id)
+    listener?.(query)
+  })
+
+  /**
+   * What fetches a file still only on the sync server, for each session whose
+   * run is under way: the page's, which says where the file is in the library
+   * once it is there (`bridge.js`).
+   * @type {Map<string, (id: string) => Promise<string|null>>}
+   */
+  const fetchers = new Map()
+
+  ipcRenderer.on('python:fetchFile', async (_, session, request, id) => {
+    let file = null
+    try {
+      file = (await fetchers.get(session)?.(id)) ?? null
+    } catch {
+      // Not fetched: Python's read of it fails.
+    }
+    ipcRenderer.send('python:fetched', request, file)
+  })
+
+  /**
+   * What answers another app's request in this window (`appCalls.js`): the
+   * page's, once it has said so. It is handed a way to say how the request is
+   * stopped, should the app give up on it.
+   * @type {((connection: object, message: object, onStop: (stop: () => void) => void) => Promise<object>)|null}
+   */
+  let answerApps = null
+  /** @type {Map<number, () => void>} */
+  const appStops = new Map()
+
+  ipcRenderer.on('apps:call', async (_, request, connection, message) => {
+    /** @type {object} */
+    let answer = { pass: 'unready' }
+    try {
+      if (answerApps) {
+        // Nothing is handed back to the page from taking its way to stop: the
+        // bridge between the two carries plain values only.
+        answer = await answerApps(connection, message, stop => {
+          appStops.set(request, stop)
+        })
+      }
+    } catch (error) {
+      // Not answered here: another window is asked.
+      console.error('An app’s request could not be answered in this window:', error)
+    }
+    appStops.delete(request)
+    ipcRenderer.send('apps:answer', request, answer)
+  })
+
+  ipcRenderer.on('apps:cancel', (_, request) => appStops.get(request)?.())
+
+  /**
+   * What the page does before its window closes: saves. Done or not, the
+   * window is told, and goes (`closing.js`).
+   * @type {(() => Promise<void>)|null}
+   */
+  let beforeClosing = null
+
+  ipcRenderer.on('window:save', async () => {
+    try {
+      await beforeClosing?.()
+    } catch {
+      // The window closes all the same.
+    }
+    ipcRenderer.send('window:saved')
+  })
+
+  /**
+   * What the page does when the menu asks something of it: a new document,
+   * the tab the writer is in closed (`menu.js`).
+   * @type {((command: string, detail?: number) => void)|null}
+   */
+  let onMenuCommand = null
+
+  ipcRenderer.on('menu:command', (_, command, detail) => onMenuCommand?.(command, detail))
+
+  /**
+   * What the page does when a terminal is made, named by the program in it,
+   * rings, is looked at, or ends, in whichever window (`terminals.js`).
+   * @type {((id: string, event: object) => void)|null}
+   */
+  let terminalEvents = null
+
+  ipcRenderer.on('terminal:event', (_, id, event) => {
+    terminalEvents?.(id, event)
+  })
+
+  /**
+   * Ask the native side, and throw what went wrong there as an Error.
+   *
+   * @param {string} channel
+   * @param {...unknown} args
+   */
+  async function call(channel, ...args) {
+    const { value, error } = await ipcRenderer.invoke(channel, ...args)
+    if (error !== undefined) throw new Error(error)
+    return value
+  }
+
+  const desktop = {
+    fetch(id, request, onBody) {
+      bodies.set(id, onBody)
+      return call('fetch', id, request).catch(error => {
+        bodies.delete(id)
+        throw error
+      })
+    },
+    abortFetch: id => ipcRenderer.send('fetch:abort', id),
+
+    signIn(id, request, onReturn) {
+      returns.set(id, onReturn)
+      return call('signIn', id, request).catch(error => {
+        returns.delete(id)
+        throw error
+      })
+    },
+    stopSignIn(id) {
+      returns.delete(id)
+      ipcRenderer.send('signIn:stop', id)
+    },
+
+    openInBrowser: url => call('open', url),
+
+    openWindow: path => call('window:open', path),
+    focusWindow: () => call('window:focus'),
+
+    downloadUpdate: () => call('update:download'),
+    installUpdate: () => call('update:install'),
+
+    settingsFile: () => call('settings:file'),
+
+    beforeClosing: save => {
+      beforeClosing = save
+    },
+
+    onMenuCommand: listener => {
+      onMenuCommand = listener
+    },
+
+    python: {
+      run(session, code, options, fetchFile) {
+        if (fetchFile) fetchers.set(session, fetchFile)
+        return call('python:run', session, code, options ?? {}).finally(() => {
+          if (fetchers.get(session) === fetchFile) fetchers.delete(session)
+        })
+      },
+      stop: session => ipcRenderer.send('python:stop', session),
+    },
+
+    library: {
+      settings: () => call('library:settings'),
+      markMoved: () => call('library:moved'),
+      projects: () => call('library:projects'),
+      walk: dir => call('library:walk', dir),
+      read: paths => call('library:read', paths),
+      list: dir => call('library:list', dir),
+      readBytes: path => call('library:readBytes', path),
+      apply: ops => call('library:apply', ops),
+      reveal: path => call('library:reveal', path),
+    },
+
+    exportFolder: {
+      choose: name => call('export:choose', name),
+      write: (target, entries) => call('export:write', target, entries),
+    },
+
+    pdf: {
+      save: name => call('pdf:save', name),
+    },
+
+    terminals: {
+      create: project => call('terminal:create', project),
+      list: () => call('terminal:list'),
+      close: id => call('terminal:close', id),
+      seen: id => call('terminal:seen', id),
+      onEvent(listener) {
+        terminalEvents = listener
+      },
+    },
+
+    apps: {
+      list: () => call('apps:list'),
+      add: name => call('apps:add', name),
+      update: (id, patch) => call('apps:update', id, patch),
+      remove: id => call('apps:remove', id),
+      setPort: port => call('apps:port', port),
+      setEnabled: enabled => call('apps:enable', enabled),
+      read: (connection, document) => call('apps:read', connection, document),
+      reads: (connection, fields) => call('apps:reads', connection, fields),
+      keep: (connection, document, record) => call('apps:keep', connection, document, record),
+      forget: what => call('apps:forget', what),
+      offer: (connection, file) => call('apps:offer', connection, file),
+      // The native side listens for apps only once a page has said this: a
+      // page that doesn't offer connected apps never does (`apps.js`).
+      answer: answer => {
+        answerApps = answer
+        ipcRenderer.send('apps:answering')
+      },
+    },
+  }
+
+  contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', desktop)
+}
 
 /**
  * A terminal's frame's bridge to its shell (`terminals.js`, and

@@ -91,8 +91,9 @@
             ></i>
             <TerminalIcon
               v-else-if="item.terminal"
+              :size="12"
               class="flex-none text-surface-500 dark:text-surface-400"
-              style="font-size: 0.75rem"
+              aria-hidden="true"
               data-terminal
             />
             <span class="flex-1 min-w-0 flex items-baseline" :class="{ italic: item.preview }">
@@ -164,7 +165,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import ContextMenu from 'primevue/contextmenu'
 import Draggable from 'vuedraggable'
-import TerminalIcon from '../terminal/TerminalIcon.vue'
+import TerminalIcon from '@/components/icons/TerminalIcon.vue'
 import { HOLD_TO_DRAG_MS } from '@/composables/useLongPress.js'
 
 /**
@@ -185,7 +186,8 @@ import { HOLD_TO_DRAG_MS } from '@/composables/useLongPress.js'
  *   title, for a tab that holds a chat's text rather than a document
  * @property {boolean} [terminal] - A terminal, not a chat
  * @property {'busy'|'unread'} [mark] - For a chat: the model working in it, or
- *   finished in it while it wasn't showing
+ *   finished in it while it wasn't showing. For a terminal, `unread`: it rang
+ *   while it wasn't showing.
  * @property {string} [tooltip] - What hovering says, where the title and
  *   path don't say it all
  *
@@ -224,7 +226,8 @@ const setDragData = data => data.setData('application/x-inksprite-tab', 'tab')
 
 /**
  * What a tab is called to a screen reader: its title, and what the mark
- * before it says to the eye.
+ * before it says to the eye. A terminal's title is whatever the program in
+ * it calls it, so one that doesn't say so is said to be a terminal.
  * @param {TabItem} item
  */
 const tabLabel = item => {
@@ -232,7 +235,9 @@ const tabLabel = item => {
     ? `${item.title}, plain text`
     : item.chat
       ? `${item.title}, ${item.chat}`
-      : item.title
+      : item.terminal && !/terminal/i.test(item.title)
+        ? `${item.title}, terminal`
+        : item.title
   return item.mark === 'busy'
     ? `${said}, working`
     : item.mark === 'unread'

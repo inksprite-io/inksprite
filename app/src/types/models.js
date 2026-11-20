@@ -83,13 +83,14 @@
  *   only the active one is known; see `utils/tabs.js`.
  * @property {string[]} [closedDocumentIds] - The editor's tabs closed and not opened
  *   since, the one closed last first: what reopening a tab brings back
- * @property {string[]} [openChatIds] - The chats open in the chat panel, in tab order.
- *   Absent means the project's chats were never in tabs; see `useChatTabs`.
+ * @property {string[]} [openChatIds] - The chat panel's tabs, in tab order: the chats
+ *   open, and in the desktop app the terminals among them, by ids that say so. Absent
+ *   means the project's chats were never in tabs; see `useChatTabs`.
  * @property {string|null} [lastChatId] - The chat panel's tab showing
  * @property {string|null} [previewChatId] - Always null: a chat's tab was a preview
  *   once, as a document's can be, and every one is kept now
- * @property {string[]} [shownChatIds] - The open chats as they were last shown, the
- *   one showing first
+ * @property {string[]} [shownChatIds] - The chat panel's tabs as they were last shown,
+ *   the one showing first
  * @property {string[]} [closedChatIds] - The chat panel's tabs closed and not opened
  *   since, the one closed last first
  * @property {string[]} [unreadChatIds] - Chats the model finished in while they weren't

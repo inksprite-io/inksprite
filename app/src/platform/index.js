@@ -45,6 +45,9 @@
  *   writer says, rather than through the print dialog
  * - **menu** - In the desktop app, what its menu asks of the page: the keys a
  *   browser keeps for its own tabs, for the app's documents and chats
+ * - **terminal** - In the desktop app, terminals: one made in a project,
+ *   listed and ended, and what passes between the page and the frame of
+ *   another origin that alone types into its shell
  *
  * Design: `.llm/desktop_design.md`.
  *
@@ -72,6 +75,7 @@ export { beforeClosing } from './closing.js'
 export { hasPython, runPython } from './python.js'
 export {
   TERMINAL_ORIGIN,
+  appShortcutFrom,
   closeTerminal,
   createTerminal,
   hasTerminal,

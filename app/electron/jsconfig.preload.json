@@ -1,0 +1,10 @@
+{
+  // The preload runs in the window's frames, not in the main process: it is
+  // checked apart, with a browser's types, which the main process's must not
+  // have (its `fetch` and what that takes and gives are Node's).
+  "extends": "./jsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2024", "DOM"]
+  },
+  "include": ["src/preload.cjs"]
+}

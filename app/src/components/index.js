@@ -49,6 +49,9 @@
  *   - `search/` - `SearchPanel`, the search across the project: its field,
  *     and what it finds by document, each match opening its document on it
  *   - `chats/` - A chat, its list, and its settings
+ *   - `terminal/` - `TerminalFrame`, a terminal in the chat panel's place: the
+ *     frame of another origin its shell is typed into, told how to look,
+ *     and its clicks and the app's shortcuts played on the panel
  *   - `narration/` - The document in the editor read aloud: `NarrationPanel`
  *     in the sidebar, with the document's blocks (`NarrationScript`: who
  *     speaks each, whether it has been read, a selection to read on its own),

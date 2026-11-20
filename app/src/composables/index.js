@@ -10,6 +10,8 @@
  * - **useChatTabs** - A project's chat tabs, each kept until it is closed: open, showing, the history closing
  *   goes back through, the chat closed last opened again, one put at another place, the caret asked for in
  *   the one showing, and unread chats
+ * - **useTerminals** - The desktop app's terminals as this window knows them: the project each is in, what the program in it calls it, which rang unseen, and one ended with its project
+ * - **usePagePress** - Whether the pointer is held from a press that began in the page, for a frame to step out of its way
  * - **useChatPlaces** - Where the writer was in each chat they left, for its tab coming back
  * - **useAIConfig** - AI configuration (provider + model)
  * - **useConnections** - The AI connections the writer has: which are theirs, how each answered last, and adding, checking and removing one

@@ -459,4 +459,69 @@ describe('ExtensionsSection', () => {
       expect(wrapper.text()).not.toContain('Used in chats on')
     })
   })
+
+  describe('Terminal', () => {
+    const row = wrapper => wrapper.find('[data-extension="terminal"]')
+    const terminalSwitch = wrapper => wrapper.findComponent('[data-extension-switch="terminal"]')
+
+    beforeEach(() => {
+      globalThis.__INKSPRITE_DESKTOP__ = { terminals: { create: vi.fn(), list: vi.fn() } }
+    })
+
+    afterEach(() => {
+      delete globalThis.__INKSPRITE_DESKTOP__
+    })
+
+    it('is there only in the desktop app, and one new enough to have terminals', async () => {
+      expect(row(await mountSection()).exists()).toBe(true)
+
+      globalThis.__INKSPRITE_DESKTOP__ = {}
+      expect(row(await mountSection()).exists()).toBe(false)
+
+      delete globalThis.__INKSPRITE_DESKTOP__
+      expect(row(await mountSection()).exists()).toBe(false)
+    })
+
+    it('comes last, and is off to start', async () => {
+      const wrapper = await mountSection()
+
+      expect(
+        wrapper
+          .findAll('[data-extension]')
+          .map(one => one.attributes('data-extension'))
+          .at(-1)
+      ).toBe('terminal')
+      expect(row(wrapper).find('[aria-expanded]').text()).toBe('Terminal')
+      expect(terminalSwitch(wrapper).props('modelValue')).toBe(false)
+      expect(useApplicationState().terminal.value).toBe(false)
+    })
+
+    it('switches on, and off again', async () => {
+      const wrapper = await mountSection()
+
+      await terminalSwitch(wrapper).vm.$emit('update:modelValue', true)
+
+      expect(useApplicationState().extensionOn('terminal')).toBe(true)
+      expect(useApplicationState().terminal.value).toBe(true)
+      expect(terminalSwitch(wrapper).props('modelValue')).toBe(true)
+
+      await terminalSwitch(wrapper).vm.$emit('update:modelValue', false)
+
+      expect(useApplicationState().extensionOn('terminal')).toBe(false)
+      expect(useApplicationState().terminal.value).toBe(false)
+      expect(terminalSwitch(wrapper).props('modelValue')).toBe(false)
+    })
+
+    it('has no settings of its own to open, on or off', async () => {
+      useApplicationState().setExtension('terminal', true)
+      const wrapper = await mountSection()
+
+      expect(row(wrapper).find('[aria-expanded]').attributes()).toMatchObject({
+        'aria-expanded': 'false',
+        'aria-disabled': 'true',
+      })
+      await row(wrapper).find('[aria-expanded]').trigger('click')
+      expect(row(wrapper).find('[aria-expanded]').attributes('aria-expanded')).toBe('false')
+    })
+  })
 })

@@ -40,9 +40,12 @@ folder's `package-lock.json` changes, in the container:
 cd app/electron && npm ci && node scripts/fetch-python.mjs
 ```
 
-What the app runs on in `node_modules` is plain JavaScript, so the
-container's install serves the Mac too. Then, on the Mac, with the dev server
-answering on `http://127.0.0.1:8002` (the test server from `docker compose`):
+What the app runs on in `node_modules` is plain JavaScript, but for node-pty,
+which a terminal's shell runs on: it comes with its binaries built for every
+system, a Mac's among them, and nothing is compiled when it is installed. So
+the container's install serves the Mac too. Then, on the Mac, with the dev
+server answering on `http://127.0.0.1:8002` (the test server from
+`docker compose`):
 
 ```sh
 app/electron/start-on-mac.sh
@@ -152,6 +155,19 @@ the bar until Alt is pressed, and the keys work all the same.
 The Web Inspector is in the View menu, and a right-click → Inspect Element
 opens it, in a release build as well: its console is where a failure the app
 doesn't show is logged, a chat title the provider refused among them.
+
+## The terminal
+
+The Terminal extension's shells are kept by `src/terminals.js`: each a process
+(node-pty) and a copy of its screen (`@xterm/headless`), in the project it was
+made in, running on while no window shows it. The page makes one, lists them
+and ends one, and never types. The emulator is a page of the shell's own,
+`terminal/`, served at `terminal://frame/` and set into the app's page as a
+frame, and it alone is handed the port its shell is typed through. The preload
+runs in every frame for that, and gives each only what is its own. node-pty's
+binaries come built in its package, so nothing is compiled, and are unpacked
+beside the archive, where its helper has to be a file. The design is
+`.llm/terminal_design.md`.
 
 ## A build
 

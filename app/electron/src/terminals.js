@@ -2,8 +2,9 @@
  * Terminals: a shell of the writer's own, in a tab of the chat panel
  * (`.llm/terminal_design.md`).
  *
- * The page never types into one. What the page may do is make a terminal,
- * list its own and end one; the keys go from a frame of another origin,
+ * The page never types into one. What a page may do is make a terminal in a
+ * project, list those there are, end one, and say one that rang was looked
+ * at; the keys go from a frame of another origin,
  * `terminal://frame/`, whose page is ours (`../terminal/`) and shows nothing
  * but what the shell prints. So a script that got into the page, from what a
  * model wrote or a page it kept, has no way to run a command: the frame's
@@ -35,7 +36,12 @@ import { openable, originOf } from './links.js'
 /** The frame's scheme. */
 export const TERMINAL_SCHEME = 'terminal'
 
-/** Where the frame's page is, and so its origin. */
+/**
+ * Where the frame's page is, and so its origin. The page and the preload,
+ * which can import nothing from here, each have it written out again, as the
+ * page has `TERMINAL_ID` and the frame `SCROLLBACK`: a test holds the copies
+ * to these.
+ */
 export const TERMINAL_ORIGIN = `${TERMINAL_SCHEME}://frame`
 
 /** The scheme as `protocol.registerSchemesAsPrivileged` takes it. */
@@ -52,6 +58,16 @@ export const SCROLLBACK = 5000
 
 /** The longest title kept of what a program names its terminal. */
 const TITLE_MOST = 200
+
+/** The longest name of a project a terminal is made in. */
+const PROJECT_MOST = 200
+
+/**
+ * How often, at most, the pages are told a terminal's new name. A program
+ * can name its terminal as fast as it prints, and each telling goes to every
+ * window.
+ */
+export const TITLE_EVERY_MS = 250
 
 /**
  * How much the shell may print ahead of what has been read, in characters:
@@ -95,6 +111,9 @@ const FILES = {
   '/frame.js': [null, 'frame.js'],
   '/appearance.js': [null, 'appearance.js'],
   '/keys.js': [null, 'keys.js'],
+  '/paste.js': [null, 'paste.js'],
+  '/address.js': [null, 'address.js'],
+  '/sight.js': [null, 'sight.js'],
   '/frame.css': [null, 'frame.css'],
   '/xterm/xterm.mjs': ['@xterm/xterm', 'lib/xterm.mjs'],
   '/xterm/xterm.css': ['@xterm/xterm', 'css/xterm.css'],
@@ -192,6 +211,24 @@ export function shellEnv(env, { locale = '', version = '' } = {}) {
 }
 
 /**
+ * What node-pty is asked for besides the shell, by system.
+ *
+ * On Windows, the console host that comes with node-pty, in place of the
+ * system's. With the system's, node-pty ends a terminal by forking a script
+ * of its own to list the console's processes (`windowsPtyAgent.js`, `kill`),
+ * and a fork of this app is the app again: its binary doesn't run as Node
+ * (the `runAsNode` fuse, `electron-builder.yml`). So every terminal closed
+ * would open a window, and quitting with one open would start the app again.
+ * With its own host node-pty closes the console and forks nothing.
+ *
+ * @param {string} platform - As `process.platform`
+ * @returns {{useConptyDll?: true}}
+ */
+export function ptyOptions(platform) {
+  return platform === 'win32' ? { useConptyDll: true } : {}
+}
+
+/**
  * A size as a terminal takes it, or null for anything else.
  *
  * @param {any} size
@@ -262,7 +299,10 @@ export function sizeFrom(size) {
  * @typedef {Object} Terminal
  * @property {string} id
  * @property {string} project - The project it was made in, as the page named it
- * @property {string} title
+ * @property {string} title - What the program in it calls it now
+ * @property {string} told - The title the pages were last told
+ * @property {ReturnType<typeof setTimeout>|null} naming - Set for a while
+ *   after the pages are told a title: one given meanwhile waits for it
  * @property {boolean} rang - Whether it rang its bell and hasn't been looked
  *   at since
  * @property {Pty|null} pty - Null until a frame first attaches, and says how
@@ -291,6 +331,7 @@ function startShell({ cols, rows }) {
     rows,
     cwd: os.homedir(),
     env: shellEnv(process.env, { locale: app.getSystemLocale(), version: app.getVersion() }),
+    ...ptyOptions(process.platform),
   })
 }
 
@@ -311,7 +352,12 @@ function userShell() {
  */
 function headlessMirror({ cols, rows }) {
   const { Terminal } = require('@xterm/headless')
-  const { SerializeAddon } = require('@xterm/addon-serialize')
+  // Named apart from the call, so that the type check doesn't read this
+  // package's typings: they are written against the emulator's for a browser,
+  // and bring a browser's types into the main process, where `fetch` and what
+  // it takes and gives are Node's.
+  const serializing = '@xterm/addon-serialize'
+  const { SerializeAddon } = require(serializing)
   const terminal = new Terminal({ cols, rows, scrollback: SCROLLBACK, allowProposedApi: true })
   const serializer = new SerializeAddon()
   terminal.loadAddon(serializer)
@@ -332,9 +378,6 @@ function headlessMirror({ cols, rows }) {
     dispose: () => terminal.dispose(),
   }
 }
-
-/** The longest name of a project a terminal is made in. */
-const PROJECT_MOST = 200
 
 /**
  * The app's terminals, each a project's.
@@ -380,6 +423,8 @@ export class Terminals {
       id,
       project,
       title: '',
+      told: '',
+      naming: null,
       rang: false,
       pty: null,
       mirror: null,
@@ -528,9 +573,11 @@ export class Terminals {
     })
     mirror.onTitle(title => {
       terminal.title = String(title).slice(0, TITLE_MOST)
-      this.#tell(terminal.id, { type: 'title', title: terminal.title })
+      if (terminal.naming === null) this.#tellTitle(terminal)
     })
+    // A bell is news once: the pages know it rang until it is looked at.
     mirror.onBell(() => {
+      if (terminal.rang) return
       terminal.rang = true
       this.#tell(terminal.id, { type: 'bell' })
     })
@@ -539,6 +586,22 @@ export class Terminals {
     mirror.onAnswer(data => {
       if (!terminal.port && terminal.pty === pty) pty.write(data)
     })
+  }
+
+  /**
+   * Tell the pages what the program in a terminal calls it, if that isn't
+   * what they were told last, and hold the next telling for
+   * `TITLE_EVERY_MS`: of the names given in that time only the last is told,
+   * at the end of it.
+   *
+   * @param {Terminal} terminal
+   */
+  #tellTitle(terminal) {
+    terminal.naming = null
+    if (terminal.title === terminal.told) return
+    terminal.told = terminal.title
+    this.#tell(terminal.id, { type: 'title', title: terminal.title })
+    terminal.naming = setTimeout(() => this.#tellTitle(terminal), TITLE_EVERY_MS)
   }
 
   /**
@@ -620,6 +683,8 @@ export class Terminals {
     terminal.pty = null
     terminal.mirror = null
     terminal.port = null
+    if (terminal.naming !== null) clearTimeout(terminal.naming)
+    terminal.naming = null
     try {
       pty?.kill()
     } catch {
@@ -663,20 +728,20 @@ export function fromTerminalFrame(event, pageOrigin) {
  * @param {string} bridge.origin - The app's page's
  * @param {() => Electron.WebContents[]} bridge.pages - The app's windows'
  *   pages, each told what becomes of every terminal
- * @param {Terminals} [bridge.terminals]
- * @returns {Terminals}
+ * @param {(size: {cols: number, rows: number}) => Pty} [bridge.start] -
+ *   Starts a terminal's shell: the writer's own, unless given
+ * @param {(size: {cols: number, rows: number}) => Mirror} [bridge.mirror] -
+ *   Makes the copy of a terminal's screen
  */
-export function handleTerminals({
-  handle,
-  ipcMain,
-  origin,
-  pages,
-  terminals = new Terminals({
+export function handleTerminals({ handle, ipcMain, origin, pages, start, mirror }) {
+  const terminals = new Terminals({
     tell: (id, event) => {
       for (const page of pages()) page.send('terminal:event', id, event)
     },
-  }),
-}) {
+    start,
+    mirror,
+  })
+
   handle('terminal:create', (_, project) => terminals.create(project))
   handle('terminal:list', () => terminals.list())
   handle('terminal:close', (_, id) => terminals.close(id))
@@ -693,5 +758,4 @@ export function handleTerminals({
   })
 
   app.on('will-quit', () => terminals.closeAll())
-  return terminals
 }

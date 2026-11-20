@@ -1,9 +1,11 @@
 /* The terminal's frame: the emulator, filling it. */
+/* The two colours are the page's, read and set by frame.js (appearance.js). */
 html,
 body {
   height: 100%;
   margin: 0;
   overflow: hidden;
+  background: var(--ground, #ffffff);
 }
 
 #terminal {
@@ -23,4 +25,29 @@ body {
 #terminal .xterm .xterm-viewport {
   background-color: transparent !important;
   scrollbar-width: none;
+}
+
+/* Where the link under the pointer leads, as a browser says it: at the foot
+   of the frame, in the frame's own colours, cut where the line ends. The
+   pointer passes through it, to the link. */
+#address {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 20;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 2px 8px 3px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font:
+    12px/1.4 system-ui,
+    sans-serif;
+  color: var(--text, #1f2328);
+  background: var(--ground, #ffffff);
+  border: solid color-mix(in srgb, var(--text, #1f2328) 25%, var(--ground, #ffffff));
+  border-width: 1px 1px 0 0;
+  border-top-right-radius: 4px;
+  pointer-events: none;
 }

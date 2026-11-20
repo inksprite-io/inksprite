@@ -1,13 +1,21 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { app, ipcMain } from 'electron'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { load as readYaml } from 'js-yaml'
+import * as page from '@/platform/terminal.js'
 import {
+  SCROLLBACK,
   TERMINAL_ID,
   TERMINAL_ORIGIN,
+  TERMINAL_SCHEME,
+  TITLE_EVERY_MS,
   Terminals,
   fromTerminalFrame,
   handleTerminals,
+  ptyOptions,
   shellEnv,
   shellFor,
   sizeFrom,
@@ -139,6 +147,27 @@ describe('terminalFile', () => {
     )
   })
 
+  it('serves every file the frame’s page asks for', () => {
+    const folder = fileURLToPath(new URL('../../electron/terminal', import.meta.url))
+    const asked = new Set(['/'])
+    for (const name of readdirSync(folder)) {
+      const text = readFileSync(path.join(folder, name), 'utf8')
+      const found = name.endsWith('.html')
+        ? text.matchAll(/(?:src|href)="([^"]+)"/g)
+        : name.endsWith('.js')
+          ? text.matchAll(/^import .* from '\.\/([^']+)'$/gm)
+          : []
+      for (const [, file] of found) asked.add(`/${file}`)
+    }
+    // Its own modules among them, each one a file there is.
+    expect([...asked]).toEqual(expect.arrayContaining(['/frame.js', '/paste.js', '/sight.js']))
+    for (const pathname of asked) {
+      const file = terminalFile(pathname, packageFolder)
+      expect(file, pathname).not.toBeNull()
+      if (!pathname.startsWith('/xterm/')) expect(existsSync(file), pathname).toBe(true)
+    }
+  })
+
   it('serves nothing it doesn’t list', () => {
     for (const pathname of [
       '/../src/main.js',
@@ -151,6 +180,45 @@ describe('terminalFile', () => {
     ]) {
       expect(terminalFile(pathname, packageFolder)).toBeNull()
     }
+  })
+})
+
+describe('the app’s page', () => {
+  it('may set a terminal’s frame, and no other', () => {
+    const html = readFileSync(fileURLToPath(new URL('../../index.html', import.meta.url)), 'utf8')
+    const [, policy] = /http-equiv="Content-Security-Policy"\s+content="([^"]+)"/.exec(html)
+    const frames = policy
+      .split(';')
+      .map(directive => directive.trim().split(/\s+/))
+      .filter(([name]) => name === 'frame-src')
+
+    expect(frames).toEqual([['frame-src', `${TERMINAL_SCHEME}:`]])
+    expect(TERMINAL_ORIGIN.startsWith(`${TERMINAL_SCHEME}://`)).toBe(true)
+  })
+})
+
+describe('the packaged app', () => {
+  const config = readYaml(
+    readFileSync(
+      fileURLToPath(new URL('../../electron/electron-builder.yml', import.meta.url)),
+      'utf8'
+    )
+  )
+
+  it('keeps node-pty’s scripts in the archive on a Mac and on Linux, and its binaries beside it', () => {
+    expect(config.asarUnpack).toEqual(['node_modules/node-pty/prebuilds/**'])
+    // Or the builder unpacks the whole of any package with a binary in it.
+    expect(config.asar).toEqual({ smartUnpack: false })
+    expect(config.mac.asarUnpack).toBeUndefined()
+    expect(config.linux.asarUnpack).toBeUndefined()
+  })
+
+  it('keeps all of node-pty beside the archive on Windows, its console host with it', () => {
+    expect(config.win.asarUnpack).toEqual(['node_modules/node-pty/**'])
+    const left = [...config.files, ...config.win.files].filter(
+      pattern => typeof pattern === 'string' && pattern.startsWith('!')
+    )
+    expect(left.some(pattern => /conpty|win32|\.(dll|exe)/.test(pattern))).toBe(false)
   })
 })
 
@@ -181,6 +249,17 @@ describe('shellFor', () => {
     })
     expect(shellFor('linux', {})).toEqual({ file: '/bin/bash', args: [] })
     expect(shellFor('win32', { SHELL: '/bin/zsh' })).toEqual({ file: 'powershell.exe', args: [] })
+  })
+})
+
+describe('ptyOptions', () => {
+  it('asks node-pty for its own console host on Windows, which ends a terminal without a fork', () => {
+    expect(ptyOptions('win32')).toEqual({ useConptyDll: true })
+  })
+
+  it('asks for nothing more anywhere else', () => {
+    expect(ptyOptions('darwin')).toEqual({})
+    expect(ptyOptions('linux')).toEqual({})
   })
 })
 
@@ -447,14 +526,89 @@ describe('Terminals', () => {
     expect(pty.resumed).toBe(1)
   })
 
-  it('tells the pages what the program names its terminal', () => {
+  it('tells the pages what the program names its terminal, cut to a length', () => {
     const { made, mirror, terminals, id } = started()
     mirror.title('vim notes.md')
-    mirror.title('t'.repeat(500))
+    expect(made.told).toEqual([{ id, event: { type: 'title', title: 'vim notes.md' } }])
+    expect(terminals.list()[0].title).toBe('vim notes.md')
 
-    expect(made.told[0]).toEqual({ id, event: { type: 'title', title: 'vim notes.md' } })
-    expect(made.told[1].event.title).toHaveLength(200)
-    expect(terminals.list()[0].title).toHaveLength(200)
+    const { made: other, mirror: named, terminals: others } = started()
+    named.title('t'.repeat(500))
+    expect(other.told[0].event.title).toHaveLength(200)
+    expect(others.list()[0].title).toHaveLength(200)
+  })
+
+  describe('a program that names its terminal as fast as it prints', () => {
+    beforeEach(() => vi.useFakeTimers())
+    afterEach(() => vi.useRealTimers())
+
+    /** The names the pages were told, in order. */
+    const names = made =>
+      made.told.filter(({ event }) => event.type === 'title').map(({ event }) => event.title)
+
+    it('is told to the pages a few times a second, the last name winning', () => {
+      const { made, mirror, terminals } = started()
+      mirror.title('step 0')
+      for (let step = 1; step < 1000; step++) mirror.title(`step ${step}`)
+
+      expect(names(made)).toEqual(['step 0'])
+      // A page that asks is told the name as it is now.
+      expect(terminals.list()[0].title).toBe('step 999')
+
+      vi.advanceTimersByTime(TITLE_EVERY_MS - 1)
+      expect(names(made)).toEqual(['step 0'])
+      vi.advanceTimersByTime(1)
+      expect(names(made)).toEqual(['step 0', 'step 999'])
+
+      // And the next burst waits its turn the same.
+      mirror.title('step 1000')
+      mirror.title('step 1001')
+      expect(names(made)).toEqual(['step 0', 'step 999'])
+      vi.advanceTimersByTime(TITLE_EVERY_MS)
+      expect(names(made)).toEqual(['step 0', 'step 999', 'step 1001'])
+    })
+
+    it('is not told a name the pages have', () => {
+      const { made, mirror } = started()
+      mirror.title('make')
+      mirror.title('make')
+      vi.advanceTimersByTime(TITLE_EVERY_MS * 2)
+      mirror.title('make')
+      expect(names(made)).toEqual(['make'])
+
+      // Changed and changed back before the pages heard of it: no news.
+      mirror.title('cc')
+      mirror.title('ld')
+      mirror.title('cc')
+      vi.advanceTimersByTime(TITLE_EVERY_MS * 2)
+      expect(names(made)).toEqual(['make', 'cc'])
+    })
+
+    it('is told nothing more once the terminal is gone', () => {
+      const { made, mirror, terminals, id } = started()
+      mirror.title('one')
+      mirror.title('two')
+      terminals.close(id)
+      vi.advanceTimersByTime(TITLE_EVERY_MS * 2)
+
+      expect(made.told).toEqual([
+        { id, event: { type: 'title', title: 'one' } },
+        { id, event: { type: 'exit' } },
+      ])
+    })
+  })
+
+  it('tells the pages of a bell once, until it has been looked at', () => {
+    const { made, mirror, terminals, id } = started()
+    mirror.bell()
+    mirror.bell()
+    mirror.bell()
+    expect(made.told).toEqual([{ id, event: { type: 'bell' } }])
+
+    terminals.seen(id)
+    mirror.bell()
+    mirror.bell()
+    expect(made.told.map(({ event }) => event.type)).toEqual(['bell', 'seen', 'bell'])
   })
 
   it('remembers that a terminal rang until a page says it was looked at', () => {
@@ -578,7 +732,10 @@ describe('handleTerminals', () => {
   /** A window's page. */
   const window = () => ({ send: vi.fn() })
 
-  /** The bridge's calls, answered over terminals of fakes, with two windows open. */
+  /**
+   * The bridge's calls, answered over terminals whose shells and screens are
+   * fakes, with two windows open.
+   */
   function bridge() {
     const made = { ptys: [] }
     const pages = [window(), window()]
@@ -589,6 +746,13 @@ describe('handleTerminals', () => {
       ipcMain,
       origin: 'app://inksprite',
       pages: () => pages,
+      start: size => {
+        const pty = fakePty()
+        pty.size = size
+        made.ptys.push(pty)
+        return pty
+      },
+      mirror: fakeMirror,
     })
     const attach = vi
       .mocked(ipcMain.on)
@@ -631,14 +795,40 @@ describe('handleTerminals', () => {
     expect(calls['terminal:list']({}).map(terminal => terminal.id)).toEqual([id])
   })
 
+  it('joins the terminal’s frame to the terminal it names, its shell started at the frame’s size', () => {
+    const { calls, made, attach } = bridge()
+    const other = calls['terminal:create']({}, 'story_2')
+    const id = calls['terminal:create']({}, 'story_1')
+    const port = fakePort()
+
+    attach({ senderFrame: frame, ports: [port] }, { id, cols: 132, rows: 43 })
+    expect(made.ptys).toHaveLength(1)
+    expect(made.ptys[0].size).toEqual({ cols: 132, rows: 43 })
+    expect(port.started).toBe(true)
+    expect(port.closed).toBe(false)
+
+    // What the frame types goes to that shell, and what the shell prints
+    // comes to the frame.
+    port.say({ type: 'input', data: 'ls\r' })
+    expect(made.ptys[0].written).toEqual(['ls\r'])
+    made.ptys[0].print('notes.md\r\n')
+    expect(port.sent).toEqual([{ type: 'data', data: 'notes.md\r\n' }])
+
+    // The other terminal has no shell yet, and gets one of its own.
+    attach({ senderFrame: frame, ports: [fakePort()] }, { id: other, ...SIZE })
+    expect(made.ptys).toHaveLength(2)
+    expect(made.ptys[1].written).toEqual([])
+  })
+
   it('hands no frame but the terminal’s a terminal, the page least of all', () => {
-    const { calls, attach } = bridge()
+    const { calls, made, attach } = bridge()
     const id = calls['terminal:create']({}, 'story_1')
     const port = fakePort()
 
     attach({ senderFrame: top, ports: [port] }, { id, ...SIZE })
     expect(port.closed).toBe(true)
     expect(port.sent).toEqual([])
+    expect(made.ptys).toHaveLength(0)
 
     // Nor is anything done without a port, and a frame that says nothing is
     // told there is no terminal.
@@ -647,6 +837,7 @@ describe('handleTerminals', () => {
     attach({ senderFrame: frame, ports: [unsaid] }, undefined)
     expect(unsaid.closed).toBe(true)
     expect(unsaid.sent).toEqual([{ type: 'exit' }])
+    expect(made.ptys).toHaveLength(0)
   })
 
   it('ends every terminal as the app quits', () => {
@@ -657,5 +848,33 @@ describe('handleTerminals', () => {
     const quit = vi.mocked(app.on).mock.calls.find(([event]) => event === 'will-quit')
     quit[1]()
     expect(calls['terminal:list']({})).toEqual([])
+  })
+})
+
+/**
+ * The page, the preload and the frame can import nothing of the main
+ * process's, so each has a copy of what it shares with it. These hold the
+ * copies to what is here: one that drifts leaves the frame without its
+ * bridge, or a terminal's tab taken for a chat's, with nothing to say why.
+ */
+describe('what is written out again where this can’t be imported', () => {
+  /** A file of the desktop app's, as written. Paths from app/, where the tests run. */
+  const written = file => readFileSync(path.join('electron', file), 'utf8')
+
+  it('is the frame’s origin, in the page and in the preload', () => {
+    expect(page.TERMINAL_ORIGIN).toBe(TERMINAL_ORIGIN)
+    const preload = /\bTERMINAL_ORIGIN = '([^']+)'/.exec(written('src/preload.cjs'))
+    expect(preload?.[1]).toBe(TERMINAL_ORIGIN)
+  })
+
+  it('is what a terminal’s id begins with, by which the page knows its tab', () => {
+    expect(page.TERMINAL_ID).toBe(TERMINAL_ID)
+    const { terminals } = setup()
+    expect(page.isTerminalId(terminals.create(PROJECT))).toBe(true)
+  })
+
+  it('is how many lines are kept above the screen, in the frame as in the copy of it', () => {
+    const frame = /\bSCROLLBACK = (\d+)/.exec(written('terminal/frame.js'))
+    expect(Number(frame?.[1])).toBe(SCROLLBACK)
   })
 })

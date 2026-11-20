@@ -374,6 +374,7 @@ export const OWN_ICONS = Object.freeze([
   'RetryIcon',
   'SendIcon',
   'SpeakerIcon',
+  'TerminalIcon',
 ])
 
 /**

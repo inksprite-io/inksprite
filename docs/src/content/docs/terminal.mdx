@@ -1,0 +1,74 @@
+---
+title: Terminal
+description: Open a terminal in a tab beside your chats in the desktop app, for a command, a build or a coding agent, without leaving inksprite.
+---
+
+A terminal is your own shell in a tab among your chats, for anything you'd
+run in a terminal app: a build, a script, a coding agent.
+
+It works only in the [desktop app](/desktop/).
+
+## Turn it on
+
+The terminal is an extension, off until you turn it on.
+
+Open **Settings** › **Extensions** and switch on **Terminal**.
+
+## Open a terminal
+
+Click **New terminal**, beside **New chat** at the top of the chat. It opens
+in a tab of its own, in your home folder, running the shell you use in any
+other terminal (PowerShell on Windows).
+
+Its tab is named by the program running in it, and **Terminal** until one
+names it. Drag it, switch to it and close it as you would a chat's.
+
+## A terminal belongs to its project
+
+Open another project and a terminal keeps running. Come back, and its tab is
+where you left it, with everything printed since.
+
+A dot on its tab means a program in it rang the bell while you were looking
+at something else, as a coding agent does when it needs you.
+
+A terminal ends when:
+
+- You close its tab. Nothing asks first, even with something running.
+- Its shell ends, as on `exit`. Its tab closes.
+- Its project goes to the trash.
+- You quit inksprite. Terminals aren't there when you open it again.
+
+## What a terminal can do
+
+A terminal is your shell, and what you run in it can do anything you can do on
+your computer. It isn't fenced the way [Python](/python/) is. The model has no
+part in it: no chat can type in a terminal or read one.
+
+What a terminal shows is kept only while it runs, on this computer. It isn't
+saved with the project, and it isn't [synced](/sync/).
+
+On a Mac, the first time a program in a terminal opens your Documents, Desktop
+or Downloads folder, macOS asks whether inksprite may. A yes there is for
+inksprite as a whole.
+
+## Keys
+
+What you type goes to the shell, <kbd>Ctrl</kbd> with it. The terminal keeps
+these for itself:
+
+| Action | Mac | Windows and Linux |
+| --- | --- | --- |
+| Copy | <kbd>⌘</kbd> <kbd>C</kbd> | <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>C</kbd> |
+| Paste | <kbd>⌘</kbd> <kbd>V</kbd> | <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>V</kbd> |
+| Select all | <kbd>⌘</kbd> <kbd>A</kbd> | |
+| Clear | <kbd>⌘</kbd> <kbd>K</kbd> | |
+| A line break where <kbd>Enter</kbd> sends | <kbd>Shift</kbd> <kbd>Enter</kbd> | <kbd>Shift</kbd> <kbd>Enter</kbd> |
+| Open a link | <kbd>⌘</kbd> and click | <kbd>Ctrl</kbd> and click |
+
+Point at a link and where it leads shows at the foot of the terminal. It opens
+in your usual browser, and an email address in your mail app.
+
+On a Mac, [inksprite's own shortcuts](/keyboard-shortcuts/#in-the-desktop-app)
+work from a terminal: <kbd>⌘</kbd> <kbd>W</kbd> closes its tab. On Windows and
+Linux they're on <kbd>Ctrl</kbd>, which goes to the shell while you're in a
+terminal, so click in the editor or a chat first.

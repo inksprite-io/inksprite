@@ -94,7 +94,7 @@ export function handleBridge(origin, { openWindow }, { appPatience } = {}) {
         method: request.method,
         headers: request.headers,
         body: request.body,
-        credentials: 'omit',
+        credentials: /** @type {const} */ ('omit'),
         signal: controller.signal,
       }
       // An address the model named, and the page took for the web: fetched

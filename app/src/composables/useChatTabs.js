@@ -23,9 +23,9 @@
  * wait for the writer to allow a call has stopped working too.
  *
  * In the desktop app a tab may be a terminal instead (`useTerminals`), by an
- * id that says so. A terminal is the project's, as a chat is, so it
- * has a tab in whichever project the window shows, for as long as its shell
- * runs: closing the tab ends the shell, and the shell ending closes the tab.
+ * id that says so. A terminal is its project's, as a chat is, and has a tab
+ * in that project for as long as its shell runs: closing the tab ends the
+ * shell, and a tab whose shell has ended is gone, as a deleted chat's is.
  *
  * One instance per project, made in a scope of its own like `useAIChat`, so
  * the watch that clears what is read outlives the view that first asked.
@@ -33,14 +33,12 @@
 import { computed, effectScope, ref, watch } from 'vue'
 import { useChats } from './useChats.js'
 import { onStoppedWorking } from './useChatActivity.js'
-import { onTerminalEnded, useTerminals } from './useTerminals.js'
+import { useTerminals } from './useTerminals.js'
 import { isTerminalId } from '@/platform/terminal.js'
 import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
-import { useSyncStore } from '@/stores/syncStore.js'
 import {
   CHAT_TABS,
   NO_TABS,
-  closeTab,
   closeTabs,
   dropTabs,
   lastClosed,
@@ -60,20 +58,20 @@ import {
  *   chat's id, or a terminal's
  * @property {import('vue').ComputedRef<string|null>} activeChatId - The chat showing,
  *   or with a terminal showing the chat shown before it
- * @property {(chatId: string) => void} open - Show a chat, in a tab beside the one
- *   showing unless it has one. The unstarted chat shown for want of anything
- *   open is written into the strip by it, as when it is sent in.
+ * @property {(id: string) => void} open - Show a chat, in a tab beside the one
+ *   showing unless it has one, or a terminal that has a tab. The unstarted
+ *   chat shown for want of anything open is written into the strip by it, as
+ *   when it is sent in.
  * @property {() => void} openNew - Show the unstarted chat
  * @property {() => Promise<void>} openTerminal - Make a terminal, and show it
- * @property {(chatId: string) => void} close - Close a tab. A terminal's
- *   shell is ended with it.
- * @property {(chatId: string) => void} shut - Close a tab and no more, as for
- *   a terminal whose shell has ended
- * @property {(chatId: string, to: number) => void} move - Put a tab at
- *   another place in the strip, counted from 0
+ *   in a tab beside the one showing
+ * @property {(id: string) => void} close - Close a tab. A terminal's shell is
+ *   ended with it.
+ * @property {(id: string, to: number) => void} move - Put a tab at another
+ *   place in the strip, counted from 0
  * @property {() => void} reopen - Show again the chat whose tab was closed
  *   last, if it is still one of the project's
- * @property {(chatId: string) => void} closeOthers - Close every tab but this one
+ * @property {(id: string) => void} closeOthers - Close every tab but this one
  * @property {() => void} focus - Put the caret in the message box of the chat
  *   showing, or the keys in the terminal showing, once the panel has it on
  *   screen
@@ -87,7 +85,7 @@ import {
 /** @type {Map<string, ChatTabsApi>} */
 const instances = new Map()
 
-/** What stops the listeners that mark chats unread and close terminals' tabs, once they are listening. */
+/** What stops the listener that marks chats unread, once it is listening. */
 let stopListening = /** @type {(() => void)|null} */ (null)
 
 /**
@@ -111,14 +109,9 @@ export function useChatTabs(storyId) {
     instance = /** @type {ChatTabsApi} */ (effectScope(true).run(() => createChatTabs(storyId)))
     instances.set(storyId, instance)
   }
-  // Any chat that stops working, in whichever project, is marked there. A
-  // terminal that is gone loses its tab in its project.
+  // Any chat that stops working, in whichever project, is marked there.
   if (!stopListening) {
-    const stops = [
-      onStoppedWorking((inStory, chatId) => useChatTabs(inStory).markUnread(chatId)),
-      onTerminalEnded((id, inStory) => instances.get(inStory)?.shut(id)),
-    ]
-    stopListening = () => stops.forEach(stop => stop())
+    stopListening = onStoppedWorking((inStory, chatId) => useChatTabs(inStory).markUnread(chatId))
   }
   return instance
 }
@@ -139,41 +132,41 @@ function createChatTabs(storyId) {
    * Whether a tab's chat is there to show: one of the project's, or the
    * unstarted one. A terminal's tab is there while its shell runs, in this
    * project, and until the terminals there are are known is taken as stored.
-   * @param {string} chatId
+   * @param {string} id
    */
-  const canShow = chatId =>
-    isTerminalId(chatId)
-      ? !terminals.ready.value || terminals.get(chatId)?.project === storyId
-      : chatsApi.isUnstarted(chatId) || Boolean(chatsApi.getChatById(chatId))
+  const canShow = id =>
+    isTerminalId(id)
+      ? !terminals.ready.value || terminals.get(id)?.project === storyId
+      : chatsApi.isUnstarted(id) || Boolean(chatsApi.getChatById(id))
 
   /**
-   * The tabs with a tab for each of the project's terminals that has none,
-   * as one whose tab was lost with the view has none: a terminal with no tab
-   * would run where nothing shows it.
-   * @param {Tabs} tabs
-   * @returns {Tabs}
+   * The tabs as kept, less any whose chat has gone, or whose terminal has. A
+   * project whose chats were never in tabs opens on its latest chat, as the
+   * panel did before it had them. Before the chats are loaded they are taken
+   * as stored. A tab left a preview, from when a chat's could be one, is a
+   * tab like the rest.
+   * @type {import('vue').ComputedRef<Tabs>}
    */
-  const withTerminals = tabs => {
-    const missing = terminals.of(storyId).filter(id => !tabs.open.includes(id))
-    return missing.length ? { ...tabs, open: [...tabs.open, ...missing] } : tabs
-  }
+  const kept = computed(() => {
+    const left = view()
+    const tabs = { ...tabsOf(left, CHAT_TABS), preview: null }
+    if (!chatsApi.ready.value) return tabs
+    const latest = chatsApi.chats.value[0]
+    if (!Array.isArray(left?.[CHAT_TABS.open]) && latest) return openTab(NO_TABS, latest.id)
+    return normalizeTabs(tabs, canShow)
+  })
 
   /**
-   * The tabs as kept, less any whose chat has gone. A project whose chats
-   * were never in tabs opens on its latest chat, as the panel did before it
-   * had them. Before the chats are loaded they are taken as stored. A tab
-   * left a preview, from when a chat's could be one, is a tab like the rest.
+   * The tabs with a tab, after the rest, for each of the project's terminals
+   * that has none, as one whose tab was lost with the view has none: a
+   * terminal with no tab would run where nothing shows it, or ends it.
    * @type {import('vue').ComputedRef<Tabs>}
    */
   const stored = computed(() => {
-    const kept = view()
-    const tabs = { ...tabsOf(kept, CHAT_TABS), preview: null }
+    const tabs = kept.value
     if (!chatsApi.ready.value) return tabs
-    const latest = chatsApi.chats.value[0]
-    if (!Array.isArray(kept?.[CHAT_TABS.open]) && latest) {
-      return withTerminals(openTab(NO_TABS, latest.id))
-    }
-    return withTerminals(normalizeTabs(tabs, canShow))
+    const missing = terminals.of(storyId).filter(id => !tabs.open.includes(id))
+    return missing.length ? { ...tabs, open: [...tabs.open, ...missing] } : tabs
   })
 
   /** @type {import('vue').ComputedRef<Tabs>} */
@@ -195,32 +188,37 @@ function createChatTabs(storyId) {
   }
 
   /** @type {ChatTabsApi['open']} */
-  const open = chatId => write(openTab(stored.value, chatId, { beside: true }))
+  const open = id => write(openTab(stored.value, id, { beside: true }))
 
   const openNew = () => open(chatsApi.unstartedChat.value.id)
 
+  /**
+   * Beside the tab showing, as a new chat is. Its tab is placed among the
+   * tabs as kept, where a terminal just made has none yet: `stored` has
+   * given it one by now, at the end.
+   * @type {ChatTabsApi['openTerminal']}
+   */
   const openTerminal = async () => {
     const id = await terminals.create(storyId)
-    // A project not saved yet is saved by it, as by a chat: there would be
-    // no project to find the terminal in again.
-    useSyncStore().start(storyId)
-    open(id)
+    write(openTab(kept.value, id, { beside: true }))
   }
 
   /**
-   * A chat's tab is the one closed last, for reopening. A terminal's is not
-   * remembered: its shell has ended, and there is nothing of it to open
-   * again.
-   * @type {ChatTabsApi['shut']}
+   * Close tabs, as the writer does. A chat's is remembered, the one closed
+   * last first, for reopening. A terminal's is not: its shell is ended with
+   * it, and there is nothing of it to open again.
+   * @param {Tabs} from
+   * @param {string[]} ids
    */
-  const shut = chatId =>
-    write(isTerminalId(chatId) ? dropTabs(stored.value, [chatId]) : closeTab(stored.value, chatId))
+  const closeFrom = (from, ids) => {
+    const ended = ids.filter(isTerminalId)
+    const chats = ids.filter(id => !isTerminalId(id))
+    write(dropTabs(closeTabs(from, chats), ended))
+    for (const id of ended) terminals.close(id)
+  }
 
   /** @type {ChatTabsApi['close']} */
-  const close = chatId => {
-    shut(chatId)
-    if (isTerminalId(chatId)) terminals.close(chatId)
-  }
+  const close = id => closeFrom(stored.value, [id])
 
   /**
    * Among the tabs as the strip shows them: the unstarted chat shown for
@@ -228,8 +226,8 @@ function createChatTabs(storyId) {
    * being moved, as by being opened.
    * @type {ChatTabsApi['move']}
    */
-  const move = (chatId, to) => {
-    const next = moveTab(tabs.value, chatId, to)
+  const move = (id, to) => {
+    const next = moveTab(tabs.value, id, to)
     if (next !== tabs.value) write(next)
   }
 
@@ -243,12 +241,12 @@ function createChatTabs(storyId) {
   }
 
   /** @type {ChatTabsApi['closeOthers']} */
-  const closeOthers = chatId => {
-    const showing = openTab(stored.value, chatId)
-    const others = showing.open.filter(id => id !== chatId)
-    const chats = others.filter(id => !isTerminalId(id))
-    write(dropTabs(closeTabs(showing, chats), others.filter(isTerminalId)))
-    for (const id of others) if (isTerminalId(id)) terminals.close(id)
+  const closeOthers = id => {
+    const showing = openTab(stored.value, id)
+    closeFrom(
+      showing,
+      showing.open.filter(other => other !== id)
+    )
   }
 
   /**
@@ -294,7 +292,6 @@ function createChatTabs(storyId) {
     openNew,
     openTerminal,
     close,
-    shut,
     move,
     reopen,
     closeOthers,

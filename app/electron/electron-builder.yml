@@ -27,10 +27,16 @@ files:
 # node-pty comes with its binaries built for every system, so nothing is
 # compiled here, and a Mac's app can be built on Linux (build-for-mac.sh).
 # Each system's build carries its own (below). They are files beside the
-# archive, since a Mac starts a shell through a program of node-pty's.
+# archive, since a Mac starts a shell through a program of node-pty's. Only
+# they are: node-pty's JavaScript runs in the main process, and stays in the
+# archive, which is checked as the app starts (the fuses below). So nothing
+# is unpacked for having a binary in it, which would be all of node-pty, the
+# one package here that has any.
 npmRebuild: false
+asar:
+  smartUnpack: false
 asarUnpack:
-  - node_modules/node-pty/**
+  - node_modules/node-pty/prebuilds/**
 
 # No spaces: GitHub renames a release's files with spaces in, and the
 # updater would then look for names that aren't there.
@@ -72,6 +78,13 @@ win:
       arch: [x64]
   files:
     - '!node_modules/node-pty/prebuilds/{darwin,linux}-*'
+  # All of node-pty beside the archive here, as it was before the others were
+  # narrowed: on Windows it starts a worker from a script of its own, which
+  # is untried inside the archive, and Windows can't be tried where this is
+  # built. Its console host (prebuilds/win32-*/conpty) is what a terminal runs
+  # on there (ptyOptions in src/terminals.js).
+  asarUnpack:
+    - node_modules/node-pty/**
 nsis:
   oneClick: true
   perMachine: false

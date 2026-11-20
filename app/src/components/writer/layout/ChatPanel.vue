@@ -47,7 +47,7 @@
           data-action="new-terminal"
           @click="openTerminal"
         >
-          <TerminalIcon style="font-size: 0.85rem" />
+          <TerminalIcon :size="13.6" aria-hidden="true" />
         </HeaderButton>
         <HeaderButton icon="pi pi-plus" label="New chat" @click="chatTabs.openNew()" />
       </template>
@@ -88,7 +88,7 @@ import HeaderButton from './HeaderButton.vue'
 import PanelToggle from './PanelToggle.vue'
 import TabStrip from './TabStrip.vue'
 import TerminalFrame from '../terminal/TerminalFrame.vue'
-import TerminalIcon from '../terminal/TerminalIcon.vue'
+import TerminalIcon from '@/components/icons/TerminalIcon.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useBackup } from '@/composables/useBackup'
 import { isWorking } from '@/composables/useChatActivity.js'
@@ -248,18 +248,18 @@ const items = computed(() => {
  * What a tab's right-click menu offers: closing it or the others, and for a
  * chat that has started, what the chat list offers for it. Closing a
  * terminal's tab ends its shell.
- * @param {string} chatId
+ * @param {string} id - The tab's: a chat's, or a terminal's
  * @returns {import('primevue/menuitem').MenuItem[]}
  */
-const tabActions = chatId => [
-  { label: 'Close', icon: 'pi pi-times', command: () => chatTabs.close(chatId) },
-  { label: 'Close others', command: () => chatTabs.closeOthers(chatId) },
-  ...(isTerminalId(chatId) || chatsApi.isUnstarted(chatId)
+const tabActions = id => [
+  { label: 'Close', icon: 'pi pi-times', command: () => chatTabs.close(id) },
+  { label: 'Close others', command: () => chatTabs.closeOthers(id) },
+  ...(isTerminalId(id) || chatsApi.isUnstarted(id)
     ? []
     : [
         { separator: true },
-        { label: 'Export', icon: 'pi pi-download', command: () => exportChat(chatId) },
-        { label: 'Delete', icon: 'pi pi-trash', command: () => chatsApi.trashChat(chatId) },
+        { label: 'Export', icon: 'pi pi-download', command: () => exportChat(id) },
+        { label: 'Delete', icon: 'pi pi-trash', command: () => chatsApi.trashChat(id) },
       ]),
 ]
 

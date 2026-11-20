@@ -36,10 +36,15 @@ const makeWindow = ({ crashed = false } = {}) => {
   return window
 }
 
-/** The page answers that it has saved. */
-const pageSaved = window => {
+/**
+ * The page answers that it has saved, or a frame set into the page does.
+ * @param {object} window
+ * @param {{parent: object|null}|null} [frame] - The frame that says so: the
+ *   page's own, at the top of the window, unless another is given
+ */
+const pageSaved = (window, frame = { parent: null }) => {
   for (const [channel, listener] of ipcMain.on.mock.calls) {
-    if (channel === 'window:saved') listener({ sender: window.webContents })
+    if (channel === 'window:saved') listener({ sender: window.webContents, senderFrame: frame })
   }
 }
 
@@ -122,6 +127,22 @@ describe('saveBeforeClosing', () => {
     pageSaved(makeWindow())
     await vi.advanceTimersByTimeAsync(0)
     expect(window.close).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not take a frame’s word for the page’s, nor one that has gone', async () => {
+    const { saveBeforeClosing } = await load()
+    const window = makeWindow()
+    saveBeforeClosing(window)
+
+    window.close()
+    pageSaved(window, { parent: { parent: null } })
+    pageSaved(window, null)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(window.close).toHaveBeenCalledTimes(1)
+
+    pageSaved(window)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(window.close).toHaveBeenCalledTimes(2)
   })
 
   it('does not ask a page that has crashed', async () => {

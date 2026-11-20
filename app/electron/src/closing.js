@@ -73,9 +73,12 @@ function askToSave(contents) {
       ipcMain.removeListener(SAVED, heard)
       resolve()
     }
+    // The page's own word for it: the preload runs in every frame of the
+    // window (`preload.cjs`), and no other frame is asked to save.
     /** @param {Electron.IpcMainEvent} event */
     const heard = event => {
-      if (event.sender === contents) done()
+      const frame = event.senderFrame
+      if (event.sender === contents && frame && !frame.parent) done()
     }
     const timer = setTimeout(done, SAVE_WAIT_MS)
     ipcMain.on(SAVED, heard)
