@@ -24,7 +24,6 @@ const { mockApi, toastAction } = await vi.hoisted(async () => {
       displayTitle: vi.fn(document => document?.title || 'Untitled'),
       plainIds,
       isPlain: vi.fn(id => plainIds.has(id)),
-      wouldSettle: vi.fn(() => false),
       currentContent: vi.fn(id => (plainIds.has(id) ? '* as typed' : '- as typed')),
       setContent: vi.fn(),
       setPlain: vi.fn((id, plain) => {
@@ -113,7 +112,6 @@ describe('EditorPanel', () => {
     clearFileViews()
     window.sessionStorage.clear()
     mockApi.plainIds.clear()
-    mockApi.wouldSettle.mockReturnValue(false)
     mockApi.get.mockImplementation(id => ({ id, type: 'text', title: id === 'doc_2' ? 'Two' : '' }))
   })
 
@@ -348,7 +346,7 @@ describe('EditorPanel', () => {
     expect(actions('pdf_1')[1].label).toBe('Show the file')
   })
 
-  it("makes a tab's document plain, and a document again, with nothing to undo when nothing changes", async () => {
+  it("makes a tab's document plain, and a document again, saying nothing", async () => {
     const wrapper = mountPanel({ open: ['doc_1'], active: 'doc_1' })
 
     plainTextItem(wrapper, 'doc_1').command()
@@ -361,24 +359,6 @@ describe('EditorPanel', () => {
     expect(mockApi.setPlain).toHaveBeenLastCalledWith('doc_1', false)
     expect(toastAction).not.toHaveBeenCalled()
     expect(wrapper.find('[data-editor]').exists()).toBe(true)
-  })
-
-  it('rewrites text the editor would write differently, and offers it back', () => {
-    mockApi.plainIds.add('doc_1')
-    mockApi.wouldSettle.mockReturnValue(true)
-    const wrapper = mountPanel({ open: ['doc_1'], active: 'doc_1' })
-
-    plainTextItem(wrapper, 'doc_1').command()
-
-    expect(mockApi.setPlain).toHaveBeenCalledWith('doc_1', false)
-    expect(toastAction).toHaveBeenCalledTimes(1)
-    const [, undo, { changes }] = toastAction.mock.calls[0]
-    expect(undo.label).toBe('Undo')
-    expect(changes).toEqual([{ removed: ['* as typed'], added: ['- as typed'] }])
-
-    undo.command()
-    expect(mockApi.setPlain).toHaveBeenLastCalledWith('doc_1', true)
-    expect(mockApi.setContent).toHaveBeenCalledWith('doc_1', '* as typed')
   })
 
   it('offers no switch on a tab that is not a text document', () => {

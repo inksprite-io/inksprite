@@ -500,15 +500,11 @@ describe('useDocuments', () => {
       expect(store.getDocument('d_1').content).toBe('- a')
     })
 
-    it('says when making a document structured would change it, and then does', () => {
-      expect(api.wouldSettle('p_1')).toBe(true)
-      expect(api.wouldSettle('d_1')).toBe(false)
-
+    it('settles the text of a plain document made structured', () => {
       api.setPlain('p_1', false)
 
       expect(store.getDocument('p_1').plain).toBe(false)
       expect(store.getDocument('p_1').content).toBe('- one')
-      expect(api.wouldSettle('p_1')).toBe(false)
     })
 
     it('turns an open document in the editor rather than the store', () => {

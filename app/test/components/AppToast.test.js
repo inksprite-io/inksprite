@@ -10,7 +10,7 @@ const Toast = {
   template: '<div><slot name="message" :message="message" /></div>',
   setup: () => ({ message }),
 }
-const ToastContent = { props: ['message'], emits: ['keep'], template: '<div />' }
+const ToastContent = { props: ['message'], template: '<div />' }
 
 const show = () =>
   mount(AppToast, { global: { plugins: [PrimeVue], stubs: { Toast, ToastContent } } })
@@ -21,13 +21,5 @@ describe('AppToast', () => {
 
     expect(toast.props('onMouseEnter')).toBeTypeOf('function')
     expect(toast.props('onMouseLeave')).toBeTypeOf('function')
-  })
-
-  it('keeps a toast that asks to be kept', async () => {
-    const wrapper = show()
-
-    await wrapper.findComponent(ToastContent).vm.$emit('keep')
-
-    expect(message.life).toBeNull()
   })
 })

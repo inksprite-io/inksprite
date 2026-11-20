@@ -96,8 +96,6 @@ export const useToast = () => {
    * @param {string} message - The message to display
    * @param {{label: string, command: () => void}} action - The button and what it does
    * @param {Object} [options] - Additional options
-   * @param {import('@/utils/lineDiff.js').LineChange[]} [options.changes] - The lines
-   *   it changed, offered under "What changed?"
    * @param {number} [options.duration] - In milliseconds; 0 keeps it until it is closed
    * @param {boolean} [options.dismissible]
    */
@@ -108,7 +106,6 @@ export const useToast = () => {
       life: options.duration === 0 ? null : options.duration || 8000,
       closable: options.dismissible !== false,
       action,
-      changes: options.changes,
     })
   }
 

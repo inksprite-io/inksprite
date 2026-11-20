@@ -4,12 +4,10 @@
  *
  * A plain document is edited as text and stored as typed. The outline's menu
  * and the tab strip's both offer the switch, and this is the one thing they
- * do with it — including offering the way back when the switch rewrote text.
+ * do with it.
  */
 
-import { changedLines } from '../utils/lineDiff.js'
 import { useDocuments } from './useDocuments.js'
-import { useToast } from './useToast.js'
 
 /** What the switch is called, on the outline's menu and the tab strip's. */
 export const PLAIN_TEXT_LABEL = 'Edit in plain text editor'
@@ -20,35 +18,6 @@ export const PLAIN_TEXT_LABEL = 'Edit in plain text editor'
  */
 export function usePlainText(storyId) {
   const api = useDocuments(storyId)
-  const toast = useToast()
-
-  /**
-   * Turn the document into the other kind. Making a document plain changes
-   * nothing in it. Making a plain one a document settles its text to what the
-   * editor can show, and where that changed something, it is done anyway and
-   * offered back: the writer sees what it came to, the lines that changed if
-   * they ask, and one click puts the text they typed back.
-   * @param {string} documentId
-   */
-  const togglePlain = documentId => {
-    const plain = api.isPlain(documentId)
-    const changes = plain && api.wouldSettle(documentId)
-    const original = changes ? api.currentContent(documentId) : null
-    api.setPlain(documentId, !plain)
-    if (!changes) return
-
-    toast.action(
-      'Some of the formatting was rewritten.',
-      {
-        label: 'Undo',
-        command: () => {
-          api.setPlain(documentId, true)
-          api.setContent(documentId, original)
-        },
-      },
-      { changes: changedLines(original, api.currentContent(documentId)) }
-    )
-  }
 
   /**
    * The menu entry for it: one switch, ticked while the document is plain,
@@ -62,7 +31,7 @@ export function usePlainText(storyId) {
     return {
       label: PLAIN_TEXT_LABEL,
       icon: api.isPlain(documentId) ? 'pi pi-check' : 'pi pi-code',
-      command: () => togglePlain(documentId),
+      command: () => api.setPlain(documentId, !api.isPlain(documentId)),
     }
   }
 

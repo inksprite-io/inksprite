@@ -4,7 +4,7 @@
        rather than in a corner of its own. -->
   <Toast @mouse-enter="hold" @mouse-leave="hold">
     <template #message="{ message }">
-      <ToastContent :message="message" @keep="keep(message)" />
+      <ToastContent :message="message" />
     </template>
   </Toast>
 </template>
@@ -19,14 +19,4 @@ import ToastContent from './ToastContent.vue'
  * each — so this is what turns that on.
  */
 const hold = () => {}
-
-/**
- * Keep a toast until it is closed. The pointer is on it when this is asked
- * for, so its timer is already paused; with no life left in it, the timer
- * does not start again when the pointer leaves.
- * @param {{life?: number|null}} message
- */
-const keep = message => {
-  message.life = null
-}
 </script>

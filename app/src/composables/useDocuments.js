@@ -613,17 +613,6 @@ export const useDocuments = storyId => {
   }
 
   /**
-   * Whether making a document structured would change its text: something in
-   * it is not what the editor would write. Worth asking about first.
-   * @param {string} documentId
-   * @returns {boolean}
-   */
-  const wouldSettle = documentId => {
-    const content = currentContent(documentId)
-    return settleMarkdown(content) !== content
-  }
-
-  /**
    * Make a document plain — edited as text, stored as typed — or structured
    * again. A plain document made structured is settled: anything the editor
    * cannot show becomes the nearest thing it can, and the original is not
@@ -1147,7 +1136,6 @@ export const useDocuments = storyId => {
     rename,
     keepingLinks,
     isPlain,
-    wouldSettle,
     setPlain,
     setContent,
     editContent,
