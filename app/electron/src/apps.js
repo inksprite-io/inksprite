@@ -1,8 +1,8 @@
 /**
  * Other apps on this computer that work in the writer's projects, over MCP:
  * a coding agent reading a design where it is written. Each has a connection,
- * its way in: a name, a token, the projects ticked for it, and what it may do
- * in them. They are kept here, in `apps.json` in the app's data folder, and
+ * its way in: a name, a token, the projects ticked for it, and whether it
+ * only reads them. They are kept here, in `apps.json` in the app's data folder, and
  * not with the page's settings: the door (`appServer.js`) checks a token
  * before any page is asked, and a connection is this computer's, so it is
  * neither synced nor in a backup. See `.llm/mcp_server_design.md`.
@@ -17,6 +17,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { appDoor } from './appServer.js'
 import { windowAsker } from './appCalls.js'
+import { appExports } from './appExports.js'
 import { appReads } from './appReads.js'
 
 /** The file's name, beside `library.json`. */
@@ -29,15 +30,6 @@ export const DEFAULT_PORT = 4657
 const NAME_MOST = 100
 
 /**
- * How a connection may change text: not at all, as suggestions the writer
- * accepts, or at once.
- * @typedef {'off'|'suggesting'|'editing'} EditMode
- */
-
-/** @type {ReadonlySet<string>} */
-const EDIT_MODES = new Set(['off', 'suggesting', 'editing'])
-
-/**
  * One app's way in.
  *
  * @typedef {Object} AppConnection
@@ -45,14 +37,15 @@ const EDIT_MODES = new Set(['off', 'suggesting', 'editing'])
  * @property {string} name - What the writer calls it: "Claude Code"
  * @property {string} token - What its requests carry
  * @property {string[]} projects - The projects ticked for it, by their ids
- * @property {EditMode} edit
- * @property {boolean} comment - Whether it may comment
+ * @property {boolean} readOnly - Whether it only reads: it is offered no
+ *   tool that changes anything
  * @property {number} created
  */
 
 /**
- * What the file holds.
- * @typedef {{port: number, connections: AppConnection[]}} AppsFile
+ * What the file holds: the port apps come in on, whether they are let in at
+ * all, and their connections.
+ * @typedef {{port: number, enabled: boolean, connections: AppConnection[]}} AppsFile
  */
 
 /** Where the file is: `~/Library/Application Support/inksprite/` on a Mac. */
@@ -85,15 +78,14 @@ function connectionFrom(entry) {
     projects: Array.isArray(entry.projects)
       ? entry.projects.filter((/** @type {unknown} */ id) => typeof id === 'string')
       : [],
-    edit: EDIT_MODES.has(entry.edit) ? entry.edit : 'suggesting',
-    comment: entry.comment !== false,
+    readOnly: entry.readOnly === true,
     created: Number.isFinite(entry.created) ? entry.created : 0,
   }
 }
 
 /**
  * The changes to a connection the page may ask for, each checked: its name,
- * its projects, and what it may do.
+ * its projects, and whether it only reads.
  *
  * @param {any} patch
  * @returns {Partial<AppConnection>}
@@ -110,11 +102,7 @@ function changesFrom(patch) {
     }
     changes.projects = [...new Set(/** @type {string[]} */ (patch.projects))]
   }
-  if ('edit' in patch) {
-    if (!EDIT_MODES.has(patch.edit)) throw new Error(`Not a way to edit: ${String(patch.edit)}`)
-    changes.edit = patch.edit
-  }
-  if ('comment' in patch) changes.comment = patch.comment === true
+  if ('readOnly' in patch) changes.readOnly = patch.readOnly === true
   return changes
 }
 
@@ -154,6 +142,7 @@ export function appConnections(file = appsPath()) {
     }
     held = {
       port: isPort(stored?.port) ? stored.port : DEFAULT_PORT,
+      enabled: stored?.enabled !== false,
       connections: (Array.isArray(stored?.connections) ? stored.connections : [])
         .map(connectionFrom)
         .filter((/** @type {AppConnection|null} */ one) => one !== null),
@@ -187,13 +176,14 @@ export function appConnections(file = appsPath()) {
 
   return {
     /**
-     * The port and every connection.
+     * The port, whether apps are let in, and every connection.
      * @returns {Promise<AppsFile>}
      */
-    all: () => inTurn(async now => ({ port: now.port, connections: [...now.connections] })),
+    all: () => inTurn(async now => ({ ...now, connections: [...now.connections] })),
 
     /**
-     * Make a connection, with a token of its own and no project ticked.
+     * Make a connection, with a token of its own and no project ticked: one
+     * that may write, which is what an app is mostly connected to do.
      *
      * @param {unknown} name
      * @returns {Promise<AppConnection>}
@@ -206,8 +196,7 @@ export function appConnections(file = appsPath()) {
           name: nameFrom(name),
           token: randomBytes(32).toString('base64url'),
           projects: [],
-          edit: 'suggesting',
-          comment: true,
+          readOnly: false,
           created: Date.now(),
         }
         await write({ ...now, connections: [...now.connections, made] })
@@ -215,7 +204,7 @@ export function appConnections(file = appsPath()) {
       }),
 
     /**
-     * Change a connection's name, its projects, or what it may do.
+     * Change a connection's name, its projects, or whether it only reads.
      *
      * @param {unknown} id
      * @param {unknown} patch
@@ -260,6 +249,18 @@ export function appConnections(file = appsPath()) {
       }),
 
     /**
+     * Let apps in, or none: with it off, nothing is listened for, and the
+     * connections are kept for when it is on again.
+     *
+     * @param {unknown} enabled
+     * @returns {Promise<void>}
+     */
+    setEnabled: enabled =>
+      inTurn(async now => {
+        if ((enabled === true) !== now.enabled) await write({ ...now, enabled: enabled === true })
+      }),
+
+    /**
      * The connection a token is of, or null. Every connection's is compared,
      * each in the same time, so how long it takes says nothing of the token.
      *
@@ -283,8 +284,8 @@ export function appConnections(file = appsPath()) {
 
 /**
  * Answer the page's calls about connections, and open the door to the apps
- * that have one: listening only while there is a connection, and handing
- * what an app asks to a window to answer (`appCalls.js`).
+ * that have one: listening only while there is a connection and apps are let
+ * in, and handing what an app asks to a window to answer (`appCalls.js`).
  *
  * @param {Object} bridge
  * @param {(channel: string, answer: (event: Electron.IpcMainInvokeEvent, ...args: any[]) => any) => void} bridge.handle -
@@ -297,7 +298,8 @@ export function appConnections(file = appsPath()) {
 export function handleApps({ handle, on, pages }) {
   const connections = appConnections()
   const asker = windowAsker(pages)
-  const door = appDoor({ connections, ask: asker.ask })
+  const exports = appExports()
+  const door = appDoor({ connections, ask: asker.ask, exports })
   const reads = appReads()
 
   on('apps:answer', (event, request, answer) => asker.answered(event.sender.id, request, answer))
@@ -314,11 +316,19 @@ export function handleApps({ handle, on, pages }) {
   handle('apps:remove', async (_, id) => {
     await connections.remove(id)
     await door.sync()
-    // What it had read goes with it.
+    // What it had read goes with it, and what was ready for it to fetch.
+    exports.forget(id)
     await reads.forget(id).catch(() => {})
   })
+  // The door moves to a new port as it is named, and shuts as apps are
+  // turned off: an app set up with the old address is no longer answered.
   handle('apps:port', async (_, port) => {
     await connections.setPort(port)
+    await door.sync()
+    return state()
+  })
+  handle('apps:enable', async (_, enabled) => {
+    await connections.setEnabled(enabled)
     await door.sync()
     return state()
   })
@@ -328,6 +338,10 @@ export function handleApps({ handle, on, pages }) {
   handle('apps:read', (_, connection, document) => reads.get(connection, document))
   handle('apps:reads', (_, connection) => reads.all(connection))
   handle('apps:keep', (_, connection, document, record) => reads.put(connection, document, record))
+
+  // What a page has made ready for a connection's app to fetch, by a link
+  // that works once (`appExports.js`).
+  handle('apps:offer', (_, connection, file) => exports.offer(connection, file))
 
   // Connections made before the app last quit are let in as it starts.
   door.sync().catch(error => console.error(`Apps could not be listened for: ${error.message}`))

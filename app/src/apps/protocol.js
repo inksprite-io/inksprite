@@ -33,31 +33,28 @@ const INVALID_PARAMS = -32602
  * @returns {string}
  */
 export function instructionsFor(app) {
-  const edits = app.edit !== 'off'
+  const writes = !app.readOnly
   return [
-    `inksprite is a writing app. This server gives you the projects its user has opened to you, to ${edits ? 'read and write' : 'list, search and read'} their documents. The tools call the user the writer.`,
+    `inksprite is a writing app. This server gives you the projects its user has opened to you, to ${writes ? 'read and write' : 'list, search and read'} their documents. The tools call the user the writer.`,
     '- A project is a tree of documents and folders. list_projects names the projects, and every other tool takes one as `project`.',
     '- A document is addressed by its path from the top of its project, as list_documents gives it: "Designs/Sync". A path has no file extension.',
     '- Documents are Markdown. A link from one to another is the path from the linking document, ending in .md.',
     '- The user may be writing while you work. Every read and write of a document answers with its `revision`: before relying on what you read earlier, changes_since with the revision you hold shows what has changed since, without reading it all again.',
-    ...(edits
+    ...(writes
       ? [
-          app.edit === 'suggesting'
-            ? "- A change you make to a document's text is suggested to the user in the document, who accepts or rejects each one there: until they do, you read the document with your suggestions made and everyone else reads it without. A new document, a move and a delete are made at once. edit_document changes passages and leaves the rest; append_document adds to the end; update_document rewrites the whole."
-            : '- What you write is in the document at once, where the user sees it, and inksprite keeps a version of the text from before. edit_document changes passages and leaves the rest; append_document adds to the end; update_document rewrites the whole.',
+          '- What you write is in the document at once, where the user sees it, and inksprite keeps a version of the text from before. edit_document changes passages and leaves the rest; append_document adds to the end; update_document rewrites the whole.',
+          '- When the user asks for suggestions and not edits, give those three `suggest`: the change is laid out in the document for the user to accept or reject there. Until they do, you read the document with your suggestions made and everyone else reads it without.',
         ]
       : []),
-    '- A file exported from inksprite names its document in its front matter. Give its `id` there as a path, written `id:<the id>`, to reach the document whatever it is called now, and change the document, not the file.',
-    ...(edits
-      ? [
-          '- export_project writes the project into the folder the user linked to it, as Markdown files: for putting a finished design into a repository.',
-        ]
-      : []),
-    ...(app.comment
+    '- export_document gives a document, or a folder, as files to fetch with your shell: for putting a finished design into a repository.',
+    `- A file exported from inksprite names its document in its front matter. Give its \`id\` there as a path, written \`id:<the id>\`, to reach the document whatever it is called now${writes ? ', and change the document, not the file' : ''}.`,
+    ...(writes
       ? [
           "- A comment is on a passage, for the user to read beside it: add_comment for what you have to say about a document, reply_comment and resolve_comment for comments that are there. On a comment, `writer` is the user, `model` is inksprite's own assistant, and what you say carries this connection's name.",
         ]
-      : []),
+      : [
+          "- A comment is on a passage. On one, `writer` is the user and `model` is inksprite's own assistant.",
+        ]),
   ].join('\n')
 }
 

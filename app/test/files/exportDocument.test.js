@@ -361,7 +361,7 @@ describe('an export that stamps', () => {
         ],
         { bytes: { file1: new Blob(['%PDF'], { type: 'application/pdf' }) } }
       ),
-      stamp: async (/** @type {Document} */ document, /** @type {string} */ text) =>
+      stamp: (/** @type {Document} */ document, /** @type {string} */ text) =>
         `<!-- ${document.id} -->\n${text}`,
     }
 

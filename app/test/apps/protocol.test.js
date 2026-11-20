@@ -6,7 +6,7 @@ vi.mock('@/apps/tools.js', () => tools)
 
 import { PROTOCOL_VERSIONS, answerRequest, instructionsFor } from '@/apps/protocol.js'
 
-const APP = { id: 'app_1', name: 'Claude Code', projects: ['story_a'], edit: 'off', comment: false }
+const APP = { id: 'app_1', name: 'Claude Code', projects: ['story_a'], readOnly: true }
 
 const signal = new AbortController().signal
 const asking = { app: APP, signal }
@@ -56,25 +56,20 @@ describe('answerRequest', () => {
     expect(reads).toContain('to list, search and read their documents')
     expect(reads).toContain('changes_since')
     expect(reads).toContain('id:<the id>')
-    expect(reads).not.toContain('export_project')
-    expect(reads).not.toMatch(/edit_document|add_comment/)
+    expect(reads).toContain("`model` is inksprite's own assistant")
+    expect(reads).toContain('export_document gives a document, or a folder, as files')
+    expect(reads).not.toMatch(/edit_document|add_comment|suggest|change the document/)
 
-    const edits = instructionsFor({ ...APP, edit: 'editing' })
-    expect(edits).toContain('to read and write their documents')
-    expect(edits).toContain('edit_document')
-    expect(edits).toContain('export_project')
-    expect(edits).not.toContain('add_comment')
-
-    const comments = instructionsFor({ ...APP, comment: true })
-    expect(comments).toContain('add_comment')
-    expect(comments).toContain("carries this connection's name")
-    expect(comments).not.toContain('edit_document')
-
-    const suggests = instructionsFor({ ...APP, edit: 'suggesting' })
-    expect(suggests).toContain('to read and write their documents')
-    expect(suggests).toContain('is suggested to the user in the document')
-    expect(suggests).not.toContain('is in the document at once')
-    expect(edits).not.toContain('is suggested to the user')
+    const writes = instructionsFor({ ...APP, readOnly: false })
+    expect(writes).toContain('to read and write their documents')
+    expect(writes).toContain('is in the document at once')
+    expect(writes).toContain('export_document')
+    expect(writes).toContain('add_comment')
+    expect(writes).toContain("carries this connection's name")
+    // Whether to suggest is the app's own assistant's to be told, call by call.
+    expect(writes).toContain(
+      'When the user asks for suggestions and not edits, give those three `suggest`'
+    )
   })
 
   it('speaks the app’s version of the protocol when it has it, and its newest otherwise', async () => {

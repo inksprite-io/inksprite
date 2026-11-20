@@ -39,6 +39,8 @@ vi.mock('@/platform/apps.js', () => ({
 
 import {
   CHANGED_SINCE_NOTE,
+  EARLIER_NOTE,
+  PASSED_MOST,
   UNKNOWN_NOTE,
   changesSince,
   keep,
@@ -67,8 +69,7 @@ const APP = {
   id: 'app_1',
   name: 'Claude Code',
   projects: [STORY],
-  edit: 'suggesting',
-  comment: true,
+  readOnly: false,
 }
 const asking = { storyId: STORY, chatId: 'app:app_1', postsAs: 'Claude Code' }
 /** The writer, at the keyboard: no chat, nothing suggested. */
@@ -304,10 +305,105 @@ describe('changesSince', () => {
     expect(
       (await changesSince(APP, asking, { path: 'Plan', revision: since.revision })).unchanged
     ).toBe('Nothing has changed since that revision.')
-    // The one before is no longer the one kept.
-    expect((await changesSince(APP, asking, { path: 'Plan', revision: had })).unknown).toBe(
-      UNKNOWN_NOTE
-    )
+    // The one before is one it held on the way: it has seen what changed since.
+    expect(await changesSince(APP, asking, { path: 'Plan', revision: had })).toEqual({
+      path: 'Plan',
+      revision: since.revision,
+      unchanged: 'Nothing has changed since you last read or wrote it.',
+    })
+  })
+
+  describe('asked with a revision from before the connection’s own later calls', () => {
+    /** Have the connection change the plan, as a call to a tool does. */
+    const write = (old, becomes) =>
+      withRevision(APP, asking, 'Plan', () =>
+        executeEditDocument({ path: 'Plan', old, new: becomes }, asking)
+      )
+
+    it('says nothing has changed when only its own writes have', async () => {
+      const { revision: first } = await read()
+      const { revision: second } = await write('rope', 'wire')
+      const { revision: third } = await write('a lamp', 'two lamps')
+
+      for (const held of [first, second]) {
+        expect(await changesSince(APP, asking, { path: 'Plan', revision: held })).toEqual({
+          path: 'Plan',
+          revision: third,
+          unchanged: 'Nothing has changed since you last read or wrote it.',
+        })
+      }
+    })
+
+    it('shows what the writer changed since the last of them, and says where from', async () => {
+      const { revision: first } = await read()
+      const { revision: second } = await write('rope', 'wire')
+      await executeEditDocument({ path: 'Plan', old: 'noon', new: 'dusk' }, writer)
+
+      const since = await changesSince(APP, asking, { path: 'Plan', revision: first })
+
+      expect(since).toMatchObject({
+        revision: await revision(),
+        since: second,
+        earlier: EARLIER_NOTE,
+      })
+      expect(since.content).toContain('-The vault opens at noon.')
+      expect(since.content).toContain('+The vault opens at dusk.')
+      // Its own change is not news to it.
+      expect(since.content).not.toContain('-Bring rope')
+    })
+
+    it('says no such thing of the revision it last had', async () => {
+      const { revision: had } = await read()
+      await executeEditDocument({ path: 'Plan', old: 'noon', new: 'dusk' }, writer)
+
+      const since = await changesSince(APP, asking, { path: 'Plan', revision: had })
+      expect(since.since).toBe(had)
+      expect(since.earlier).toBeUndefined()
+    })
+
+    it('goes on knowing them through a whole read, and through what it was shown', async () => {
+      const { revision: first } = await read()
+      await executeEditDocument({ path: 'Plan', old: 'noon', new: 'dusk' }, writer)
+      const { revision: second } = await read()
+      await executeEditDocument({ path: 'Plan', old: 'rope', new: 'wire' }, writer)
+      const shown = await changesSince(APP, asking, { path: 'Plan', revision: second })
+
+      expect((await kept(APP, 'doc_plan')).passed).toEqual([first, second])
+      expect((await changesSince(APP, asking, { path: 'Plan', revision: first })).unchanged).toBe(
+        'Nothing has changed since you last read or wrote it.'
+      )
+      expect(shown.since).toBe(second)
+    })
+
+    it('lets them go where it has not seen what changed between', async () => {
+      const { revision: first } = await read()
+      await executeEditDocument({ path: 'Plan', old: 'noon', new: 'dusk' }, writer)
+      // A write over a change it has not seen: what is kept stays, and the
+      // revision the write left is not one it is known to hold.
+      const { revision: left } = await write('rope', 'wire')
+      expect((await kept(APP, 'doc_plan')).revision).toBe(first)
+
+      // It reads at that revision: brought up to date without the change shown.
+      expect(await unchangedAt(APP, asking, 'Plan', left)).toMatchObject({ revision: left })
+      expect((await kept(APP, 'doc_plan')).passed).toBeUndefined()
+      expect((await changesSince(APP, asking, { path: 'Plan', revision: first })).unknown).toBe(
+        UNKNOWN_NOTE
+      )
+    })
+
+    it('remembers only so many, the latest', async () => {
+      const held = [(await read()).revision]
+      for (let n = 0; n < PASSED_MOST + 2; n++) {
+        held.push((await write(n === 0 ? 'rope' : `rope ${n - 1}`, `rope ${n}`)).revision)
+      }
+
+      const { passed } = await kept(APP, 'doc_plan')
+      expect(passed).toHaveLength(PASSED_MOST)
+      expect(passed).toEqual(held.slice(-PASSED_MOST - 1, -1))
+      expect((await changesSince(APP, asking, { path: 'Plan', revision: held[0] })).unknown).toBe(
+        UNKNOWN_NOTE
+      )
+    })
   })
 
   it('tells of a comment made, one answered, and one resolved', async () => {

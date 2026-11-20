@@ -1,28 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import {
-  STAMP_NOTE,
-  asExported,
-  bodyHash,
-  readStamp,
-  stamped,
-  withoutStamp,
-} from '@/files/exportStamp.js'
+import { STAMP_NOTE, readStamp, stamped, withoutStamp } from '@/files/exportStamp.js'
 
 const FROM = { project: 'Thief', document: 'Designs/Sync', id: 'doc_1' }
 const BODY = '# Sync\n\nHow the devices agree.\n'
 
 describe('stamped', () => {
-  it('puts where the document came from above its text, under one key', async () => {
-    const text = await stamped(FROM, BODY)
-
-    expect(text).toBe(
+  it('puts where the document came from above its text, under one key', () => {
+    expect(stamped(FROM, BODY)).toBe(
       [
         '---',
         'inksprite:',
         '  project: Thief',
         '  document: Designs/Sync',
         '  id: doc_1',
-        `  hash: ${await bodyHash(BODY)}`,
         `  note: ${STAMP_NOTE}`,
         '---',
         '',
@@ -31,38 +21,28 @@ describe('stamped', () => {
     )
   })
 
-  it('is the same for the same text, and changes only with it: there is no date in it', async () => {
-    expect(await stamped(FROM, BODY)).toBe(await stamped(FROM, BODY))
-    expect(await stamped(FROM, `${BODY}More.\n`)).not.toBe(await stamped(FROM, BODY))
+  it('is the same for the same text, and changes only with it: there is no date in it', () => {
+    expect(stamped(FROM, BODY)).toBe(stamped(FROM, BODY))
+    expect(stamped(FROM, `${BODY}More.\n`)).toBe(`${stamped(FROM, BODY)}More.\n`)
   })
 
-  it('keeps a name that YAML would read as something else', async () => {
+  it('keeps a name that YAML would read as something else', () => {
     const odd = { project: 'Thief: the heist #2', document: 'Notes/"Quoted" & more', id: 'doc_1' }
-    const { stamp, body } = readStamp(await stamped(odd, BODY))
+    const { stamp, body } = readStamp(stamped(odd, BODY))
 
-    expect(stamp).toMatchObject(odd)
+    expect(stamp).toEqual(odd)
     expect(body).toBe(BODY)
   })
 
-  it('stamps an empty document', async () => {
-    const text = await stamped(FROM, '')
-    expect(readStamp(text)).toMatchObject({ stamp: { id: 'doc_1' }, body: '' })
-    expect(await asExported(text)).toBe(true)
-  })
-})
-
-describe('bodyHash', () => {
-  it('is sixteen hex digits that tell two texts apart', async () => {
-    expect(await bodyHash('a')).toMatch(/^[0-9a-f]{16}$/)
-    expect(await bodyHash('a')).toBe(await bodyHash('a'))
-    expect(await bodyHash('a')).not.toBe(await bodyHash('b'))
+  it('stamps an empty document', () => {
+    expect(readStamp(stamped(FROM, ''))).toMatchObject({ stamp: { id: 'doc_1' }, body: '' })
   })
 })
 
 describe('readStamp', () => {
-  it('reads back what was stamped, and the text under it', async () => {
-    const { stamp, body, others } = readStamp(await stamped(FROM, BODY))
-    expect(stamp).toEqual({ ...FROM, hash: await bodyHash(BODY) })
+  it('reads back what was stamped, and the text under it', () => {
+    const { stamp, body, others } = readStamp(stamped(FROM, BODY))
+    expect(stamp).toEqual(FROM)
     expect(body).toBe(BODY)
     expect(others).toEqual({})
   })
@@ -79,37 +59,19 @@ describe('readStamp', () => {
     }
   })
 
-  it('hands back what else the front matter held', () => {
+  it('hands back what else the front matter held, and reads a stamp that says more', () => {
     const text = '---\ntitle: Sync\ninksprite:\n  id: doc_1\n  hash: abc\n---\n\nText.\n'
-    expect(readStamp(text)).toMatchObject({
-      stamp: { id: 'doc_1', hash: 'abc', project: '', document: '' },
+    expect(readStamp(text)).toEqual({
+      stamp: { id: 'doc_1', project: '', document: '' },
       body: 'Text.\n',
       others: { title: 'Sync' },
     })
   })
 })
 
-describe('asExported', () => {
-  it('is true of a file as it was exported', async () => {
-    expect(await asExported(await stamped(FROM, BODY))).toBe(true)
-  })
-
-  it('is false of one whose text was changed since, and of one with no stamp', async () => {
-    const text = await stamped(FROM, BODY)
-    expect(await asExported(text.replace('agree', 'disagree'))).toBe(false)
-    expect(await asExported(`${text}\nA line added.\n`)).toBe(false)
-    expect(await asExported(BODY)).toBe(false)
-  })
-
-  it('is true of an older export on another branch: what matters is its own text', async () => {
-    const older = await stamped(FROM, '# Sync\n\nAn earlier draft.\n')
-    expect(await asExported(older)).toBe(true)
-  })
-})
-
 describe('withoutStamp', () => {
-  it('takes the stamp off a file brought back in', async () => {
-    expect(withoutStamp(await stamped(FROM, BODY))).toBe(BODY)
+  it('takes the stamp off a file brought back in', () => {
+    expect(withoutStamp(stamped(FROM, BODY))).toBe(BODY)
   })
 
   it('leaves a file with no stamp as it was', () => {
@@ -119,7 +81,7 @@ describe('withoutStamp', () => {
   })
 
   it('keeps what else the front matter held', () => {
-    const text = '---\ntitle: Sync\ninksprite:\n  id: doc_1\n  hash: abc\n---\n\nText.\n'
+    const text = '---\ntitle: Sync\ninksprite:\n  id: doc_1\n---\n\nText.\n'
     expect(withoutStamp(text)).toBe('---\ntitle: Sync\n---\n\nText.\n')
   })
 })

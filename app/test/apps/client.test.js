@@ -1,4 +1,5 @@
 // @vitest-environment node
+/* global TextEncoder */
 /**
  * A real MCP client against the door and the page's answers behind it, with
  * the tools stood in for: what a client is sent is what the protocol asks.
@@ -7,6 +8,7 @@ import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import http from 'node:http'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { appDoor } from '../../electron/src/appServer.js'
+import { appExports } from '../../electron/src/appExports.js'
 
 const tools = vi.hoisted(() => ({ toolsFor: vi.fn(), callTool: vi.fn() }))
 vi.mock('@/apps/tools.js', () => tools)
@@ -18,8 +20,7 @@ const CONNECTION = {
   name: 'Claude Code',
   token: 'the-right-token',
   projects: ['story_a'],
-  edit: 'suggesting',
-  comment: true,
+  readOnly: false,
   created: 1,
 }
 
@@ -27,6 +28,8 @@ const CONNECTION = {
 let port
 /** @type {ReturnType<typeof appDoor>} */
 let door
+/** What is held for an app to fetch, as the native side holds it. */
+const held = appExports()
 
 beforeAll(async () => {
   port = await new Promise(resolve => {
@@ -47,35 +50,57 @@ beforeAll(async () => {
       },
       annotations: { readOnlyHint: true },
     },
+    {
+      name: 'export_document',
+      description: 'Get a document as a file.',
+      inputSchema: { type: 'object', properties: { path: { type: 'string' } } },
+      annotations: { readOnlyHint: true },
+    },
   ])
-  tools.callTool.mockImplementation(async (_, __, args) =>
-    args.path === 'notes/Nothing'
-      ? { result: { content: [{ type: 'text', text: 'No document there.' }], isError: true } }
-      : {
+  tools.callTool.mockImplementation(async (app, name, args) =>
+    name === 'export_document'
+      ? {
+          // As `apps/exports.js` answers: a link at the address the app asked by.
           result: {
             content: [
-              { type: 'text', text: '{"path":"notes/Plan"}' },
-              { type: 'text', text: 'Bring rope.' },
+              {
+                type: 'text',
+                text: JSON.stringify({
+                  url: `${app.address}/export/${held.offer(app.id, { name: 'Plan.md', bytes: new TextEncoder().encode('Bring rope.\n') }).id}`,
+                }),
+              },
             ],
           },
         }
+      : args.path === 'notes/Nothing'
+        ? { result: { content: [{ type: 'text', text: 'No document there.' }], isError: true } }
+        : {
+            result: {
+              content: [
+                { type: 'text', text: '{"path":"notes/Plan"}' },
+                { type: 'text', text: 'Bring rope.' },
+              ],
+            },
+          }
   )
   door = appDoor({
     connections: {
-      all: async () => ({ port, connections: [CONNECTION] }),
+      all: async () => ({ port, enabled: true, connections: [CONNECTION] }),
       byToken: async token => (token === CONNECTION.token ? CONNECTION : null),
     },
-    ask: async (connection, message, signal) => {
-      const answer = await answerRequest(message, { app: connection, signal })
+    ask: async (connection, message, signal, address) => {
+      const answer = await answerRequest(message, { app: { ...connection, address }, signal })
       if ('pass' in answer) throw new Error('inksprite has no window open.')
       return answer.response
     },
+    exports: held,
   })
   await door.sync()
 })
 
 afterAll(() => {
   door.stop()
+  held.clear()
 })
 
 /** A client connected with a token. */
@@ -90,6 +115,23 @@ const connect = async (token = CONNECTION.token) => {
 }
 
 describe('a client through the door', () => {
+  it('is answered with a link its shell can fetch, once, without the token', async () => {
+    const client = await connect()
+
+    const answer = await client.callTool({
+      name: 'export_document',
+      arguments: { path: 'notes/Plan' },
+    })
+    const { url } = JSON.parse(answer.content[0].text)
+    await client.close()
+
+    expect(url).toMatch(new RegExp(`^http://127\\.0\\.0\\.1:${port}/export/[\\w-]{43}$`))
+    const fetched = await fetch(url)
+    expect(fetched.status).toBe(200)
+    expect(await fetched.text()).toBe('Bring rope.\n')
+    expect((await fetch(url)).status).toBe(404)
+  })
+
   it('connects, and is told what inksprite is', async () => {
     const client = await connect()
 
@@ -105,6 +147,7 @@ describe('a client through the door', () => {
     const { tools: listed } = await client.listTools()
     expect(listed).toEqual([
       expect.objectContaining({ name: 'read_document', annotations: { readOnlyHint: true } }),
+      expect.objectContaining({ name: 'export_document' }),
     ])
 
     const read = await client.callTool({ name: 'read_document', arguments: { path: 'notes/Plan' } })

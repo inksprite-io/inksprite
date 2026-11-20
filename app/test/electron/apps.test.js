@@ -21,10 +21,14 @@ afterEach(async () => {
 
 describe('appConnections', () => {
   it('starts with none, on the port it has when nothing says otherwise', async () => {
-    expect(await appConnections(file).all()).toEqual({ port: DEFAULT_PORT, connections: [] })
+    expect(await appConnections(file).all()).toEqual({
+      port: DEFAULT_PORT,
+      enabled: true,
+      connections: [],
+    })
   })
 
-  it('makes a connection with a token of its own, suggesting, and no project ticked', async () => {
+  it('makes a connection with a token of its own, that may write, and no project ticked', async () => {
     const connections = appConnections(file)
     const made = await connections.add('  Claude Code  ')
     const other = await connections.add('Another')
@@ -32,8 +36,7 @@ describe('appConnections', () => {
     expect(made).toMatchObject({
       name: 'Claude Code',
       projects: [],
-      edit: 'suggesting',
-      comment: true,
+      readOnly: false,
     })
     expect(made.token).toMatch(/^[\w-]{43}$/)
     expect(other.token).not.toBe(made.token)
@@ -54,15 +57,14 @@ describe('appConnections', () => {
     expect((await connections.all()).connections).toEqual([])
   })
 
-  it("changes a connection's name, its projects and what it may do", async () => {
+  it("changes a connection's name, its projects and whether it only reads", async () => {
     const connections = appConnections(file)
     const { id, token } = await connections.add('Claude Code')
 
     const after = await connections.update(id, {
       name: 'The agent',
       projects: ['story_a', 'story_b', 'story_a'],
-      edit: 'editing',
-      comment: false,
+      readOnly: true,
     })
 
     expect(after).toMatchObject({
@@ -70,8 +72,7 @@ describe('appConnections', () => {
       token,
       name: 'The agent',
       projects: ['story_a', 'story_b'],
-      edit: 'editing',
-      comment: false,
+      readOnly: true,
     })
     expect((await appConnections(file).all()).connections).toEqual([after])
   })
@@ -82,11 +83,11 @@ describe('appConnections', () => {
 
     await expect(connections.update(made.id, { projects: 'story_a' })).rejects.toThrow('projects')
     await expect(connections.update(made.id, { projects: [1] })).rejects.toThrow('projects')
-    await expect(connections.update(made.id, { edit: 'anything' })).rejects.toThrow('Not a way')
     await expect(connections.update(made.id, { name: '' })).rejects.toThrow('needs a name')
     await expect(connections.update('app_none', { name: 'x' })).rejects.toThrow('No such')
-    // Nothing the page may not set is taken from it.
-    await connections.update(made.id, { token: 'mine', id: 'other', created: 0 })
+    // Nothing the page may not set is taken from it, and only a plain yes
+    // has it read only.
+    await connections.update(made.id, { token: 'mine', id: 'other', created: 0, readOnly: 'no' })
 
     expect((await connections.all()).connections).toEqual([made])
   })
@@ -114,6 +115,20 @@ describe('appConnections', () => {
     expect((await appConnections(file).all()).port).toBe(5000)
   })
 
+  it('lets apps in until told not to, and keeps that', async () => {
+    const connections = appConnections(file)
+    const made = await connections.add('Claude Code')
+
+    await connections.setEnabled(false)
+    expect(await appConnections(file).all()).toMatchObject({ enabled: false, connections: [made] })
+
+    // Only a plain yes turns it on.
+    await connections.setEnabled('yes')
+    expect((await appConnections(file).all()).enabled).toBe(false)
+    await connections.setEnabled(true)
+    expect((await appConnections(file).all()).enabled).toBe(true)
+  })
+
   it('makes changes asked at once one at a time, losing none', async () => {
     const connections = appConnections(file)
     await Promise.all(['a', 'b', 'c', 'd'].map(name => connections.add(name)))
@@ -129,7 +144,11 @@ describe('appConnections', () => {
   it('reads a file that is not what it writes as far as it can', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
     await fs.writeFile(file, 'not json')
-    expect(await appConnections(file).all()).toEqual({ port: DEFAULT_PORT, connections: [] })
+    expect(await appConnections(file).all()).toEqual({
+      port: DEFAULT_PORT,
+      enabled: true,
+      connections: [],
+    })
     expect(error).toHaveBeenCalled()
     error.mockRestore()
 
@@ -137,8 +156,19 @@ describe('appConnections', () => {
       file,
       JSON.stringify({
         port: 'high',
+        enabled: 'no',
         connections: [
-          { id: 'app_1', token: 'secret', name: 'Kept', projects: ['story_a', 7], edit: 'never' },
+          // One from before a connection read or wrote, and no more: its
+          // `edit` and `comment` are let go.
+          {
+            id: 'app_1',
+            token: 'secret',
+            name: 'Kept',
+            projects: ['story_a', 7],
+            edit: 'suggesting',
+            comment: true,
+            readOnly: 'yes',
+          },
           { id: 'app_2', name: 'No token' },
           'nonsense',
         ],
@@ -146,14 +176,14 @@ describe('appConnections', () => {
     )
     expect(await appConnections(file).all()).toEqual({
       port: DEFAULT_PORT,
+      enabled: true,
       connections: [
         {
           id: 'app_1',
           token: 'secret',
           name: 'Kept',
           projects: ['story_a'],
-          edit: 'suggesting',
-          comment: true,
+          readOnly: false,
           created: 0,
         },
       ],

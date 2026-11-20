@@ -202,11 +202,6 @@ const desktop = {
   exportFolder: {
     choose: name => call('export:choose', name),
     write: (target, entries) => call('export:write', target, entries),
-    linked: storyId => call('export:linked', storyId),
-    link: storyId => call('export:link', storyId),
-    unlink: storyId => call('export:unlink', storyId),
-    look: (storyId, paths) => call('export:look', storyId, paths),
-    apply: (storyId, entries) => call('export:apply', storyId, entries),
   },
 
   pdf: {
@@ -229,9 +224,11 @@ const desktop = {
     update: (id, patch) => call('apps:update', id, patch),
     remove: id => call('apps:remove', id),
     setPort: port => call('apps:port', port),
+    setEnabled: enabled => call('apps:enable', enabled),
     read: (connection, document) => call('apps:read', connection, document),
     reads: connection => call('apps:reads', connection),
     keep: (connection, document, record) => call('apps:keep', connection, document, record),
+    offer: (connection, file) => call('apps:offer', connection, file),
     answer: answer => {
       answerApps = answer
     },

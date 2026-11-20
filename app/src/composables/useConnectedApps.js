@@ -11,7 +11,14 @@
  */
 
 import { ref } from 'vue'
-import { addApp, listApps, removeApp, setAppsPort, updateApp } from '@/platform/apps.js'
+import {
+  addApp,
+  listApps,
+  removeApp,
+  setAppsEnabled,
+  setAppsPort,
+  updateApp,
+} from '@/platform/apps.js'
 
 /** @typedef {import('@/platform/apps.js').AppConnection} AppConnection */
 /** @typedef {import('@/platform/apps.js').AppsState} AppsState */
@@ -25,6 +32,23 @@ const SERVER_NAME = 'inksprite'
  * @type {import('vue').Ref<AppsState|null>}
  */
 const state = ref(null)
+
+/** What a new connection is called until the writer names it: the app most are for. */
+const NEW_NAME = 'Claude Code'
+
+/**
+ * The name a new connection starts under: one no other has, numbered from
+ * `(2)` as copies are.
+ *
+ * @param {Array<{name: string}>} connections - Those there are
+ * @returns {string}
+ */
+export function nextAppName(connections) {
+  const taken = new Set(connections.map(one => one.name))
+  let name = NEW_NAME
+  for (let n = 2; taken.has(name); n++) name = `${NEW_NAME} (${n})`
+  return name
+}
 
 /**
  * Where an app reaches inksprite, on this computer.
@@ -51,10 +75,10 @@ export const claudeCodeCommand = (port, token) =>
  *   add: (name: string) => Promise<AppConnection>,
  *   rename: (id: string, name: string) => Promise<void>,
  *   setProject: (id: string, storyId: string, ticked: boolean) => Promise<void>,
- *   setEdit: (id: string, edit: AppConnection['edit']) => Promise<void>,
- *   setComment: (id: string, comment: boolean) => Promise<void>,
+ *   setReadOnly: (id: string, readOnly: boolean) => Promise<void>,
  *   remove: (id: string) => Promise<void>,
  *   setPort: (port: number) => Promise<void>,
+ *   setEnabled: (enabled: boolean) => Promise<void>,
  * }}
  */
 export function useConnectedApps() {
@@ -77,7 +101,7 @@ export function useConnectedApps() {
 
   /**
    * Make a connection for an app, with no project ticked yet.
-   * @param {string} name
+   * @param {string} name - `nextAppName` gives one to start under
    * @returns {Promise<AppConnection>}
    */
   const add = async name => {
@@ -112,23 +136,13 @@ export function useConnectedApps() {
   }
 
   /**
-   * Say how a connection may change the documents' text.
+   * Say whether a connection only reads, or writes as well.
    *
    * @param {string} id
-   * @param {AppConnection['edit']} edit
+   * @param {boolean} readOnly
    */
-  const setEdit = async (id, edit) => {
-    place(await updateApp(id, { edit }))
-  }
-
-  /**
-   * Say whether a connection may comment.
-   *
-   * @param {string} id
-   * @param {boolean} comment
-   */
-  const setComment = async (id, comment) => {
-    place(await updateApp(id, { comment }))
+  const setReadOnly = async (id, readOnly) => {
+    place(await updateApp(id, { readOnly }))
   }
 
   /**
@@ -141,12 +155,20 @@ export function useConnectedApps() {
   }
 
   /**
-   * Have apps reach inksprite on another port.
+   * Have apps reach inksprite on another port, from now.
    * @param {number} port
    */
   const setPort = async port => {
     state.value = await setAppsPort(port)
   }
 
-  return { state, load, add, rename, setProject, setEdit, setComment, remove, setPort }
+  /**
+   * Let apps in, or none.
+   * @param {boolean} enabled
+   */
+  const setEnabled = async enabled => {
+    state.value = await setAppsEnabled(enabled)
+  }
+
+  return { state, load, add, rename, setProject, setReadOnly, remove, setPort, setEnabled }
 }

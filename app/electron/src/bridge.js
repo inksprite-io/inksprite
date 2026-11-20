@@ -20,7 +20,6 @@ import { downloadUpdate, installUpdate } from './updates.js'
 import { readSettingsFile } from './settingsFile.js'
 import { libraryFolder, librarySettings, markMoved } from './library.js'
 import { exportFolders } from './exporting.js'
-import { exportLinks } from './exportLinks.js'
 import { savePdf } from './printing.js'
 import { bringForward } from './windows.js'
 import { PythonSessions } from './sandbox.js'
@@ -214,21 +213,6 @@ export function handleBridge(origin, { openWindow }) {
   )
   handle('export:write', (_, target, entries) =>
     exports.write(target, entries, file => inTurn(folder => folder.locate(file)))
-  )
-
-  // A project linked to a folder it is exported to again and again
-  // (`exportLinks.js`): chosen by the writer in a dialog, kept here by the
-  // project's id, and written in place. The page names a project, never a
-  // folder.
-  const links = exportLinks()
-  handle('export:linked', (_, storyId) => links.linked(storyId))
-  handle('export:link', (event, storyId) =>
-    links.link(BrowserWindow.fromWebContents(event.sender), storyId)
-  )
-  handle('export:unlink', (_, storyId) => links.unlink(storyId))
-  handle('export:look', (_, storyId, paths) => links.look(storyId, paths))
-  handle('export:apply', (_, storyId, entries) =>
-    links.apply(storyId, entries, file => inTurn(folder => folder.locate(file)))
   )
 
   // The page as it prints, saved as a PDF where the writer says (`printing.js`).

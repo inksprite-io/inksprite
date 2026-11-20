@@ -108,8 +108,8 @@
  * @property {string} name - What the writer calls it
  * @property {string} token - What its requests carry
  * @property {string[]} projects - The projects ticked for it, by their ids
- * @property {'off'|'suggesting'|'editing'} edit - How it may change text
- * @property {boolean} comment - Whether it may comment
+ * @property {boolean} readOnly - Whether it only reads: it is offered no tool
+ *   that changes anything
  * @property {number} created
  */
 
@@ -118,9 +118,10 @@
  *
  * @typedef {Object} AppsState
  * @property {number} port - The port apps reach inksprite on
+ * @property {boolean} enabled - Whether apps are let in at all
  * @property {AppConnection[]} connections
  * @property {boolean} listening - Whether the port is listened on, which it
- *   is only while there is a connection
+ *   is only while apps are let in and there is a connection
  * @property {string|null} problem - Why it isn't, though it should be
  * @property {Record<string, number>} called - When each connection last asked
  *   something, by its id, since the app started
@@ -141,9 +142,12 @@
  * @property {() => Promise<AppsState>} list
  * @property {(name: string) => Promise<AppConnection>} add - Make one, with a
  *   token of its own and no project ticked
- * @property {(id: string, patch: Partial<Pick<AppConnection, 'name'|'projects'|'edit'|'comment'>>) => Promise<AppConnection>} update
+ * @property {(id: string, patch: Partial<Pick<AppConnection, 'name'|'projects'|'readOnly'>>) => Promise<AppConnection>} update
  * @property {(id: string) => Promise<void>} remove
- * @property {(port: number) => Promise<AppsState>} setPort
+ * @property {(port: number) => Promise<AppsState>} setPort - Listen on
+ *   another port, from now
+ * @property {(enabled: boolean) => Promise<AppsState>} setEnabled - Let apps
+ *   in, or none
  * @property {(connection: string, document: string) => Promise<object|null>} [read] -
  *   What a connection last read or wrote of a document, as `keep` was handed
  *   it, or null. Missing, with `reads` and `keep`, from a desktop app from
@@ -152,9 +156,13 @@
  *   kept for a connection
  * @property {(connection: string, document: string, record: object) => Promise<void>} [keep] -
  *   Keep what a connection now has of a document
- * @property {(answer: (connection: Omit<AppConnection, 'token'|'created'>, message: object, onStop: (stop: () => void) => void) => Promise<AppAnswer>) => void} answer -
- *   Say what answers an app's request in this window. `onStop` takes what
- *   stops the request, should the app give up on it.
+ * @property {(connection: string, file: {name: string, bytes: Uint8Array}) => Promise<{id: string}>} offer -
+ *   Hold a file for a connection's app to fetch, once and within a few
+ *   minutes, at `/export/<id>` of the address it reaches this computer by
+ * @property {(answer: (connection: Omit<AppConnection, 'token'|'created'> & {address: string}, message: object, onStop: (stop: () => void) => void) => Promise<AppAnswer>) => void} answer -
+ *   Say what answers an app's request in this window. `address` is where
+ *   the app reaches this computer, and `onStop` takes what stops the
+ *   request, should the app give up on it.
  */
 
 /**
@@ -185,30 +193,6 @@
  *   a folder of this name to start with; null when the writer cancelled
  * @property {(target: string, entries: DesktopExportEntry[]) => Promise<void>} write -
  *   Write an export where the writer chose, in place of what is there
- * @property {(storyId: string) => Promise<string|null>} [linked] - The folder
- *   a project is exported to again and again, or null
- *   (`app/electron/src/exportLinks.js`). Missing, with the four below, from a
- *   desktop app from before folders were linked.
- * @property {(storyId: string) => Promise<string|null>} [link] - Ask the
- *   writer for that folder; null when they cancelled
- * @property {(storyId: string) => Promise<void>} [unlink]
- * @property {(storyId: string, paths: string[]) => Promise<Record<string, string|null>>} [look] -
- *   The text of each of these files as it is in the project's folder now
- * @property {(storyId: string, entries: Array<DesktopExportEntry|{path: string, text: string, own?: boolean}>) => Promise<LinkedExportReport>} [apply] -
- *   Write an export into the project's folder, in place
- */
-
-/**
- * What an export to a project's linked folder did, by paths below the
- * folder (`app/electron/src/exportLinks.js`).
- *
- * @typedef {Object} LinkedExportReport
- * @property {string} folder - Where, on this disk
- * @property {string[]} written - Made, or changed
- * @property {string[]} edited - Of those, the ones changed outside inksprite
- *   or not the export's: now in the system's trash
- * @property {string[]} removed - No longer in the export: in the system's trash
- * @property {number} unchanged - How many were already as they would be written
  */
 
 /**

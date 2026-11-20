@@ -1,6 +1,7 @@
 /**
  * The door other apps on this computer come in by: MCP over HTTP, on the
- * loopback alone, and only while there is a connection to let in (`apps.js`).
+ * loopback alone, and only while there is a connection to let in and the
+ * writer hasn't turned apps off (`apps.js`).
  *
  * It is MCP's Streamable HTTP at its plainest: `POST /mcp`, a JSON answer to
  * each request, no stream and no session. The door knows who is asking and
@@ -14,12 +15,20 @@
  *   rebinds its name to the loopback would send;
  * - a request without a connection's token;
  * - anything but a `POST` of JSON to `/mcp`, of a size a call could be.
+ *
+ * One thing more is served: what a tool made ready for the app to fetch, a
+ * document or a folder exported for it, by `GET /export/<id>`. The id is its
+ * way in, there being no token in an app's own shell: it works once, for a
+ * few minutes (`appExports.js`), and is refused a browser as the rest is.
  */
 
 import http from 'node:http'
 
 /** Where apps post. */
 export const PATH = '/mcp'
+
+/** Where an app fetches what was made ready for it, by its id. */
+export const EXPORTS = '/export/'
 
 /** The most a request's body may be: a document written whole, and room. */
 export const MOST_BYTES = 4 * 1024 * 1024
@@ -62,6 +71,24 @@ export function hostName(host) {
     return null
   }
 }
+
+/**
+ * Where the app that sent a request reaches this computer: the name and port
+ * it asked by, which is not the same from inside a container as beside it.
+ *
+ * @param {string|undefined} host - The `Host` header, of a name already let in
+ * @returns {string}
+ */
+export function addressOf(host) {
+  return `http://${new URL(`http://${host}`).host}`
+}
+
+/**
+ * A file's name as a download's header gives it.
+ * @param {string} name
+ */
+const disposition = name =>
+  `attachment; filename*=UTF-8''${encodeURIComponent(name).replace(/['()*]/g, c => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)}`
 
 /**
  * A request's body, as far as `most` bytes, or null for one that is longer.
@@ -116,11 +143,13 @@ function listenOn(answer, host, port) {
  *
  * @param {Object} options
  * @param {Pick<import('./apps.js').AppConnections, 'all'|'byToken'>} options.connections
- * @param {(connection: import('./apps.js').AppConnection, message: object, signal: AbortSignal) => Promise<object>} options.ask -
- *   Has a window answer a request; rejects, in words for the app's model,
- *   when none can
+ * @param {(connection: import('./apps.js').AppConnection, message: object, signal: AbortSignal, address: string) => Promise<object>} options.ask -
+ *   Has a window answer a request, told where the app reaches this computer;
+ *   rejects, in words for the app's model, when none can
+ * @param {Pick<import('./appExports.js').AppExports, 'take'>} [options.exports] -
+ *   What is ready for apps to fetch
  */
-export function appDoor({ connections, ask }) {
+export function appDoor({ connections, ask, exports }) {
   /** @type {http.Server[]} */
   let servers = []
   /** The port listened on, or null while not listening. @type {number|null} */
@@ -151,15 +180,42 @@ export function appDoor({ connections, ask }) {
   }
 
   /**
+   * Hand over what was made ready under an id, the once.
+   *
+   * @param {http.IncomingMessage} request
+   * @param {http.ServerResponse} response
+   * @param {string} id
+   */
+  const download = (request, response, id) => {
+    // A browser says where it is fetching from, or why: nothing here is for one.
+    if (request.headers['sec-fetch-site'] !== undefined) return send(response, 403)
+    if (request.method !== 'GET') return send(response, 405, undefined, { Allow: 'GET' })
+    const file = exports?.take(id) ?? null
+    if (!file) return send(response, 404)
+    response
+      .writeHead(200, {
+        // Never a page, whatever is in it.
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': file.bytes.length,
+        'Content-Disposition': disposition(file.name),
+        'X-Content-Type-Options': 'nosniff',
+        'Cache-Control': 'no-store',
+      })
+      .end(file.bytes)
+  }
+
+  /**
    * @param {http.IncomingMessage} request
    * @param {http.ServerResponse} response
    */
   const respond = async (request, response) => {
     try {
       const url = new URL(request.url || '/', 'http://localhost')
-      if (url.pathname !== PATH) return send(response, 404)
+      const fetching = url.pathname.startsWith(EXPORTS)
+      if (url.pathname !== PATH && !fetching) return send(response, 404)
       if (request.headers.origin !== undefined) return send(response, 403)
       if (!HOSTS.has(hostName(request.headers.host) ?? '')) return send(response, 403)
+      if (fetching) return download(request, response, url.pathname.slice(EXPORTS.length))
 
       const [scheme, token] = (request.headers.authorization || '').split(' ')
       const connection =
@@ -205,7 +261,8 @@ export function appDoor({ connections, ask }) {
         if (!response.writableEnded) controller.abort()
       })
       try {
-        send(response, 200, await ask(connection, message, controller.signal))
+        const address = addressOf(request.headers.host)
+        send(response, 200, await ask(connection, message, controller.signal, address))
       } catch (error) {
         const why = error instanceof Error ? error.message : String(error)
         send(response, 200, failure(message.id, NOT_ANSWERED, why))
@@ -235,13 +292,13 @@ export function appDoor({ connections, ask }) {
   return {
     /**
      * Listen if there is a connection to let in, on the port the file names,
-     * and stop if there is none.
+     * and stop if there is none, or apps are turned off.
      *
      * @returns {Promise<void>}
      */
     async sync() {
-      const { port, connections: all } = await connections.all()
-      if (all.length === 0) {
+      const { port, enabled, connections: all } = await connections.all()
+      if (!enabled || all.length === 0) {
         stop()
         problem = null
         return

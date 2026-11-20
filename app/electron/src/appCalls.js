@@ -20,11 +20,19 @@
  */
 
 /**
- * What a page is told of the connection asking. Not its token.
+ * What a page is told of the connection asking, and of where its app
+ * reaches this computer, for a link it is to fetch. Not its token.
  *
  * @param {import('./apps.js').AppConnection} connection
+ * @param {string} address
  */
-const forPage = ({ id, name, projects, edit, comment }) => ({ id, name, projects, edit, comment })
+const forPage = ({ id, name, projects, readOnly }, address) => ({
+  id,
+  name,
+  projects,
+  readOnly,
+  address,
+})
 
 /**
  * A way to ask the app's windows.
@@ -42,12 +50,12 @@ export function windowAsker(pages) {
    * asking to give up.
    *
    * @param {Electron.WebContents} page
-   * @param {import('./apps.js').AppConnection} connection
+   * @param {ReturnType<typeof forPage>} asking - Who asks, as a page is told
    * @param {object} message
    * @param {AbortSignal} signal
    * @returns {Promise<PageAnswer>}
    */
-  const askPage = (page, connection, message, signal) =>
+  const askPage = (page, asking, message, signal) =>
     new Promise(resolve => {
       if (page.isDestroyed()) return resolve({ pass: 'gone' })
       const request = ++asked
@@ -71,7 +79,7 @@ export function windowAsker(pages) {
       waiting.set(key, done)
       page.once('destroyed', gone)
       signal.addEventListener('abort', stopped)
-      page.send('apps:call', request, forPage(connection), message)
+      page.send('apps:call', request, asking, message)
     })
 
   return {
@@ -81,17 +89,19 @@ export function windowAsker(pages) {
      * @param {import('./apps.js').AppConnection} connection
      * @param {object} message - The request, as the app sent it
      * @param {AbortSignal} signal - Aborted when the app gives up on it
+     * @param {string} address - Where the app reaches this computer
      * @returns {Promise<object>} The answer, as the app is sent it
      * @throws {Error} When no window could answer, saying why in words the
      *   app's model can read
      */
-    async ask(connection, message, signal) {
+    async ask(connection, message, signal, address) {
       const open = pages()
       if (open.length === 0) throw new Error('inksprite has no window open.')
+      const asking = forPage(connection, address)
       /** @type {Pass[]} */
       const passes = []
       for (const page of open) {
-        const answer = await askPage(page, connection, message, signal)
+        const answer = await askPage(page, asking, message, signal)
         if (signal.aborted) throw new Error('The request was given up on.')
         if ('response' in answer) return answer.response
         passes.push(answer.pass)

@@ -38,12 +38,9 @@ vi.mock('@/platform/apps.js', () => ({
   }),
 }))
 
-/** The export to a project's linked folder, stood in for: there is no folder here. */
-const exporting = vi.hoisted(() => ({ toLinked: vi.fn() }))
-vi.mock('@/composables/useExport.js', async original => ({
-  ...(await original()),
-  exportToLinkedFolder: (/** @type {string} */ storyId) => exporting.toLinked(storyId),
-}))
+/** What makes an export ready for an app to fetch, stood in for (`apps/exports.test.js`). */
+const exporting = vi.hoisted(() => ({ exportFor: vi.fn() }))
+vi.mock('@/apps/exports.js', () => exporting)
 
 const projects = vi.hoisted(() => ({
   projectsOf: vi.fn(),
@@ -65,15 +62,11 @@ const APP = {
   id: 'app_1',
   name: 'Claude Code',
   projects: [STORY],
-  edit: 'off',
-  comment: false,
+  readOnly: true,
 }
 
-/** One that edits and comments. */
-const WRITER = { ...APP, edit: 'editing', comment: true }
-
-/** One whose edits are suggested, and that comments. */
-const SUGGESTER = { ...APP, edit: 'suggesting', comment: true }
+/** One that writes as well: what a connection is unless the writer says otherwise. */
+const WRITER = { ...APP, readOnly: false }
 
 const signal = new AbortController().signal
 
@@ -90,6 +83,8 @@ describe('toolsFor', () => {
       'describe_document',
       'search_documents',
       'changes_since',
+      'export_document',
+      'list_comments',
     ])
     for (const tool of tools) {
       expect(tool.annotations).toEqual({ readOnlyHint: true })
@@ -97,8 +92,8 @@ describe('toolsFor', () => {
     }
   })
 
-  it('offers the tools that edit to a connection that edits', () => {
-    const names = toolsFor({ ...APP, edit: 'editing' }).map(tool => tool.name)
+  it('offers every tool to a connection that writes: those that edit and those that comment as well', () => {
+    const names = toolsFor(WRITER).map(tool => tool.name)
     expect(names).toEqual([
       'list_projects',
       'list_documents',
@@ -106,6 +101,7 @@ describe('toolsFor', () => {
       'describe_document',
       'search_documents',
       'changes_since',
+      'export_document',
       'create_document',
       'create_folder',
       'update_document',
@@ -113,18 +109,6 @@ describe('toolsFor', () => {
       'append_document',
       'move_document',
       'delete_document',
-      'export_project',
-    ])
-  })
-
-  it('offers the same tools to one that suggests, whose changes wait on the writer', () => {
-    expect(toolsFor({ ...APP, edit: 'suggesting' })).toEqual(toolsFor({ ...APP, edit: 'editing' }))
-  })
-
-  it('offers the tools that comment to a connection that comments', () => {
-    const names = toolsFor({ ...APP, comment: true }).map(tool => tool.name)
-    expect(names).not.toContain('export_project')
-    expect(names.slice(6)).toEqual([
       'list_comments',
       'add_comment',
       'reply_comment',
@@ -132,19 +116,20 @@ describe('toolsFor', () => {
     ])
   })
 
+  it('writes unless its connection says it only reads', () => {
+    const { readOnly: _, ...unsaid } = APP
+    expect(toolsFor(unsaid)).toEqual(toolsFor(WRITER))
+  })
+
   it('says which tools change nothing, which only add, and which may take away', () => {
     const hints = Object.fromEntries(toolsFor(WRITER).map(tool => [tool.name, tool.annotations]))
     expect(hints.list_comments).toEqual({ readOnlyHint: true })
+    // An export changes nothing here: the app writes the files, on its side.
+    expect(hints.export_document).toEqual({ readOnlyHint: true })
     for (const name of ['create_document', 'create_folder', 'append_document', 'add_comment']) {
       expect(hints[name], name).toEqual({ readOnlyHint: false, destructiveHint: false })
     }
-    for (const name of [
-      'edit_document',
-      'update_document',
-      'move_document',
-      'delete_document',
-      'export_project',
-    ]) {
+    for (const name of ['edit_document', 'update_document', 'move_document', 'delete_document']) {
       expect(hints[name], name).toEqual({ readOnlyHint: false, destructiveHint: true })
     }
   })
@@ -185,12 +170,44 @@ describe('toolsFor', () => {
     const edit = toolsFor(WRITER).find(tool => tool.name === 'edit_document')
     const { properties, required } = edit.inputSchema
 
-    expect(Object.keys(properties)).toEqual(['project', 'path', 'old', 'new', 'all', 'edits'])
+    expect(Object.keys(properties)).toEqual([
+      'project',
+      'path',
+      'old',
+      'new',
+      'all',
+      'edits',
+      'suggest',
+    ])
     expect(required).toEqual(['path'])
     expect(properties.all.type).toBe('boolean')
     expect(properties.edits.items.required).toEqual(['old', 'new'])
     expect(Object.keys(properties.edits.items.properties)).toEqual(['old', 'new', 'all'])
     expect(edit.description).toContain('`edits`')
+  })
+
+  it('lets a change to a document’s text be suggested, call by call, and nothing else', () => {
+    const taking = toolsFor(WRITER)
+      .filter(tool => 'suggest' in tool.inputSchema.properties)
+      .map(tool => tool.name)
+
+    expect(taking).toEqual(['update_document', 'edit_document', 'append_document'])
+    for (const tool of toolsFor(WRITER).filter(one => taking.includes(one.name))) {
+      expect(tool.inputSchema.properties.suggest.type).toBe('boolean')
+      expect(tool.inputSchema.required, tool.name).not.toContain('suggest')
+    }
+  })
+
+  it('says of the comments and the folders what is so for an app', () => {
+    const said = Object.fromEntries(toolsFor(WRITER).map(tool => [tool.name, tool.description]))
+
+    // Not all "by the writer and by you": inksprite's own assistant comments too.
+    expect(said.list_comments).toMatch(/^The open comments on passages: each with its id/)
+    // Every open comment is counted, whoever left it.
+    expect(said.list_documents).toContain('how many open comments are on it')
+    expect(said.list_documents).not.toContain('the user left')
+    // A project starts with no folders.
+    expect(said.create_folder).toContain('the folders the project has are usually the right ones')
   })
 })
 
@@ -457,59 +474,47 @@ describe('callTool', () => {
     expect(parts(hidden).join(' ')).not.toContain('Nobody reads this')
   })
 
-  it('writes the project out to its linked folder for a connection that edits, and says what that did', async () => {
-    exporting.toLinked.mockResolvedValue({
-      folder: '/repo/docs',
-      written: ['notes/Plan.md'],
-      removed: ['notes/Old.md'],
-      edited: [],
-      unchanged: 3,
-      missing: 0,
+  it('hands a document or a folder over as files, for any connection, in the window that has the project', async () => {
+    exporting.exportFor.mockResolvedValue({
+      file: 'Plan.md',
+      url: 'http://127.0.0.1:4657/export/abc',
+      command: "curl -fsS 'http://127.0.0.1:4657/export/abc' -o 'Plan.md'",
     })
 
-    const answer = await callTool(WRITER, 'export_project', { project: 'Thief' }, signal)
+    for (const app of [APP, WRITER]) {
+      const answer = await callTool(app, 'export_document', { path: 'notes/Plan' }, signal)
 
-    expect(exporting.toLinked).toHaveBeenCalledWith(STORY)
+      expect(JSON.parse(parts(answer)[0]).command).toContain('/export/abc')
+      expect(exporting.exportFor).toHaveBeenLastCalledWith(
+        app,
+        expect.objectContaining({ storyId: STORY, chatId: 'app:app_1' }),
+        { path: 'notes/Plan' }
+      )
+    }
     expect(projects.inProject).toHaveBeenCalledWith(STORY, expect.any(Function))
-    expect(JSON.parse(parts(answer)[0])).toEqual({
-      folder: '/repo/docs',
-      written: ['notes/Plan.md'],
-      removed: ['notes/Old.md'],
-      unchanged: 3,
+  })
+
+  it('exports a document by the id an exported file’s stamp carries', async () => {
+    exporting.exportFor.mockResolvedValue({ file: 'Plan.md' })
+
+    await callTool(APP, 'export_document', { path: 'id:doc_plan' }, signal)
+
+    expect(exporting.exportFor).toHaveBeenLastCalledWith(APP, expect.anything(), {
+      path: 'notes/Plan',
     })
   })
 
-  it('names the copies an export replaced that had been changed outside', async () => {
-    exporting.toLinked.mockResolvedValue({
-      folder: '/repo/docs',
-      written: ['notes/Plan.md'],
-      removed: [],
-      edited: ['notes/Plan.md'],
-      unchanged: 0,
-      missing: 2,
-    })
-
-    const said = JSON.parse(parts(await callTool(WRITER, 'export_project', {}, signal))[0])
-    expect(said.edited).toEqual(['notes/Plan.md'])
-    expect(said.note).toContain("system's trash")
-    expect(said.missing).toBe(2)
-  })
-
-  it('says where a folder is linked when the project has none, and what else went wrong', async () => {
-    exporting.toLinked.mockRejectedValue(new Error('No folder is linked to this project.'))
-    const none = await callTool(WRITER, 'export_project', {}, signal)
+  it('says what kept an export from being made, as an error for the app’s model', async () => {
+    exporting.exportFor.mockResolvedValue({ error: '"notes" holds nothing to export.' })
+    const none = await callTool(APP, 'export_document', { path: 'notes' }, signal)
     expect(none.result.isError).toBe(true)
-    expect(parts(none)[0]).toContain('Settings › Project › Export folder')
+    expect(parts(none)[0]).toBe('"notes" holds nothing to export.')
 
-    exporting.toLinked.mockRejectedValue(new Error('Plan.md goes through a link.'))
-    const failed = await callTool(WRITER, 'export_project', {}, signal)
-    expect(parts(failed)[0]).toBe("The project couldn't be exported. Plan.md goes through a link.")
-  })
-
-  it('exports nothing for a connection that doesn’t edit', async () => {
-    const answer = await callTool(APP, 'export_project', {}, signal)
-    expect(parts(answer)[0]).toBe('Unknown tool: export_project')
-    expect(exporting.toLinked).not.toHaveBeenCalled()
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    exporting.exportFor.mockRejectedValue(new Error('That is more than can be handed over.'))
+    const failed = await callTool(APP, 'export_document', { path: 'notes' }, signal)
+    expect(failed.result.isError).toBe(true)
+    expect(parts(failed)[0]).toBe("export_document couldn't be run.")
   })
 
   it('lists and searches without what is hidden', async () => {
@@ -681,7 +686,7 @@ describe('callTool', () => {
   })
 })
 
-describe('a connection that suggests', () => {
+describe('a change that is suggested', () => {
   /** @type {ReturnType<typeof useDocumentsStore>} */
   let store
 
@@ -694,6 +699,9 @@ describe('a connection that suggests', () => {
   /** The plan as the connection reads it. */
   const asRead = async app =>
     parts(await callTool(app, 'read_document', { path: 'Plan' }, signal))[1]
+
+  /** A call that suggests its change, as an app asked for suggestions makes it. */
+  const suggest = (app, name, args) => callTool(app, name, { ...args, suggest: true }, signal)
 
   /** The plan's suggestions, by their ids. */
   const suggestions = () =>
@@ -720,20 +728,19 @@ describe('a connection that suggests', () => {
     })
   })
 
-  it('has its edit laid out in the text for the writer, under its name, and reads it as made', async () => {
-    const answer = await callTool(
-      SUGGESTER,
-      'edit_document',
-      { path: 'Plan', old: 'Bring rope', new: 'Bring wire' },
-      signal
-    )
+  it('is laid out in the text for the writer, under the connection’s name, and read as made', async () => {
+    const answer = await suggest(WRITER, 'edit_document', {
+      path: 'Plan',
+      old: 'Bring rope',
+      new: 'Bring wire',
+    })
 
     const said = JSON.parse(parts(answer)[0])
     expect(said).toMatchObject({ suggested: true, document: { path: 'Plan' } })
     expect(said.note).toContain('accepts or rejects')
 
     expect(await asItStands()).toBe(PLAN)
-    expect(await asRead(SUGGESTER)).toBe(PLAN.replace('rope', 'wire'))
+    expect(await asRead(WRITER)).toBe(PLAN.replace('rope', 'wire'))
 
     const [[id, thread]] = suggestions()
     expect(id).toBe(said.suggestion)
@@ -744,42 +751,35 @@ describe('a connection that suggests', () => {
   it('folds a later change that touches its suggestion into it', async () => {
     const first = JSON.parse(
       parts(
-        await callTool(
-          SUGGESTER,
-          'edit_document',
-          { path: 'Plan', old: 'Bring rope', new: 'Bring wire' },
-          signal
-        )
+        await suggest(WRITER, 'edit_document', {
+          path: 'Plan',
+          old: 'Bring rope',
+          new: 'Bring wire',
+        })
       )[0]
     )
     const second = JSON.parse(
       parts(
-        await callTool(
-          SUGGESTER,
-          'edit_document',
-          { path: 'Plan', old: 'Bring wire', new: 'Bring thin wire' },
-          signal
-        )
+        await suggest(WRITER, 'edit_document', {
+          path: 'Plan',
+          old: 'Bring wire',
+          new: 'Bring thin wire',
+        })
       )[0]
     )
 
     expect(second.suggestion).toBe(first.suggestion)
     expect(suggestions()).toHaveLength(1)
-    expect(await asRead(SUGGESTER)).toContain('Bring thin wire and a lamp.')
+    expect(await asRead(WRITER)).toContain('Bring thin wire and a lamp.')
     expect(await asItStands()).toBe(PLAN)
   })
 
   it('is one connection’s: another reads the text as it stands, and suggests apart', async () => {
-    await callTool(
-      SUGGESTER,
-      'edit_document',
-      { path: 'Plan', old: 'Bring rope', new: 'Bring wire' },
-      signal
-    )
-    const other = { ...SUGGESTER, id: 'app_2', name: 'Another agent' }
+    await suggest(WRITER, 'edit_document', { path: 'Plan', old: 'Bring rope', new: 'Bring wire' })
+    const other = { ...WRITER, id: 'app_2', name: 'Another agent' }
 
     expect(await asRead(other)).toBe(PLAN)
-    await callTool(other, 'edit_document', { path: 'Plan', old: 'at noon', new: 'at dusk' }, signal)
+    await suggest(other, 'edit_document', { path: 'Plan', old: 'at noon', new: 'at dusk' })
 
     expect(
       suggestions()
@@ -787,102 +787,83 @@ describe('a connection that suggests', () => {
         .sort()
     ).toEqual(['Another agent', 'Claude Code'])
     expect(await asRead(other)).toBe(PLAN.replace('noon', 'dusk'))
-    expect(await asRead(SUGGESTER)).toBe(PLAN.replace('rope', 'wire'))
+    expect(await asRead(WRITER)).toBe(PLAN.replace('rope', 'wire'))
   })
 
-  it('suggests several edits in a call, and what is added to the end', async () => {
-    const many = await callTool(
-      SUGGESTER,
-      'edit_document',
-      {
-        path: 'Plan',
-        edits: [
-          { old: 'noon', new: 'dusk' },
-          { old: 'rope', new: 'wire' },
-        ],
-      },
-      signal
-    )
+  it('can be several edits in a call, and what is added to the end', async () => {
+    const many = await suggest(WRITER, 'edit_document', {
+      path: 'Plan',
+      edits: [
+        { old: 'noon', new: 'dusk' },
+        { old: 'rope', new: 'wire' },
+      ],
+    })
     expect(JSON.parse(parts(many)[0])).toMatchObject({ suggested: true, edits: 2 })
 
-    const added = await callTool(
-      SUGGESTER,
-      'append_document',
-      { path: 'Plan', text: '* chalk' },
-      signal
-    )
+    const added = await suggest(WRITER, 'append_document', { path: 'Plan', text: '* chalk' })
     const [about, stored] = parts(added)
     expect(JSON.parse(about).suggested).toBe(true)
     expect(stored).toBe('- chalk')
 
     expect(await asItStands()).toBe(PLAN)
-    expect(await asRead(SUGGESTER)).toBe(
+    expect(await asRead(WRITER)).toBe(
       'The vault opens at dusk.\n\nBring wire and a lamp.\n\n- chalk'
     )
   })
 
-  it('makes a new document, a move and a delete at once, there being no chat to propose them in', async () => {
-    const made = await callTool(
-      SUGGESTER,
-      'create_document',
-      { path: 'Crew', content: 'Mara picks locks.' },
-      signal
-    )
-    expect(JSON.parse(parts(made)[0])).toMatchObject({ success: true, document: { path: 'Crew' } })
+  it('can be a whole rewrite', async () => {
+    const answer = await suggest(WRITER, 'update_document', {
+      path: 'Plan',
+      content: 'The vault opens at dusk.',
+    })
 
-    await callTool(SUGGESTER, 'move_document', { path: 'Crew', to: 'The crew' }, signal)
-    expect(parts(await callTool(SUGGESTER, 'list_documents', {}, signal))[0]).toContain('The crew')
-
-    const gone = await callTool(SUGGESTER, 'delete_document', { path: 'The crew' }, signal)
-    expect(JSON.parse(parts(gone)[0])).toMatchObject({ success: true })
-    expect(parts(await callTool(SUGGESTER, 'list_documents', {}, signal))[0]).not.toContain('crew')
+    expect(JSON.parse(parts(answer)[0]).suggested).toBe(true)
+    expect(await asItStands()).toBe(PLAN)
+    expect(await asRead(WRITER)).toBe('The vault opens at dusk.')
   })
 
-  it('changes a plain document at once, which has no room for the marks', async () => {
-    await callTool(SUGGESTER, 'create_document', { path: 'odds.py', content: 'print(1)' }, signal)
-    const edit = await callTool(
-      SUGGESTER,
+  it('is refused for a plain document, which has no room for the marks, and made without', async () => {
+    await callTool(WRITER, 'create_document', { path: 'odds.py', content: 'print(1)' }, signal)
+    const script = () => [...store.documents.values()].find(one => one.title === 'odds.py')
+
+    const refused = await suggest(WRITER, 'edit_document', {
+      path: 'odds.py',
+      old: 'print(1)',
+      new: 'print(2)',
+    })
+    expect(refused.result.isError).toBe(true)
+    expect(parts(refused)[0]).toContain('A change to "odds.py" can\'t be suggested')
+    expect(script().content).toBe('print(1)')
+
+    const made = await callTool(
+      WRITER,
       'edit_document',
       { path: 'odds.py', old: 'print(1)', new: 'print(2)' },
       signal
     )
-
-    expect(JSON.parse(parts(edit)[0])).toMatchObject({ success: true })
-    const script = [...store.documents.values()].find(document => document.title === 'odds.py')
-    expect(script.content).toBe('print(2)')
+    expect(JSON.parse(parts(made)[0])).toMatchObject({ success: true })
+    expect(script().content).toBe('print(2)')
   })
 
-  it('comments at once, as any connection that comments does', async () => {
-    const added = await callTool(
-      SUGGESTER,
-      'add_comment',
-      { path: 'Plan', passage: 'Bring rope', text: 'How much?' },
-      signal
-    )
-
-    const { comment, success } = JSON.parse(parts(added)[0])
-    expect(success).toBe(true)
-    expect(store.getDocument('doc_plan').comments[comment].posts[0]).toMatchObject({
-      author: 'model',
-      name: 'Claude Code',
-    })
+  it('leaves the path to the tool to turn down, where nothing is at it', async () => {
+    const answer = await suggest(WRITER, 'edit_document', { path: 'Nothing', old: 'a', new: 'b' })
+    expect(answer.result.isError).toBe(true)
+    expect(parts(answer)[0]).toContain('Nothing')
+    expect(parts(answer)[0]).not.toContain('suggested')
   })
 
-  it('is not told to say why with a tool it is not offered', async () => {
-    const quiet = { ...SUGGESTER, comment: false }
-    const answer = await callTool(
-      quiet,
+  it('is asked for outright: anything but a plain yes has the change made', async () => {
+    await callTool(
+      WRITER,
       'edit_document',
-      { path: 'Plan', old: 'rope', new: 'wire' },
+      { path: 'Plan', old: 'rope', new: 'wire', suggest: 'please' },
       signal
     )
-
-    const { note } = JSON.parse(parts(answer)[0])
-    expect(note).toContain('accepts or rejects')
-    expect(note).not.toContain('reply_comment')
+    expect(await asItStands()).toBe(PLAN.replace('rope', 'wire'))
+    expect(suggestions()).toHaveLength(0)
   })
 
-  it('makes a change at once for a connection that edits', async () => {
+  it('is not how a change is made unless asked: an edit is in the text at once', async () => {
     await callTool(WRITER, 'edit_document', { path: 'Plan', old: 'rope', new: 'wire' }, signal)
     expect(await asItStands()).toBe(PLAN.replace('rope', 'wire'))
     expect(suggestions()).toHaveLength(0)

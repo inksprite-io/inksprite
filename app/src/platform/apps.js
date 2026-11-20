@@ -15,8 +15,9 @@ import { desktop, isDesktop } from './desktop.js'
 
 /**
  * A connection as a window is told of it when its app asks something:
- * without its token.
- * @typedef {Omit<AppConnection, 'token'|'created'>} AskingApp
+ * without its token, and with where the app reaches this computer
+ * (`http://127.0.0.1:4657`, or by another name from inside a container).
+ * @typedef {Omit<AppConnection, 'token'|'created'> & {address: string}} AskingApp
  */
 
 /**
@@ -51,9 +52,9 @@ export const listApps = () => bridge().list()
 export const addApp = name => bridge().add(name)
 
 /**
- * Change a connection's name, its projects, or what it may do.
+ * Change a connection's name, its projects, or whether it only reads.
  * @param {string} id
- * @param {Partial<Pick<AppConnection, 'name'|'projects'|'edit'|'comment'>>} patch
+ * @param {Partial<Pick<AppConnection, 'name'|'projects'|'readOnly'>>} patch
  * @returns {Promise<AppConnection>}
  */
 export const updateApp = (id, patch) => bridge().update(id, patch)
@@ -66,11 +67,20 @@ export const updateApp = (id, patch) => bridge().update(id, patch)
 export const removeApp = id => bridge().remove(id)
 
 /**
- * Have apps reach inksprite on another port.
+ * Have apps reach inksprite on another port, from now: one set up with the
+ * old address is no longer answered.
  * @param {number} port
  * @returns {Promise<AppsState>}
  */
 export const setAppsPort = port => bridge().setPort(port)
+
+/**
+ * Let apps in, or none. Off, nothing is listened for, and the connections
+ * are kept.
+ * @param {boolean} enabled
+ * @returns {Promise<AppsState>}
+ */
+export const setAppsEnabled = enabled => bridge().setEnabled(enabled)
 
 /**
  * What a connection last read or wrote of a document, as `keepAppRead` was
@@ -102,6 +112,17 @@ export const appReads = async connection => (await bridge().reads?.(connection))
 export const keepAppRead = async (connection, document, record) => {
   await bridge().keep?.(connection, document, record)
 }
+
+/**
+ * Hold a file for a connection's app to fetch with its own shell: once,
+ * within a few minutes, at `/export/<id>` of the address it reaches this
+ * computer by.
+ *
+ * @param {string} connection
+ * @param {{name: string, bytes: Uint8Array}} file
+ * @returns {Promise<{id: string}>}
+ */
+export const offerAppExport = (connection, file) => bridge().offer(connection, file)
 
 /**
  * Say what answers an app's request in this window.

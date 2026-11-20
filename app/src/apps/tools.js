@@ -4,10 +4,9 @@
  *
  * They are the document tools a chat's model has (`ai/tools/documents.js`),
  * by their names, each taking the project as well, since an app has several
- * where a chat has one, and `list_projects` for what those are. Which an app
- * is offered is its connection's to say, by what the tools do with the
- * documents, as a profile says it: it reads them always, edits them where
- * the connection edits, and comments on them where it comments.
+ * where a chat has one, and `list_projects` for what those are. An app is
+ * offered all of them, or only those that read, where its connection only
+ * reads.
  *
  * A chat's model gets more than its tools: the project block on every turn,
  * and a conversation the app can see. An app's gets only what a call
@@ -24,11 +23,11 @@
  *   project block, the chat, or tools an app isn't offered, the app is given
  *   another.
  * - **Several edits in a call, and how the text was stored** (`./writes.js`).
- * - **The project written out**: `export_project` writes it into the folder
- *   the writer linked to it, each text stamped with the document it came
- *   from (`composables/useExport.js`), and a document is reached by the id
- *   its stamp carries, written `id:<id>` where a path goes, whatever it has
- *   been renamed since.
+ * - **Documents handed over as files**: `export_document` makes a document
+ *   or a folder ready and answers with a link the app's own shell fetches,
+ *   each text stamped with the document it came from (`./exports.js`), and
+ *   a document is reached by the id its stamp carries, written `id:<id>`
+ *   where a path goes, whatever it has been renamed since.
  * - **A revision on every read and write, and what changed since one**
  *   (`./revisions.js`): what a chat's model is told on every turn of the
  *   documents it read, an app asks for.
@@ -36,21 +35,21 @@
  *   under the connection's name, which the Comments tab and other readers
  *   show.
  *
- * - **Suggesting is of text.** A connection that suggests has its changes
- *   to a document's text laid out in the text, each for the writer to accept
- *   or reject, as a chat that asks first has its. What such a chat proposes
- *   in the chat, an app has no chat for: a new document, a delete, a move, a
- *   rename, a change to a plain document and a comment all go ahead in
- *   either mode. The trash and a document's versions take them back.
+ * - **A suggestion is asked for, call by call.** In a chat, whether edits
+ *   wait is the chat's setting. Here it is how the app's own assistant was
+ *   asked to work, so the three tools that change a document's text take
+ *   `suggest`: the change is then laid out in the text, for the writer to
+ *   accept or reject, as a chat that asks first has its. A plain document
+ *   holds no such marks, and a suggestion to one is refused.
  *
  * Hidden documents are not in an app's project, as they are not in a
  * chat's: hiding keeps a document from models.
  */
 
 import { toolRegistry } from '@/ai/tools/index.js'
-import { SUGGESTED_NOTE, documentForChat, pathInProject } from '@/ai/tools/documents.js'
-import { NO_LINKED_FOLDER, exportToLinkedFolder } from '@/composables/useExport.js'
+import { documentForChat, pathInProject } from '@/ai/tools/documents.js'
 import { findProject, inProject, projectsOf } from './projects.js'
+import { exportFor } from './exports.js'
 import { answeringStored, editMany } from './writes.js'
 import { changesSince, unchangedAt, withRevision } from './revisions.js'
 
@@ -79,8 +78,8 @@ export const LIST_PROJECTS = 'list_projects'
 /** The tool that says what changed since a revision an app holds. */
 export const CHANGES_SINCE = 'changes_since'
 
-/** The tool that writes a project into the folder linked to it. */
-export const EXPORT_PROJECT = 'export_project'
+/** The tool that hands a document or a folder over as files. */
+export const EXPORT_DOCUMENT = 'export_document'
 
 /** What comes before a document's id where a path goes: an exported file's stamp has the id. */
 const BY_ID = 'id:'
@@ -91,7 +90,7 @@ const BY_ID = 'id:'
  */
 const READING = ['list_documents', 'read_document', 'describe_document', 'search_documents']
 
-/** Those that change the documents, for a connection that edits. */
+/** Those that change the documents, for a connection that writes. */
 const EDITING = [
   'create_document',
   'create_folder',
@@ -102,11 +101,14 @@ const EDITING = [
   'delete_document',
 ]
 
-/** Those that comment, for a connection that comments. */
-const COMMENTING = ['list_comments', 'add_comment', 'reply_comment', 'resolve_comment']
+/** The one that reads the comments. */
+const LIST_COMMENTS = 'list_comments'
+
+/** Those that say something on them, for a connection that writes. */
+const COMMENTING = ['add_comment', 'reply_comment', 'resolve_comment']
 
 /** Those that change nothing. */
-const READ_ONLY = new Set([...READING, 'list_comments'])
+const READ_ONLY = new Set([...READING, LIST_COMMENTS])
 
 /** Those that only add, and take nothing away. */
 const ADDING = new Set([
@@ -126,19 +128,26 @@ const WRITES_TEXT = new Set([
 ])
 
 /** Those that say something on a document's comments. */
-const SAYS = new Set(['add_comment', 'reply_comment', 'resolve_comment'])
+const SAYS = new Set(COMMENTING)
 
-/** Those that change the text of a document that is there: what a connection that suggests suggests. */
+/** Those that change the text of a document that is there: what can be suggested instead. */
 const CHANGES_TEXT = new Set(['update_document', 'edit_document', 'append_document'])
 
+/** The argument that has a change to a document's text suggested, not made. */
+const SUGGEST = {
+  type: 'boolean',
+  description:
+    'Suggest the change instead of making it, for when the user asks for suggestions: it is laid out in the document for them to accept or reject there, and changes nothing until they do.',
+}
+
 /**
- * What a suggestion's answer says to a connection that doesn't comment, and
- * so has no way to say why on it.
+ * A tool's parameters with `suggest` among them.
+ * @param {Record<string, any>} parameters
  */
-const SUGGESTED_NOTE_NO_COMMENT = SUGGESTED_NOTE.replace(
-  ' To say why, reply_comment on its id.',
-  ''
-)
+const suggesting = parameters => ({
+  ...parameters,
+  properties: { ...parameters.properties, suggest: SUGGEST },
+})
 
 /**
  * A text with a sentence taken out of it.
@@ -159,10 +168,12 @@ const EDIT_OUTSIDE =
  */
 const SAID_OUTSIDE = {
   list_documents: ({ description }) => ({
-    description: description.replace(
-      'a description written for you from its text by explore_documents',
-      'a description written from its text'
-    ),
+    description: description
+      .replace(
+        'a description written for you from its text by explore_documents',
+        'a description written from its text'
+      )
+      .replace('how many comments the user left on it', 'how many open comments are on it'),
   }),
   read_document: ({ parameters }) => ({
     description:
@@ -211,19 +222,32 @@ const SAID_OUTSIDE = {
               required: ['old', 'new'],
             },
           },
+          suggest: SUGGEST,
         },
         required: ['path'],
       },
     }
   },
   append_document: ({ parameters }) => ({
-    parameters: {
+    parameters: suggesting({
       ...parameters,
       properties: {
         ...parameters.properties,
         text: { type: 'string', description: 'The text to add, in Markdown.' },
       },
-    },
+    }),
+  }),
+  update_document: ({ parameters }) => ({ parameters: suggesting(parameters) }),
+  create_folder: ({ description }) => ({
+    description: description.replace(
+      'the folders a project starts with are usually the right ones',
+      'the folders the project has are usually the right ones'
+    ),
+  }),
+  // The comments there are the user's, inksprite's own assistant's and the
+  // app's: "by the writer and by you" is a chat's.
+  list_comments: ({ description }) => ({
+    description: description.replace(', by the writer and by you:', ':'),
   }),
   move_document: ({ description }) => ({
     description: without(
@@ -284,43 +308,68 @@ const CHANGES_SINCE_TOOL = {
 }
 
 /** @type {AppTool} */
-const EXPORT_PROJECT_TOOL = {
-  name: EXPORT_PROJECT,
+const EXPORT_DOCUMENT_TOOL = {
+  name: EXPORT_DOCUMENT,
   description:
-    "Write the project out as Markdown files, into the folder the user linked to it on their computer: for putting a finished design into a repository. Files and folders go by the documents' paths, each text as it stands without comments or suggestions, and only what has changed is written. Each text is stamped in its front matter with the document it came from; its `id` there reaches the document from any tool here, as the path `id:<that id>`. The answer names the folder and, by path below it, what was written and what was removed, and under `edited` any file that had been changed there since it was last exported: that copy is in the system's trash, and the file now says what the document says. Change documents here, not the exported files. Where no folder is linked, it says so: the user links one in inksprite, in Settings › Project.",
-  inputSchema: { type: 'object', properties: { project: PROJECT } },
-  annotations: { readOnlyHint: false, destructiveHint: true },
+    'Get a document, or a folder with everything in it, as files: for putting a finished design into a repository, or anywhere else on your side. Each text is Markdown as it stands, without comments or suggestions, stamped in its front matter with the document it came from; its `id` there reaches the document from any tool here, as the path `id:<that id>`. The answer is a link and the command that fetches it, to run in your shell where the files should go: the link works once, for five minutes. One document comes as its file. A folder ("/" is the whole project), or a document with pictures, comes as a tar archive of files and directories by the documents\' names, a folder as a directory of its name. A repository imported into the project is left out. Change documents here, not the exported files, and export again.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      project: PROJECT,
+      path: {
+        type: 'string',
+        description: 'The document\'s path from the project root, or a folder\'s. Default "/".',
+      },
+    },
+  },
+  annotations: { readOnlyHint: true },
 }
 
+/** The tools that are an app's alone, by name. */
+const OWN = new Map(
+  [LIST_PROJECTS_TOOL, CHANGES_SINCE_TOOL, EXPORT_DOCUMENT_TOOL].map(tool => [tool.name, tool])
+)
+
 /**
- * The document tools an app is offered, by name: those that read, and those
- * of what else its connection may do.
+ * The tools an app is offered, by name, in the order it is told of them:
+ * those that read, and, for a connection that writes, the rest. What changed
+ * since comes after the tools that read, since it stands in for a read, and
+ * the export after it: it changes nothing here, so every connection has it.
  *
  * @param {AskingApp} app
  * @returns {string[]}
  */
 const offered = app => [
+  LIST_PROJECTS,
   ...READING,
-  ...(app.edit === 'off' ? [] : EDITING),
-  ...(app.comment ? COMMENTING : []),
+  CHANGES_SINCE,
+  EXPORT_DOCUMENT,
+  ...(app.readOnly ? [] : EDITING),
+  LIST_COMMENTS,
+  ...(app.readOnly ? [] : COMMENTING),
 ]
 
 /**
- * Whether a call's change is suggested in the text, not made: a change to
- * the text of a document that can hold the marks, by a connection that
- * suggests. A plain document holds none, and a chat would be asked about
- * it in the chat, which an app hasn't: there the change is made.
+ * A document tool as an app is told of it.
  *
- * @param {AskingApp} app
- * @param {string} name
- * @param {Record<string, any>} args
- * @param {{storyId: string, chatId: string}} context
- * @returns {Promise<boolean>}
+ * @param {import('@/ai/tools/registry.js').ToolDefinition} definition - As a chat has it
+ * @returns {AppTool}
  */
-async function suggests(app, name, args, context) {
-  if (app.edit !== 'suggesting' || !CHANGES_TEXT.has(name)) return false
-  const found = await documentForChat(context.storyId, context.chatId, String(args.path ?? ''))
-  return found?.document.type === 'text' && !found.document.plain
+function outside(definition) {
+  const chat = definition.function
+  const said = SAID_OUTSIDE[chat.name]?.({
+    description: chat.description,
+    parameters: /** @type {Record<string, any>} */ (chat.parameters),
+  })
+  const schema = /** @type {Record<string, any>} */ (said?.parameters ?? chat.parameters)
+  return {
+    name: chat.name,
+    description: said?.description ?? chat.description,
+    inputSchema: { ...schema, properties: { project: PROJECT, ...schema.properties } },
+    annotations: READ_ONLY.has(chat.name)
+      ? { readOnlyHint: true }
+      : { readOnlyHint: false, destructiveHint: !ADDING.has(chat.name) },
+  }
 }
 
 /**
@@ -330,67 +379,28 @@ async function suggests(app, name, args, context) {
  * @returns {AppTool[]}
  */
 export function toolsFor(app) {
-  const documents = toolRegistry.getDefinitionsFor(offered(app)).map(definition => {
-    const chat = definition.function
-    const outside = SAID_OUTSIDE[chat.name]?.({
-      description: chat.description,
-      parameters: /** @type {Record<string, any>} */ (chat.parameters),
-    })
-    const schema = /** @type {Record<string, any>} */ (outside?.parameters ?? chat.parameters)
-    return {
-      name: chat.name,
-      description: outside?.description ?? chat.description,
-      inputSchema: { ...schema, properties: { project: PROJECT, ...schema.properties } },
-      annotations: READ_ONLY.has(chat.name)
-        ? { readOnlyHint: true }
-        : { readOnlyHint: false, destructiveHint: !ADDING.has(chat.name) },
-    }
+  return offered(app).flatMap(name => {
+    const own = OWN.get(name)
+    if (own) return [own]
+    const tool = toolRegistry.tools.get(name)
+    return tool ? [outside(tool.definition)] : []
   })
-  // What changed since, after the tools that read: it stands in for a read.
-  // The export, after those that edit, for a connection that does.
-  const edits = app.edit === 'off' ? 0 : EDITING.length
-  return [
-    LIST_PROJECTS_TOOL,
-    ...documents.slice(0, READING.length),
-    CHANGES_SINCE_TOOL,
-    ...documents.slice(READING.length, READING.length + edits),
-    ...(edits ? [EXPORT_PROJECT_TOOL] : []),
-    ...documents.slice(READING.length + edits),
-  ]
 }
 
 /**
- * Write a project into the folder linked to it, for an app, and say what
- * that did.
+ * Why a change to a document's text can't be suggested, or null where it
+ * can: a plain document is kept as typed, and holds no marks for one. A path
+ * with nothing at it is the tool's to turn down.
  *
- * @param {string} storyId
- * @returns {Promise<Record<string, any>>}
+ * @param {{storyId: string, chatId: string}} asking
+ * @param {string} path
+ * @returns {Promise<{error: string}|null>}
  */
-async function exportProject(storyId) {
-  try {
-    const { folder, written, removed, edited, unchanged, missing } =
-      await exportToLinkedFolder(storyId)
-    return {
-      folder,
-      written,
-      removed,
-      unchanged,
-      ...(edited.length
-        ? {
-            edited,
-            note: "The files under `edited` had been changed in the folder since they were last exported. Those copies are in the system's trash, and the files now say what their documents say: tell the user.",
-          }
-        : {}),
-      ...(missing ? { missing } : {}),
-    }
-  } catch (error) {
-    const why = error instanceof Error ? error.message : String(error)
-    return {
-      error:
-        why === NO_LINKED_FOLDER
-          ? 'No folder is linked to this project. The user links one in inksprite: Settings › Project › Export folder.'
-          : `The project couldn't be exported. ${why}`,
-    }
+async function unsuggestable(asking, path) {
+  const found = await documentForChat(asking.storyId, asking.chatId, path)
+  if (found?.document.type !== 'text' || !found.document.plain) return null
+  return {
+    error: `A change to "${found.path}" can't be suggested: it is kept exactly as typed, with nowhere for a suggestion to go. Without \`suggest\`, the change is made.`,
   }
 }
 
@@ -476,14 +486,11 @@ export async function callTool(app, name, args, signal) {
   // and suggestions are by.
   const asking = { storyId: project.id, chatId: `app:${app.id}`, postsAs: app.name, signal }
   const tool = toolRegistry.tools.get(name)
-  const own = name === CHANGES_SINCE || (name === EXPORT_PROJECT && app.edit !== 'off')
-  if (!own && (!tool || !offered(app).includes(name))) {
+  if (!offered(app).includes(name) || (!tool && !OWN.has(name))) {
     return { result: toResult({ error: `Unknown tool: ${name}` }) }
   }
   const ran = await inProject(project.id, async () => {
     try {
-      if (name === EXPORT_PROJECT) return await exportProject(project.id)
-
       // A document named by its id, as an exported file's stamp has it.
       if (typeof rest.path === 'string' && rest.path.startsWith(BY_ID)) {
         const id = rest.path.slice(BY_ID.length).trim()
@@ -495,6 +502,7 @@ export async function callTool(app, name, args, signal) {
         }
         rest.path = found
       }
+      if (name === EXPORT_DOCUMENT) return await exportFor(app, asking, rest)
       if (name === CHANGES_SINCE || !tool) return await changesSince(app, asking, rest)
       const path = typeof rest.path === 'string' ? rest.path : ''
       if (name === 'read_document') {
@@ -504,20 +512,22 @@ export async function callTool(app, name, args, signal) {
         return await withRevision(app, asking, path, () => tool.execute(rest, asking), sendsAll)
       }
 
-      const context = { ...asking, propose: await suggests(app, name, rest, asking) }
+      // Suggested, where the call asks for that: laid out in the text for
+      // the writer to settle, as a chat that asks first has its changes.
+      const suggested = CHANGES_TEXT.has(name) && rest.suggest === true
+      if (CHANGES_TEXT.has(name)) delete rest.suggest
+      const refused = suggested ? await unsuggestable(asking, path) : null
+      if (refused) return refused
+      const context = { ...asking, propose: suggested }
       const run = () =>
         name === 'edit_document' && (Array.isArray(rest.edits) || rest.all === true)
           ? editMany(rest, context)
           : tool.execute(rest, context)
       const write = () =>
         WRITES_TEXT.has(name) ? answeringStored(name, rest, context, run) : run()
-      const answer =
-        WRITES_TEXT.has(name) || SAYS.has(name)
-          ? await withRevision(app, asking, name === 'create_document' ? '' : path, write)
-          : await write()
-      return answer?.note === SUGGESTED_NOTE && !app.comment
-        ? { ...answer, note: SUGGESTED_NOTE_NO_COMMENT }
-        : answer
+      return WRITES_TEXT.has(name) || SAYS.has(name)
+        ? await withRevision(app, asking, name === 'create_document' ? '' : path, write)
+        : await write()
     } catch (error) {
       console.error(`${name} failed for a connected app:`, error)
       return { error: `${name} couldn't be run.` }

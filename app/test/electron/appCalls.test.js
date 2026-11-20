@@ -8,8 +8,7 @@ const CONNECTION = {
   name: 'Claude Code',
   token: 'secret',
   projects: ['story_a'],
-  edit: 'suggesting',
-  comment: true,
+  readOnly: false,
   created: 1,
 }
 
@@ -43,16 +42,22 @@ describe('windowAsker', () => {
     const front = page(1)
     const asker = windowAsker(() => [front, page(2)])
 
-    const answer = asker.ask(CONNECTION, MESSAGE, new AbortController().signal)
+    const answer = asker.ask(
+      CONNECTION,
+      MESSAGE,
+      new AbortController().signal,
+      'http://127.0.0.1:4657'
+    )
     await tick()
     const [channel, request, connection, message] = front.send.mock.calls[0]
     expect(channel).toBe('apps:call')
+    // With where its app reaches this computer, for a link it is to fetch.
     expect(connection).toEqual({
       id: 'app_1',
       name: 'Claude Code',
       projects: ['story_a'],
-      edit: 'suggesting',
-      comment: true,
+      readOnly: false,
+      address: 'http://127.0.0.1:4657',
     })
     expect(message).toEqual(MESSAGE)
 

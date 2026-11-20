@@ -6,24 +6,30 @@ const platform = vi.hoisted(() => ({
   updateApp: vi.fn(),
   removeApp: vi.fn(),
   setAppsPort: vi.fn(),
+  setAppsEnabled: vi.fn(),
 }))
 vi.mock('@/platform/apps.js', () => platform)
 
-import { appAddress, claudeCodeCommand, useConnectedApps } from '@/composables/useConnectedApps.js'
+import {
+  appAddress,
+  claudeCodeCommand,
+  nextAppName,
+  useConnectedApps,
+} from '@/composables/useConnectedApps.js'
 
 const connection = (patch = {}) => ({
   id: 'app_1',
   name: 'Claude Code',
   token: 'the-token',
   projects: ['story_a'],
-  edit: 'suggesting',
-  comment: true,
+  readOnly: false,
   created: 1,
   ...patch,
 })
 
 const listed = (connections = [connection()]) => ({
   port: 4657,
+  enabled: true,
   connections,
   listening: connections.length > 0,
   problem: null,
@@ -85,16 +91,15 @@ describe('useConnectedApps', () => {
     expect(apps.state.value.connections[0].name).toBe('The agent')
   })
 
-  it('says how a connection may edit, and whether it comments', async () => {
+  it('says whether a connection only reads', async () => {
     const apps = useConnectedApps()
 
-    await apps.setEdit('app_1', 'editing')
-    expect(platform.updateApp).toHaveBeenLastCalledWith('app_1', { edit: 'editing' })
-    expect(apps.state.value.connections[0].edit).toBe('editing')
+    await apps.setReadOnly('app_1', true)
+    expect(platform.updateApp).toHaveBeenLastCalledWith('app_1', { readOnly: true })
+    expect(apps.state.value.connections[0].readOnly).toBe(true)
 
-    await apps.setComment('app_1', false)
-    expect(platform.updateApp).toHaveBeenLastCalledWith('app_1', { comment: false })
-    expect(apps.state.value.connections[0].comment).toBe(false)
+    await apps.setReadOnly('app_1', false)
+    expect(apps.state.value.connections[0].readOnly).toBe(false)
   })
 
   it('removes a connection, and reads again whether anything is listened for', async () => {
@@ -114,6 +119,27 @@ describe('useConnectedApps', () => {
     await apps.setPort(5000)
 
     expect(apps.state.value.port).toBe(5000)
+  })
+
+  it('turns apps off and on, and shows what came of it', async () => {
+    platform.setAppsEnabled.mockResolvedValue({ ...listed(), enabled: false, listening: false })
+    const apps = useConnectedApps()
+
+    await apps.setEnabled(false)
+
+    expect(platform.setAppsEnabled).toHaveBeenCalledWith(false)
+    expect(apps.state.value).toMatchObject({ enabled: false, listening: false })
+  })
+})
+
+describe('nextAppName', () => {
+  it('is the app most connections are for, numbered where that is taken', () => {
+    expect(nextAppName([])).toBe('Claude Code')
+    expect(nextAppName([{ name: 'The agent' }])).toBe('Claude Code')
+    expect(nextAppName([{ name: 'Claude Code' }])).toBe('Claude Code (2)')
+    expect(nextAppName([{ name: 'Claude Code' }, { name: 'Claude Code (2)' }])).toBe(
+      'Claude Code (3)'
+    )
   })
 })
 

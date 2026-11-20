@@ -2,15 +2,15 @@
 /* global Buffer */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import http from 'node:http'
-import { MOST_BYTES, appDoor, hostName } from '../../electron/src/appServer.js'
+import { MOST_BYTES, addressOf, appDoor, hostName } from '../../electron/src/appServer.js'
+import { appExports } from '../../electron/src/appExports.js'
 
 const CONNECTION = {
   id: 'app_1',
   name: 'Claude Code',
   token: 'the-right-token',
   projects: ['story_a'],
-  edit: 'suggesting',
-  comment: true,
+  readOnly: false,
   created: 1,
 }
 
@@ -28,26 +28,33 @@ const freePort = () =>
 let port
 /** @type {Array<typeof CONNECTION>} */
 let held
+/** @type {boolean} */
+let enabled
 /** @type {ReturnType<typeof vi.fn>} */
 let ask
 /** @type {ReturnType<typeof appDoor>} */
 let door
+/** @type {ReturnType<typeof appExports>} */
+let exports
 
 const connections = {
-  all: async () => ({ port, connections: held }),
+  all: async () => ({ port, enabled, connections: held }),
   byToken: async token => held.find(one => one.token === token) ?? null,
 }
 
 beforeEach(async () => {
   port = await freePort()
   held = [CONNECTION]
+  enabled = true
   ask = vi.fn(async (_, message) => ({ jsonrpc: '2.0', id: message.id, result: { ok: true } }))
-  door = appDoor({ connections, ask })
+  exports = appExports()
+  door = appDoor({ connections, ask, exports })
   await door.sync()
 })
 
 afterEach(() => {
   door.stop()
+  exports.clear()
 })
 
 /**
@@ -106,9 +113,18 @@ describe('appDoor', () => {
     expect(ask).toHaveBeenCalledWith(
       CONNECTION,
       { jsonrpc: '2.0', id: 3, method: 'tools/list' },
-      expect.any(Object)
+      expect.any(Object),
+      `http://127.0.0.1:${port}`
     )
     expect(door.state().called.app_1).toBeGreaterThan(0)
+  })
+
+  it('tells the window where the app reaches this computer, by the name it asked by', async () => {
+    await send({ headers: { Host: `host.docker.internal:${port}` } })
+    expect(ask.mock.calls.at(-1)[3]).toBe(`http://host.docker.internal:${port}`)
+
+    await send({ headers: { Host: `localhost:${port}` } })
+    expect(ask.mock.calls.at(-1)[3]).toBe(`http://localhost:${port}`)
   })
 
   it('never sends a CORS header', async () => {
@@ -253,6 +269,17 @@ describe('appDoor', () => {
     expect((await send()).status).toBe(200)
   })
 
+  it('listens for no one while apps are turned off, whatever connections there are', async () => {
+    enabled = false
+    await door.sync()
+    expect(door.state()).toMatchObject({ listening: false, problem: null })
+    await expect(send()).rejects.toThrow()
+
+    enabled = true
+    await door.sync()
+    expect((await send()).status).toBe(200)
+  })
+
   it('moves to another port when told of one', async () => {
     const before = port
     port = await freePort()
@@ -278,6 +305,136 @@ describe('appDoor', () => {
     })
     other.close()
     error.mockRestore()
+  })
+})
+
+describe('what was made ready for an app to fetch', () => {
+  const FILE = { name: 'Vault plan — draft.md', bytes: new Uint8Array([35, 32, 80, 108, 97, 110]) }
+
+  /**
+   * Fetch from the door as an app's shell does: no token, nothing but the link.
+   *
+   * @returns {Promise<{status: number, headers: http.IncomingHttpHeaders, bytes: Buffer}>}
+   */
+  const fetchFile = (id, { method = 'GET', headers = {} } = {}) =>
+    new Promise((resolve, reject) => {
+      const request = http.request(
+        { host: '127.0.0.1', port, path: `/export/${id}`, method, headers },
+        response => {
+          const chunks = []
+          response.on('data', chunk => chunks.push(chunk))
+          response.on('end', () =>
+            resolve({
+              status: response.statusCode,
+              headers: response.headers,
+              bytes: Buffer.concat(chunks),
+            })
+          )
+        }
+      )
+      request.on('error', reject)
+      request.end()
+    })
+
+  it('is handed over by its link alone, as a file to save and never a page', async () => {
+    const { id } = exports.offer('app_1', FILE)
+
+    const answer = await fetchFile(id)
+
+    expect(answer.status).toBe(200)
+    expect([...answer.bytes]).toEqual([...FILE.bytes])
+    expect(answer.headers['content-type']).toBe('application/octet-stream')
+    expect(answer.headers['content-length']).toBe('6')
+    expect(answer.headers['x-content-type-options']).toBe('nosniff')
+    expect(answer.headers['cache-control']).toBe('no-store')
+    expect(answer.headers['content-disposition']).toBe(
+      "attachment; filename*=UTF-8''Vault%20plan%20%E2%80%94%20draft.md"
+    )
+    expect(Object.keys(answer.headers).filter(name => name.startsWith('access-control'))).toEqual(
+      []
+    )
+    // No window is asked anything.
+    expect(ask).not.toHaveBeenCalled()
+  })
+
+  it('is handed over once', async () => {
+    const { id } = exports.offer('app_1', FILE)
+
+    expect((await fetchFile(id)).status).toBe(200)
+    const again = await fetchFile(id)
+
+    expect(again.status).toBe(404)
+    expect(again.bytes.length).toBe(0)
+  })
+
+  it('is not there under an id never made, or one whose time is up', async () => {
+    exports.offer('app_1', FILE)
+    for (const id of ['nothing', '', 'a'.repeat(43), '..%2f..%2fapps.json']) {
+      expect((await fetchFile(id)).status, id).toBe(404)
+    }
+
+    const short = appExports({ life: 1 })
+    const brief = appDoor({ connections, ask, exports: short })
+    door.stop()
+    await brief.sync()
+    const { id } = short.offer('app_1', FILE)
+    await new Promise(resolve => setTimeout(resolve, 20))
+
+    expect((await fetchFile(id)).status).toBe(404)
+    brief.stop()
+  })
+
+  it('is refused a browser, and a name that isn’t this computer’s, and is still there after', async () => {
+    const { id } = exports.offer('app_1', FILE)
+
+    for (const headers of [
+      { Origin: 'https://example.com' },
+      { Origin: 'null' },
+      // A page opened, or a picture or a script that names the link.
+      { 'Sec-Fetch-Site': 'none' },
+      { 'Sec-Fetch-Site': 'cross-site' },
+      { Host: `evil.example:${port}` },
+    ]) {
+      expect((await fetchFile(id, { headers })).status, JSON.stringify(headers)).toBe(403)
+    }
+
+    expect((await fetchFile(id)).status).toBe(200)
+  })
+
+  it('is only fetched: anything else leaves it there', async () => {
+    const { id } = exports.offer('app_1', FILE)
+
+    for (const method of ['POST', 'PUT', 'DELETE', 'HEAD']) {
+      const answer = await fetchFile(id, { method })
+      expect(answer.status, method).toBe(405)
+      expect(answer.headers.allow).toBe('GET')
+    }
+
+    expect((await fetchFile(id)).status).toBe(200)
+  })
+
+  it('is reached by the names a container asks by', async () => {
+    const { id } = exports.offer('app_1', FILE)
+    const answer = await fetchFile(id, { headers: { Host: `host.docker.internal:${port}` } })
+    expect(answer.status).toBe(200)
+  })
+
+  it('is nothing a door without any serves', async () => {
+    const bare = appDoor({ connections, ask })
+    door.stop()
+    await bare.sync()
+    expect((await fetchFile('anything')).status).toBe(404)
+    bare.stop()
+  })
+})
+
+describe('addressOf', () => {
+  it('is where a request was sent: its name and its port', () => {
+    expect(addressOf('127.0.0.1:4657')).toBe('http://127.0.0.1:4657')
+    expect(addressOf('host.docker.internal:4700')).toBe('http://host.docker.internal:4700')
+    expect(addressOf('[::1]:4657')).toBe('http://[::1]:4657')
+    // Nothing but the name and port is taken from it.
+    expect(addressOf('localhost:4657/x?y')).toBe('http://localhost:4657')
   })
 })
 

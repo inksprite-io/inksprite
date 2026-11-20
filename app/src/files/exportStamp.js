@@ -1,9 +1,8 @@
-/* global TextEncoder */
 /**
  * @module files/exportStamp
- * @description The stamp on a document exported to its project's linked
- * folder: front matter saying where it came from, as generated code says
- * what generated it.
+ * @description The stamp on a document exported for another app
+ * (`apps/exports.js`): front matter saying where it came from, as generated
+ * code says what generated it.
  *
  * ```yaml
  * ---
@@ -11,22 +10,18 @@
  *   project: Thief
  *   document: Designs/Sync
  *   id: doc_x
- *   hash: 0123456789abcdef
  *   note: Exported from inksprite. Edit the document there and export again; changes made to this file are overwritten.
  * ---
  * ```
  *
  * The note is for whoever opens the file, a model first: it says what to do
  * and what happens otherwise. The id finds the document whatever it is
- * called now. The hash is of the body as it was written, with no date in it,
- * so a file changes only when its text does; and a body that doesn't match
- * its own hash was changed outside inksprite, on whatever branch is checked
- * out, which is how an export tells an older copy of its own from one that
- * was edited.
+ * called now. There is no date in it, so a file changes only when its text
+ * does.
  *
- * Only a linked export is stamped: one made from the menus is as it would be
- * published. A stamped file brought back in has its stamp taken off, the
- * editor having no front matter to keep it in.
+ * Only an export made for an app is stamped: one made from the menus is as
+ * it would be published. A stamped file brought back in has its stamp taken
+ * off, the editor having no front matter to keep it in.
  *
  * Design: `.llm/mcp_server_design.md`, "The stamp".
  */
@@ -47,32 +42,17 @@ export const STAMP_NOTE =
  * @property {string} project - Its project's name
  * @property {string} document - Its path there
  * @property {string} id - The document's id
- * @property {string} hash - Of the file's body as it was written
  */
 
 /**
- * A short hash of a body: the start of its SHA-256, in hex.
- *
- * @param {string} body
- * @returns {Promise<string>}
- */
-export async function bodyHash(body) {
-  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(body))
-  return [...new Uint8Array(digest).slice(0, 8)]
-    .map(byte => byte.toString(16).padStart(2, '0'))
-    .join('')
-}
-
-/**
- * A document's text as it is exported to a linked folder: stamped.
+ * A document's text as it is exported for another app: stamped.
  *
  * @param {{project: string, document: string, id: string}} from
  * @param {string} body
- * @returns {Promise<string>}
+ * @returns {string}
  */
-export async function stamped({ project, document, id }, body) {
-  const stamp = { project, document, id, hash: await bodyHash(body), note: STAMP_NOTE }
-  return withFrontmatter({ [STAMP_KEY]: stamp }, body)
+export function stamped({ project, document, id }, body) {
+  return withFrontmatter({ [STAMP_KEY]: { project, document, id, note: STAMP_NOTE } }, body)
 }
 
 /**
@@ -94,24 +74,10 @@ export function readStamp(text) {
       project: String(found.project ?? ''),
       document: String(found.document ?? ''),
       id: found.id,
-      hash: String(found.hash ?? ''),
     },
     body,
     others,
   }
-}
-
-/**
- * Whether a file is an export as inksprite left it: stamped, its body still
- * the one its stamp was made for. False for one changed since, and for one
- * with no stamp.
- *
- * @param {string} text
- * @returns {Promise<boolean>}
- */
-export async function asExported(text) {
-  const { stamp, body } = readStamp(text)
-  return Boolean(stamp) && /** @type {Stamp} */ (stamp).hash === (await bodyHash(body))
 }
 
 /**

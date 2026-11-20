@@ -102,7 +102,7 @@ export function exportFolders() {
  * @param {string} relative
  * @returns {string}
  */
-export function below(target, relative) {
+function below(target, relative) {
   const parts = typeof relative === 'string' ? relative.split('/') : []
   const bad = process.platform === 'win32' ? /[\\:\0]/ : /\0/
   if (

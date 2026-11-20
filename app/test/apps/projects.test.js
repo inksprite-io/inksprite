@@ -47,8 +47,7 @@ const app = (projects = ['story_a', 'story_b']) => ({
   id: 'app_1',
   name: 'Claude Code',
   projects,
-  edit: 'suggesting',
-  comment: true,
+  readOnly: false,
 })
 
 beforeEach(() => {

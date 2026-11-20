@@ -7,7 +7,9 @@ import {
   canConnectApps,
   keepAppRead,
   listApps,
+  offerAppExport,
   removeApp,
+  setAppsEnabled,
   setAppsPort,
   updateApp,
 } from '@/platform/apps.js'
@@ -26,6 +28,8 @@ const bridge = () => {
     update: vi.fn(async (id, patch) => ({ id, ...patch })),
     remove: vi.fn(async () => {}),
     setPort: vi.fn(async port => ({ port })),
+    setEnabled: vi.fn(async enabled => ({ enabled })),
+    offer: vi.fn(async () => ({ id: 'the-id' })),
     answer: vi.fn(),
   }
   globalThis[BRIDGE] = { apps }
@@ -55,9 +59,18 @@ describe('platform/apps', () => {
     await updateApp('app_1', { projects: ['story_a'] })
     await removeApp('app_1')
     expect(await setAppsPort(5000)).toEqual({ port: 5000 })
+    expect(await setAppsEnabled(false)).toEqual({ enabled: false })
 
     expect(apps.update).toHaveBeenCalledWith('app_1', { projects: ['story_a'] })
     expect(apps.remove).toHaveBeenCalledWith('app_1')
+  })
+
+  it('has the native side hold a file for a connection’s app to fetch', async () => {
+    const apps = bridge()
+    const file = { name: 'Plan.md', bytes: new Uint8Array([1]) }
+
+    expect(await offerAppExport('app_1', file)).toEqual({ id: 'the-id' })
+    expect(apps.offer).toHaveBeenCalledWith('app_1', file)
   })
 
   it('keeps and reads back what a connection has of a document', async () => {
