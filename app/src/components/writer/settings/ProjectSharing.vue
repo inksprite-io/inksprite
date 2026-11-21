@@ -144,12 +144,7 @@
            the way to something shared. A click goes for everything in it,
            and leaves the folders above as they are. There while only some
            is shared: shared whole, there is nothing to choose. -->
-      <div
-        v-if="selective"
-        ref="boxes"
-        class="max-h-[min(18rem,40vh)] overflow-y-auto"
-        data-share-tree
-      >
+      <div v-if="selective" ref="boxes" data-share-tree>
         <Tree
           v-model:expanded-keys="expanded"
           :value="nodes"
@@ -184,7 +179,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, useId, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, useId, watch } from 'vue'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import InputText from 'primevue/inputtext'
@@ -358,6 +353,9 @@ async function choose(value) {
   // working, and what went wrong is said where the switch is.
   choosing.value = value
   choiceFailure.value = null
+  // The boxes appear under the switch, at the foot of what may be a long
+  // section: brought into view, as the writer turned the switch off for them.
+  if (value) nextTick(() => boxes.value?.scrollIntoView?.({ block: 'nearest' }))
   try {
     await cloud.setSelective(props.storyId, value)
   } catch (error) {

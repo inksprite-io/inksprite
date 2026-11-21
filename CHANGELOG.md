@@ -19,12 +19,12 @@ The desktop app:
   **Settings** › **Extensions**: your own shell in a tab beside your chats.
   A terminal belongs to its project, and keeps running while another
   project is open. No chat can type in one or read one.
-- **Connected apps**: another app on your computer, such as a coding agent,
-  can work in the projects you tick for it. Add one in **Settings** ›
-  **Connections** › **Connected apps** and give the app the command or the
-  address on its card. It reads, edits and comments on your documents as the
-  chat's model does, suggests its changes when you ask it to, and can put
-  documents into a repository as files.
+- **Connected apps** let another app on your computer, such as a coding
+  agent, work in the projects you tick for it. Add one in **Settings** ›
+  **Connections** › **Connected apps** and give the app the command, or the
+  address and the token, on its card. It reads, edits and comments on your
+  documents as the chat's model does, suggests its edits when you ask it to,
+  and can put documents into a repository as files.
 - Keys for tabs, as a browser has for its own: Command-N for a new document,
   Command-T for a new chat, Command-W to close the tab, Shift-Command-T to
   reopen the one you closed last, Control-Tab and Command-1 to 9 to go from

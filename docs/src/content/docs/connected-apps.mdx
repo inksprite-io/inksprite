@@ -32,7 +32,7 @@ which are services the chat's model calls.
 The card says when the app last asked for anything.
 
 :::note
-An app running in a Docker container reaches your computer as
+On a Mac, an app running in a Docker container reaches your computer as
 `host.docker.internal`. Put that in place of `127.0.0.1` in the address.
 :::
 
@@ -44,26 +44,26 @@ comment on them. What it deletes goes to the
 [trash](/projects/#delete-and-the-trash), and inksprite keeps a
 [version](/editor/#versions) of a document from before each change.
 
-A change shows in the document as it is made. To have changes wait for you,
-ask the app's assistant for suggestions rather than edits. They come as
+A change shows in the document as it is made. To have its changes to a
+document's text wait for you, ask the app's assistant for suggestions rather
+than edits. They come as
 [suggestions](/comments/#suggestions) in the text, under the app's name, for
 you to accept or reject.
 
 An app is given nothing else: no other project, no chats, no settings, and no
 document you've [hidden from all chats](/chats/#hide-documents).
 
-- **Read only**, on its card, leaves it listing, reading, searching and
-  exporting.
+- **Read only**, on its card, lets it only list, read, search and export.
 - **Remove** takes the connection away, and its token stops working at once.
 
 ## Put documents in a repository
 
 Ask the app to export a document, a folder or the whole project. inksprite
 makes the files ready and gives the app a link that works once, which the app
-fetches into its own folder: Markdown files laid out as the outline is, as
+fetches into its own folder, laid out as the outline is, as
 [Export](/projects/#export) writes them, without comments or suggestions.
 
-Each file starts with a few lines saying which document it came from. They
+Each Markdown file starts with a few lines saying which document it came from. They
 tell whoever opens the file to change the document in inksprite and export it
 again, and they let the app find the document later, whatever it has been
 renamed to.

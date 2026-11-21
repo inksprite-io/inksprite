@@ -2085,6 +2085,21 @@ describe('DocumentNode in a project shared with only some of its documents', () 
     expect(items(wrapper).map((/** @type {any} */ item) => item.label)).toContain('Stop sharing')
   })
 
+  it('hides its mark on hover where the chat’s eye floats over the end of the row', () => {
+    const chapter = api.createTextDocument('root_story_1', 'Chapter 1')
+    sharing.value = { ...PEOPLE, projects: {} }
+
+    // No chat open: no eye, and the mark stays.
+    const alone = mountNode(chapter.id).find('[data-share-mark]')
+    expect(alone.classes()).not.toContain('group-hover:invisible')
+
+    clearChatsInstances()
+    useChatsStore().chats.set('chat_1', { id: 'chat_1', storyId: 'story_1', title: 'Chat' })
+    const wrapper = mountNode(chapter.id, { chatId: 'chat_1' })
+    expect(wrapper.find('[data-row-toggles]').exists()).toBe(true)
+    expect(wrapper.find('[data-share-mark]').classes()).toContain('group-hover:invisible')
+  })
+
   it('shows nothing of it in a project shared whole', () => {
     const chapter = api.createTextDocument('root_story_1', 'Chapter 1')
 

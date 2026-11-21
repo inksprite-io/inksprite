@@ -313,6 +313,29 @@ describe('ProjectSharing, sharing only some documents', () => {
     expect(find('[data-share-tree]')).not.toBeNull()
   })
 
+  it('brings the boxes into view as they appear under the switch', async () => {
+    cloud.setSelective.mockImplementation(async (storyId, on) => {
+      sharing.value = { ...sharing.value, selective: on ? [storyId] : [] }
+    })
+    const original = window.HTMLElement.prototype.scrollIntoView
+    const scrolled = vi.fn()
+    window.HTMLElement.prototype.scrollIntoView = scrolled
+    try {
+      await mountSharing()
+      expect(scrolled).not.toHaveBeenCalled()
+
+      await flip()
+      expect(scrolled).toHaveBeenCalledTimes(1)
+      expect(scrolled.mock.contexts[0].hasAttribute('data-share-tree')).toBe(true)
+
+      // Not as they go.
+      await flip()
+      expect(scrolled).toHaveBeenCalledTimes(1)
+    } finally {
+      window.HTMLElement.prototype.scrollIntoView = original
+    }
+  })
+
   it('leaves the Share button as it is while the choice is made', async () => {
     /** @type {() => void} */
     let made = () => {}

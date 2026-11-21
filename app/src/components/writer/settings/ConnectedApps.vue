@@ -48,10 +48,10 @@
         <button
           v-tooltip.bottom="copied === ADDRESS ? 'Copied' : 'Copy'"
           type="button"
-          class="flex-none w-7 h-7 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
+          class="flex-none w-6 h-6 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
           aria-label="Copy address"
           data-action="copy-address"
-          @click="copyText(ADDRESS, address)"
+          @click="copyText(ADDRESS, address, 'address')"
         >
           <i :class="copied === ADDRESS ? 'pi pi-check' : 'pi pi-copy'" style="font-size: 0.7rem" />
         </button>
@@ -72,7 +72,6 @@
           size="small"
           class="w-24 dark:!bg-surface-900"
           inputmode="numeric"
-          :disabled="!enabled"
           data-field="apps-port"
           @blur="savePort"
           @keydown.enter="savePort"
@@ -176,7 +175,7 @@
               v-tooltip.bottom="copied === `${one.id}:${row.id}` ? 'Copied' : 'Copy'"
               type="button"
               class="flex-none w-6 h-6 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
-              :aria-label="`Copy ${row.label}`"
+              :aria-label="row.copyLabel"
               data-action="copy-setup"
               @click="copy(one, row)"
             >
@@ -402,7 +401,7 @@ const remove = async one => {
  * of it, the token shown only in part.
  *
  * @param {AppConnection} one
- * @returns {Array<{id: string, label: string, text: string, shown: string}>}
+ * @returns {Array<{id: string, label: string, copyLabel: string, what: string, text: string, shown: string}>}
  */
 const setupOf = one => {
   const port = state.value?.port ?? 0
@@ -411,11 +410,27 @@ const setupOf = one => {
     {
       id: 'claude-code',
       label: 'Claude Code',
+      copyLabel: 'Copy the command for Claude Code',
+      what: 'command',
       text: claudeCodeCommand(port, one.token),
       shown: claudeCodeCommand(port, hidden),
     },
-    { id: 'address', label: 'Address', text: appAddress(port), shown: appAddress(port) },
-    { id: 'token', label: 'Token', text: one.token, shown: hidden },
+    {
+      id: 'address',
+      label: 'Address',
+      copyLabel: 'Copy address',
+      what: 'address',
+      text: appAddress(port),
+      shown: appAddress(port),
+    },
+    {
+      id: 'token',
+      label: 'Token',
+      copyLabel: 'Copy token',
+      what: 'token',
+      text: one.token,
+      shown: hidden,
+    },
   ]
 }
 
@@ -427,8 +442,9 @@ const copied = ref(/** @type {string|null} */ (null))
  *
  * @param {string} key - What marks the button: a card's row, or the address
  * @param {string} text
+ * @param {string} what - What it is, for saying it couldn't be copied
  */
-const copyText = async (key, text) => {
+const copyText = async (key, text, what) => {
   try {
     await navigator.clipboard.writeText(text)
     copied.value = key
@@ -436,15 +452,15 @@ const copyText = async (key, text) => {
       if (copied.value === key) copied.value = null
     }, 1500)
   } catch {
-    toast.error("That couldn't be copied.")
+    toast.error(`The ${what} couldn't be copied.`)
   }
 }
 
 /**
  * @param {AppConnection} one
- * @param {{id: string, label: string, text: string}} row
+ * @param {{id: string, label: string, what: string, text: string}} row
  */
-const copy = (one, row) => copyText(`${one.id}:${row.id}`, row.text)
+const copy = (one, row) => copyText(`${one.id}:${row.id}`, row.text, row.what)
 
 // The server every app comes in by, on a card of its own above theirs.
 
@@ -497,7 +513,7 @@ const switchServer = async on => {
     await setEnabled(on)
   } catch (error) {
     console.error('Failed to turn the MCP server on or off:', error)
-    toast.error(`The MCP server couldn't be turned ${on ? 'on' : 'off'}.`)
+    toast.error(`The server couldn't be ${on ? 'started' : 'stopped'}.`)
     redrawn.value++
   }
 }

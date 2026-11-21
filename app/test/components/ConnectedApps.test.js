@@ -689,7 +689,7 @@ describe('ConnectedApps', () => {
         open()
           .findAll('[data-action="copy-setup"]')
           .map(button => button.attributes('aria-label'))
-      ).toEqual(['Copy Claude Code', 'Copy Address', 'Copy Token'])
+      ).toEqual(['Copy the command for Claude Code', 'Copy address', 'Copy token'])
     })
 
     it('marks the row just copied, for a moment', async () => {
@@ -738,7 +738,7 @@ describe('ConnectedApps', () => {
       await setup(open(), 'token').find('[data-action="copy-setup"]').trigger('click')
       await flushPromises()
 
-      expect(toast.error).toHaveBeenCalledWith("That couldn't be copied.")
+      expect(toast.error).toHaveBeenCalledWith("The token couldn't be copied.")
       expect(open().find('[data-action="copy-setup"] .pi-check').exists()).toBe(false)
     })
   })
@@ -858,7 +858,7 @@ describe('ConnectedApps', () => {
       await serverSwitch(wrapper).setValue(false)
       await flushPromises()
 
-      expect(toast.error).toHaveBeenCalledWith("The MCP server couldn't be turned off.")
+      expect(toast.error).toHaveBeenCalledWith("The server couldn't be stopped.")
       expect(serverSwitch(wrapper).element.checked).toBe(true)
       expect(status(wrapper)).toBe('Status: Running')
     })
@@ -874,7 +874,7 @@ describe('ConnectedApps', () => {
       await serverSwitch(wrapper).setValue(true)
       await flushPromises()
 
-      expect(toast.error).toHaveBeenCalledWith("The MCP server couldn't be turned on.")
+      expect(toast.error).toHaveBeenCalledWith("The server couldn't be started.")
       expect(status(wrapper)).toBe('Status: Stopped')
     })
 
@@ -913,7 +913,7 @@ describe('ConnectedApps', () => {
       await wrapper.find('[data-action="copy-address"]').trigger('click')
       await flushPromises()
 
-      expect(toast.error).toHaveBeenCalledWith("That couldn't be copied.")
+      expect(toast.error).toHaveBeenCalledWith("The address couldn't be copied.")
       expect(wrapper.find('[data-action="copy-address"] .pi-check').exists()).toBe(false)
     })
 
@@ -993,13 +993,18 @@ describe('ConnectedApps', () => {
         expect(portField().element.value).toBe('4657')
       })
 
-      it('can’t be changed while the server is off', async () => {
+      it('can be changed while the server is off, for when it is started', async () => {
         native.kept.enabled = false
         const wrapper = await mountApps()
         await openPort(wrapper)
 
-        expect(portField().attributes('disabled')).toBeDefined()
-        expect(portField().element.value).toBe('4657')
+        expect(portField().attributes('disabled')).toBeUndefined()
+        await portField().setValue('5000')
+        await portField().trigger('blur')
+        await flushPromises()
+
+        expect(native.platform.setAppsPort).toHaveBeenCalledWith(5000)
+        expect(portField().element.value).toBe('5000')
       })
     })
   })

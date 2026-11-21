@@ -101,11 +101,12 @@
 
       <!-- In a project shared with only some of its documents, what the
            people it is shared with see; faint on a folder they see only on
-           the way to what is shared. -->
+           the way to what is shared. It gives way to the chat's toggle,
+           which floats over the end of the row on hover. -->
       <i
         v-if="shareMark"
         class="flex-none pi pi-users text-surface-400 dark:text-surface-500"
-        :class="shareMark === 'partly' && 'opacity-50'"
+        :class="[shareMark === 'partly' && 'opacity-50', floatsToggles && 'group-hover:invisible']"
         style="font-size: 0.65rem"
         role="img"
         :title="shareMark === 'shared' ? 'Shared' : 'Partly shared'"
@@ -126,7 +127,7 @@
            end of a title is the title. Not during a drag, which WebKit
            leaves the hover on every row it crossed. -->
       <div
-        v-if="toggles && !isRoot && !isMobile && !isDragging"
+        v-if="floatsToggles"
         class="absolute inset-y-0 right-1 flex items-center gap-1 pl-1 bg-inherit opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto"
         data-row-toggles
       >
@@ -616,6 +617,11 @@ const hideInChat = () => {
  * toggle, since no chat can show it.
  */
 const toggles = computed(() => !!chat.value && !hiddenEverywhere.value)
+
+/** Whether the chat's toggle floats over the end of the row on hover. */
+const floatsToggles = computed(
+  () => toggles.value && !isRoot.value && !isMobile.value && !props.isDragging
+)
 
 /**
  * The folders the document open is in, below the project: marked as it is,
