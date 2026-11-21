@@ -128,6 +128,58 @@ describe('a chat that plays a card', () => {
     expect(store.getDocument(description.id).content).toBe('Elara waits. {{char}} waits.')
   })
 
+  it('makes several edits to the text as it reads, each where the document has it', async () => {
+    const result = await executeEditDocument(
+      {
+        path: 'Elara/Description',
+        edits: [
+          { old: 'is a knight', new: 'is a squire' },
+          {
+            old: 'Elara is a squire. Riley met her',
+            new: 'Elara is a squire, and Riley found her',
+          },
+        ],
+      },
+      as(playing)
+    )
+
+    expect(result).toMatchObject({ success: true, edits: 2 })
+    expect(store.getDocument(description.id).content).toBe(
+      'Elara is a squire, and Riley found her on the road.'
+    )
+  })
+
+  it('changes every place it reads a passage at, and leaves the macros it did not touch', async () => {
+    store.updateDocument(description.id, {
+      content: '{{char}} waits. Elara waits by the gate. {{user}} waits.',
+    })
+
+    const result = await executeEditDocument(
+      { path: 'Elara/Description', old: 'waits', new: 'rests', all: true },
+      as(playing)
+    )
+
+    expect(result).toMatchObject({ success: true, charactersRemoved: 15, charactersWritten: 15 })
+    expect(store.getDocument(description.id).content).toBe(
+      '{{char}} rests. Elara rests by the gate. {{user}} rests.'
+    )
+  })
+
+  it('changes a name at every place it reads it, where it is a macro and where it is written out', async () => {
+    store.updateDocument(description.id, {
+      content: '{{char}} waits. Elara waits by the gate. {{user}} waits.',
+    })
+
+    await executeEditDocument(
+      { path: 'Elara/Description', old: 'Elara', new: 'Mara', all: true },
+      as(playing)
+    )
+
+    expect(store.getDocument(description.id).content).toBe(
+      'Mara waits. Mara waits by the gate. {{user}} waits.'
+    )
+  })
+
   it('shows the nearest lines with the names in when a quote is not there', async () => {
     const result = await executeEditDocument(
       { path: 'Elara/Description', old: 'Elara is a squire.', new: 'x' },

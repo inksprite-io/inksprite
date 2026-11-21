@@ -38,7 +38,6 @@ import { documentForChat, pathInProject } from '@/ai/tools/documents.js'
 import { postsOf, suggestedBy } from '@/ai/tools/commentReads.js'
 import { textHash } from '@/ai/context/reads.js'
 import { peopleOf } from '@/cloud/people.js'
-import { useEditor } from '@/composables/useEditor.js'
 import { forgetReads, keepRead, keptRead, keptReads } from '@/platform/apps.js'
 import { lineDiff } from '@/utils/lineDiff.js'
 
@@ -80,6 +79,20 @@ import { lineDiff } from '@/utils/lineDiff.js'
  * @property {number} at - When
  */
 
+/**
+ * A document as a connection reads it at one moment. A call that reads or
+ * writes one takes it once before and once after (`apps/tools.js`), and what
+ * its answer says of the document is said from the two.
+ *
+ * @typedef {Object} DocumentState
+ * @property {Seen} seen - What would be kept of it for the connection
+ * @property {Record<string, CommentThread>} threads - Its threads, as they are
+ * @property {string|null} text - Its text, however long; null for anything
+ *   but a text document
+ * @property {boolean} plain - Whether it is kept exactly as typed, with no
+ *   marks in it
+ */
+
 /** The longest text kept to tell changes from, in characters. */
 const TEXT_MOST = 1_000_000
 
@@ -98,19 +111,20 @@ export const CHANGED_SINCE_NOTE =
   'The document has changed since the revision you last had of it, apart from this call. changes_since with that revision shows how.'
 
 /**
- * A document as a connection reads it now: what it would be kept as, and
- * its threads as they are. Null for a path with no document, and a folder.
+ * A document as a connection reads it now, as the store has it: what was
+ * just typed is in the editor until a pause, and whoever runs a call has it
+ * written out first (`apps/tools.js`). Null for a path with no document, and
+ * a folder.
  *
  * @param {Asking} asking
  * @param {string} path
- * @returns {Promise<{seen: Seen, threads: Record<string, CommentThread>}|null>}
+ * @returns {Promise<DocumentState|null>}
  */
 export async function stateAt(asking, path) {
-  // What was just typed is in the editor until a pause: have it written out.
-  useEditor().flush()
   const found = await documentForChat(asking.storyId, asking.chatId, path)
   if (!found || found.document.type === 'folder') return null
   const { document } = found
+  const written = document.type === 'text'
   const text = document.content || ''
   const all = /** @type {Record<string, CommentThread>} */ (document.comments || {})
 
@@ -138,11 +152,13 @@ export async function stateAt(asking, path) {
       document: document.id,
       path: found.path,
       revision: textHash(`${text}\n${JSON.stringify(threads)}`),
-      text: document.type === 'text' && text.length <= TEXT_MOST ? text : null,
+      text: written && text.length <= TEXT_MOST ? text : null,
       threads,
       at: Date.now(),
     },
     threads: all,
+    text: written ? text : null,
+    plain: written && !!document.plain,
   }
 }
 
@@ -190,36 +206,32 @@ export async function kept(app, documentId) {
 }
 
 /**
- * Run a call that reads or writes one document, and put the document's
- * revision in its answer. What the connection has of it is kept as it is
- * now, unless the document had changed since the connection last had it
- * for some other reason than this call: then the answer says so, with the
- * revision it had, and what is kept stays, for `changes_since` to show what
- * it has not seen. A call that sends the whole text leaves nothing unseen.
+ * The answer of a call that read or wrote one document, with the document's
+ * revision in it, from the document as it was before the call and as it is
+ * after. What the connection has of it is kept as it is now, unless the
+ * document had changed since the connection last had it for some other
+ * reason than this call: then the answer says so, with the revision it had,
+ * and what is kept stays, for `changes_since` to show what it has not seen.
+ * A call that sends the whole text leaves nothing unseen. A refusal is
+ * answered as it is, and so is a call that left no document.
  *
  * @param {AskingApp} app
- * @param {Asking} asking
- * @param {string} path - Where the document is as the call is made; nowhere
- *   yet for one the call makes
- * @param {() => Promise<any>} run
- * @param {(answer: any) => boolean} [sendsAll] - Whether an answer sends the
- *   document's whole text
+ * @param {{before: DocumentState|null, after: DocumentState|null}} states -
+ *   The document before the call, where there was one, and after it
+ * @param {any} answer - What the tool answered
+ * @param {boolean} [sawAll] - Whether the answer sends the document's whole
+ *   text
  * @returns {Promise<any>}
  */
-export async function withRevision(app, asking, path, run, sendsAll = () => false) {
-  const before = path ? await stateAt(asking, path) : null
+export async function withRevision(app, { before, after }, answer, sawAll = false) {
+  if (!after || !answer || typeof answer !== 'object' || 'error' in answer) return answer
   const had = before ? await kept(app, before.seen.document) : null
-  const answer = await run()
-  if (!answer || typeof answer !== 'object' || 'error' in answer) return answer
-
-  const now = await stateAt(asking, answer.document?.path ?? answer.path ?? path)
-  if (!now) return answer
-  const current = sendsAll(answer) || !before || !had || had.revision === before.seen.revision
+  const current = sawAll || !before || !had || had.revision === before.seen.revision
   // Seen whole, or the call's own change to what it had: nothing it missed.
-  if (current) await keep(app, now.seen, had, true)
+  if (current) await keep(app, after.seen, had, true)
   return {
     ...answer,
-    revision: now.seen.revision,
+    revision: after.seen.revision,
     ...(current
       ? {}
       : {
@@ -233,17 +245,15 @@ export async function withRevision(app, asking, path, run, sendsAll = () => fals
  * then say so, and send nothing.
  *
  * @param {AskingApp} app
- * @param {Asking} asking
- * @param {string} path
- * @param {unknown} revision
+ * @param {DocumentState|null} state - The document as it is
+ * @param {unknown} revision - The one the connection holds
  * @returns {Promise<{path: string, revision: string, unchanged: string}|null>}
  */
-export async function unchangedAt(app, asking, path, revision) {
+export async function unchangedAt(app, state, revision) {
   if (typeof revision !== 'string' || !revision) return null
-  const now = await stateAt(asking, path)
-  if (!now || now.seen.revision !== revision) return null
-  await keep(app, now.seen, await kept(app, now.seen.document))
-  return { path: now.seen.path, revision, unchanged: 'Unchanged since that revision.' }
+  if (!state || state.seen.revision !== revision) return null
+  await keep(app, state.seen, await kept(app, state.seen.document))
+  return { path: state.seen.path, revision, unchanged: 'Unchanged since that revision.' }
 }
 
 /**

@@ -96,15 +96,23 @@ let store
 /** The plan's revision as the connection reads it now. */
 const revision = async () => (await stateAt(asking, 'Plan')).seen.revision
 
+/**
+ * A call on a document, as the adapter runs one (`apps/tools.js`): the
+ * document taken before the call and after it, and the answer given its
+ * revision from the two.
+ *
+ * @param {string} path
+ * @param {() => Promise<any>} run - The tool
+ * @param {boolean} [sawAll] - Whether the answer sends the whole text
+ */
+const calling = async (path, run, sawAll = false) => {
+  const before = await stateAt(asking, path)
+  const answer = await run()
+  return withRevision(APP, { before, after: await stateAt(asking, path) }, answer, sawAll)
+}
+
 /** Have the connection read the plan, as a whole read does. */
-const read = () =>
-  withRevision(
-    APP,
-    asking,
-    'Plan',
-    () => executeReadDocument({ path: 'Plan' }, asking),
-    () => true
-  )
+const read = () => calling('Plan', () => executeReadDocument({ path: 'Plan' }, asking), true)
 
 beforeEach(async () => {
   setActivePinia(createPinia())
@@ -203,7 +211,7 @@ describe('withRevision', () => {
   it('keeps what a write left, when the connection was up to date', async () => {
     const { revision: read1 } = await read()
     const edit = { path: 'Plan', old: 'rope', new: 'wire' }
-    const answer = await withRevision(APP, asking, 'Plan', () => executeEditDocument(edit, asking))
+    const answer = await calling('Plan', () => executeEditDocument(edit, asking))
 
     expect(answer.success).toBe(true)
     expect(answer.revision).not.toBe(read1)
@@ -216,7 +224,7 @@ describe('withRevision', () => {
     await executeEditDocument({ path: 'Plan', old: 'noon', new: 'dusk' }, writer)
 
     const edit = { path: 'Plan', old: 'rope', new: 'wire' }
-    const answer = await withRevision(APP, asking, 'Plan', () => executeEditDocument(edit, asking))
+    const answer = await calling('Plan', () => executeEditDocument(edit, asking))
 
     expect(answer.changedSince).toEqual({ revision: had, note: CHANGED_SINCE_NOTE })
     expect(answer.revision).toBe(await revision())
@@ -229,7 +237,7 @@ describe('withRevision', () => {
 
   it('keeps what a write left for a connection that had read nothing of the document', async () => {
     const edit = { path: 'Plan', old: 'rope', new: 'wire' }
-    const answer = await withRevision(APP, asking, 'Plan', () => executeEditDocument(edit, asking))
+    const answer = await calling('Plan', () => executeEditDocument(edit, asking))
 
     expect(answer.changedSince).toBeUndefined()
     expect((await kept(APP, 'doc_plan')).revision).toBe(answer.revision)
@@ -239,22 +247,14 @@ describe('withRevision', () => {
     const { revision: had } = await read()
     await executeEditDocument({ path: 'Plan', old: 'noon', new: 'dusk' }, writer)
 
-    const part = await withRevision(
-      APP,
-      asking,
-      'Plan',
-      () => executeReadDocument({ path: 'Plan' }, asking),
-      () => false
-    )
+    const part = await calling('Plan', () => executeReadDocument({ path: 'Plan' }, asking), false)
 
     expect(part.changedSince.revision).toBe(had)
     expect((await kept(APP, 'doc_plan')).revision).toBe(had)
   })
 
   it('adds nothing to a refusal', async () => {
-    const answer = await withRevision(APP, asking, 'Nothing', () =>
-      executeReadDocument({ path: 'Nothing' }, asking)
-    )
+    const answer = await calling('Nothing', () => executeReadDocument({ path: 'Nothing' }, asking))
     expect(answer.error).toContain('No document')
     expect(answer.revision).toBeUndefined()
   })
@@ -263,7 +263,7 @@ describe('withRevision', () => {
 describe('unchangedAt', () => {
   it('says a document is still at the revision the connection holds', async () => {
     const { revision: had } = await read()
-    expect(await unchangedAt(APP, asking, 'Plan', had)).toEqual({
+    expect(await unchangedAt(APP, await stateAt(asking, 'Plan'), had)).toEqual({
       path: 'Plan',
       revision: had,
       unchanged: 'Unchanged since that revision.',
@@ -274,9 +274,9 @@ describe('unchangedAt', () => {
     const { revision: had } = await read()
     await executeEditDocument({ path: 'Plan', old: 'rope', new: 'wire' }, writer)
 
-    expect(await unchangedAt(APP, asking, 'Plan', had)).toBeNull()
-    expect(await unchangedAt(APP, asking, 'Plan', undefined)).toBeNull()
-    expect(await unchangedAt(APP, asking, 'Nothing', had)).toBeNull()
+    expect(await unchangedAt(APP, await stateAt(asking, 'Plan'), had)).toBeNull()
+    expect(await unchangedAt(APP, await stateAt(asking, 'Plan'), undefined)).toBeNull()
+    expect(await unchangedAt(APP, await stateAt(asking, 'Nothing'), had)).toBeNull()
   })
 })
 
@@ -328,9 +328,7 @@ describe('changesSince', () => {
   describe('asked with a revision from before the connection’s own later calls', () => {
     /** Have the connection change the plan, as a call to a tool does. */
     const write = (old, becomes) =>
-      withRevision(APP, asking, 'Plan', () =>
-        executeEditDocument({ path: 'Plan', old, new: becomes }, asking)
-      )
+      calling('Plan', () => executeEditDocument({ path: 'Plan', old, new: becomes }, asking))
 
     it('says nothing has changed when only its own writes have', async () => {
       const { revision: first } = await read()
@@ -396,7 +394,9 @@ describe('changesSince', () => {
       expect((await kept(APP, 'doc_plan')).revision).toBe(first)
 
       // It reads at that revision: brought up to date without the change shown.
-      expect(await unchangedAt(APP, asking, 'Plan', left)).toMatchObject({ revision: left })
+      expect(await unchangedAt(APP, await stateAt(asking, 'Plan'), left)).toMatchObject({
+        revision: left,
+      })
       expect((await kept(APP, 'doc_plan')).passed).toBeUndefined()
       expect((await changesSince(APP, asking, { path: 'Plan', revision: first })).unknown).toBe(
         UNKNOWN_NOTE
@@ -600,13 +600,7 @@ describe('changesSince', () => {
 
   describe('of a folder', () => {
     const readCrew = () =>
-      withRevision(
-        APP,
-        asking,
-        'notes/Crew',
-        () => executeReadDocument({ path: 'notes/Crew' }, asking),
-        () => true
-      )
+      calling('notes/Crew', () => executeReadDocument({ path: 'notes/Crew' }, asking), true)
 
     it('names the documents the connection has read that have changed, with the revision it had', async () => {
       const plan = await read()

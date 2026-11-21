@@ -22,12 +22,11 @@ import {
   READ_AGAIN_NOTE,
   STORED_MOST,
   STORED_NOTE,
-  answeringStored,
   changedLines,
-  editMany,
+  withStored,
 } from '@/apps/writes.js'
+import { stateAt } from '@/apps/revisions.js'
 import {
-  executeAddComment,
   executeAppendDocument,
   executeCreateDocument,
   executeEditDocument,
@@ -37,7 +36,6 @@ import {
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { clearDocumentInstances } from '@/composables/useDocuments'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
-import { withoutComments } from '@/editor/comments.js'
 
 const STORY = 'story_1'
 const context = { storyId: STORY, chatId: 'app:app_1', postsAs: 'Claude Code' }
@@ -50,18 +48,27 @@ const TEXT = [
   'Bring rope and a lamp.',
 ].join('\n')
 
-/** @type {ReturnType<typeof useDocumentsStore>} */
-let store
-
-/** The plan's text, without the comments' markup. */
-const plan = () => withoutComments(store.getDocument('doc_plan').content)
+/**
+ * A write, as the adapter runs one (`apps/tools.js`): the document taken
+ * before the write and after it, and the answer saying how the text was
+ * stored from the two.
+ *
+ * @param {string} name - The tool
+ * @param {Record<string, any>} args
+ * @param {() => Promise<any>} write - The tool, run
+ */
+const writing = async (name, args, write) => {
+  const before = await stateAt(context, args.path)
+  const answer = await write()
+  return withStored(name, args, { before, after: await stateAt(context, args.path) }, answer)
+}
 
 beforeEach(async () => {
   setActivePinia(createPinia())
   clearDocumentInstances()
   vi.clearAllMocks()
   vi.spyOn(console, 'error').mockImplementation(() => {})
-  store = useDocumentsStore()
+  const store = useDocumentsStore()
   await projectOverview(STORY)
   store.createDocument({
     id: 'doc_plan',
@@ -77,147 +84,6 @@ beforeEach(async () => {
     parentId: rootIdFor(STORY),
     type: 'folder',
     title: 'notes',
-  })
-})
-
-describe('editMany', () => {
-  it('makes several edits in order, each to the text the ones before it left', async () => {
-    const answer = await editMany(
-      {
-        path: 'Plan',
-        edits: [
-          { old: 'Bring rope', new: 'Bring a ladder' },
-          { old: 'a ladder and a lamp', new: 'a ladder, a lamp and gloves' },
-        ],
-      },
-      context
-    )
-
-    expect(answer).toMatchObject({ success: true, edits: 2, document: { path: 'Plan' } })
-    expect(plan()).toBe(TEXT.replace('rope and a lamp', 'a ladder, a lamp and gloves'))
-  })
-
-  it('makes none of them when one cannot be made, and says which', async () => {
-    const answer = await editMany(
-      {
-        path: 'Plan',
-        edits: [
-          { old: 'Bring rope', new: 'Bring a ladder' },
-          { old: 'two guards', new: 'three guards' },
-        ],
-      },
-      context
-    )
-
-    expect(answer.error).toContain('Edit 2: "old" was not found in "Plan"')
-    expect(answer.error).toContain('once the edits before it were made')
-    expect(answer.error).toContain('None of the edits was made.')
-    expect(typeof answer.nearest).toBe('string')
-    expect(plan()).toBe(TEXT)
-  })
-
-  it('refuses a passage that is there more than once, unless every place is meant', async () => {
-    const twice = await editMany(
-      { path: 'Plan', edits: [{ old: 'at noon', new: 'at midnight' }] },
-      context
-    )
-    expect(twice.error).toContain('"old" appears 2 times in "Plan"')
-    expect(twice.error).toContain('set "all"')
-    expect(plan()).toBe(TEXT)
-
-    const every = await editMany({ path: 'Plan', old: 'noon', new: 'midnight', all: true }, context)
-    expect(every).toMatchObject({ success: true, edits: 1 })
-    expect(plan()).toBe(TEXT.replaceAll('noon', 'midnight'))
-  })
-
-  it('takes `all` for one edit of several, or for all of them', async () => {
-    await editMany(
-      {
-        path: 'Plan',
-        edits: [
-          { old: 'noon', new: 'dusk', all: true },
-          { old: 'rope', new: 'wire' },
-        ],
-      },
-      context
-    )
-    expect(plan()).toBe(TEXT.replaceAll('noon', 'dusk').replace('rope', 'wire'))
-
-    await editMany({ path: 'Plan', all: true, edits: [{ old: 'dusk', new: 'dawn' }] }, context)
-    expect(plan()).toBe(TEXT.replaceAll('noon', 'dawn').replace('rope', 'wire'))
-  })
-
-  it('writes a `$` in what a passage becomes as a dollar sign', async () => {
-    await editMany({ path: 'Plan', edits: [{ old: 'rope', new: '$1 of rope $&' }] }, context)
-    expect(plan()).toContain('Bring $1 of rope $& and a lamp.')
-  })
-
-  it('says what is wrong with edits that are not edits, and makes none', async () => {
-    const cases = [
-      [{ path: 'Plan', edits: [] }, 'at least one change'],
-      [{ path: 'Plan', edits: [{ new: 'x' }] }, 'Edit 1: Give the passage to change as "old"'],
-      [{ path: 'Plan', edits: [{ old: 'rope' }] }, 'Edit 1: Give what it becomes as "new"'],
-      [{ path: 'Plan', edits: [{ old: 'rope', new: 'x' }], old: 'a', new: 'b' }, 'not both'],
-      [{ path: 'Plan', all: true, new: 'x' }, 'Give the passage to change as "old"'],
-    ]
-    for (const [args, said] of cases) {
-      expect((await editMany(args, context)).error, JSON.stringify(args)).toContain(said)
-    }
-    expect(plan()).toBe(TEXT)
-  })
-
-  it('says of a path with no document, or a folder, what one edit says', async () => {
-    const edits = [{ old: 'rope', new: 'wire' }]
-    expect((await editMany({ path: 'Nothing', edits }, context)).error).toContain(
-      'No document at "Nothing"'
-    )
-    expect((await editMany({ path: 'notes', edits }, context)).error).toContain('folder')
-  })
-
-  it('keeps a comment on words the edits leave, and resolves one whose words they change', async () => {
-    const kept = await executeAddComment(
-      { path: 'Plan', passage: 'a lamp', text: 'Which one?' },
-      context
-    )
-    const changed = await executeAddComment(
-      { path: 'Plan', passage: 'Bring rope', text: 'How much?' },
-      context
-    )
-
-    const answer = await editMany(
-      { path: 'Plan', edits: [{ old: 'Bring rope', new: 'Bring wire' }] },
-      context
-    )
-
-    expect(answer.success).toBe(true)
-    const { comments } = store.getDocument('doc_plan')
-    expect(comments[kept.comment].status).toBe('open')
-    expect(comments[changed.comment].status).toBe('resolved')
-    expect(plan()).toContain('Bring wire and a lamp.')
-  })
-
-  it('finds a passage quoted with a comment’s markup in it', async () => {
-    await executeAddComment({ path: 'Plan', passage: 'a lamp', text: 'Which one?' }, context)
-    const marked = store.getDocument('doc_plan').content
-    const quoted = marked.split('\n').at(-1)
-    expect(quoted).not.toBe('Bring rope and a lamp.')
-
-    const answer = await editMany(
-      { path: 'Plan', edits: [{ old: quoted, new: 'Bring wire and a lamp.' }] },
-      context
-    )
-
-    expect(answer.success).toBe(true)
-    expect(plan()).toContain('Bring wire and a lamp.')
-  })
-
-  it('writes nothing, and says so, when every passage already reads that way', async () => {
-    const before = store.getDocument('doc_plan').content
-    const answer = await editMany({ path: 'Plan', edits: [{ old: 'rope', new: 'rope' }] }, context)
-
-    expect(answer).toMatchObject({ success: true, edits: 1, document: { path: 'Plan' } })
-    expect(answer.note).toContain('Nothing changed')
-    expect(store.getDocument('doc_plan').content).toBe(before)
   })
 })
 
@@ -247,12 +113,10 @@ describe('changedLines', () => {
   })
 })
 
-describe('answeringStored', () => {
+describe('withStored', () => {
   it('says nothing more when the text is in the document as it was sent', async () => {
     const args = { path: 'Plan', old: 'rope', new: 'wire' }
-    const answer = await answeringStored('edit_document', args, context, () =>
-      executeEditDocument(args, context)
-    )
+    const answer = await writing('edit_document', args, () => executeEditDocument(args, context))
 
     expect(answer.success).toBe(true)
     expect(answer.stored).toBeUndefined()
@@ -261,9 +125,7 @@ describe('answeringStored', () => {
 
   it('gives the passage as it reads now when the editor wrote it another way', async () => {
     const args = { path: 'Plan', old: 'Bring rope and a lamp.', new: '* rope\n* a lamp' }
-    const answer = await answeringStored('edit_document', args, context, () =>
-      executeEditDocument(args, context)
-    )
+    const answer = await writing('edit_document', args, () => executeEditDocument(args, context))
 
     expect(answer).toMatchObject({ success: true, stored: '- rope\n- a lamp', note: STORED_NOTE })
   })
@@ -271,29 +133,20 @@ describe('answeringStored', () => {
   it('does so for what is added to the end, for a new document, and for a whole rewrite', async () => {
     const append = { path: 'Plan', text: '* gloves' }
     expect(
-      (
-        await answeringStored('append_document', append, context, () =>
-          executeAppendDocument(append, context)
-        )
-      ).stored
+      (await writing('append_document', append, () => executeAppendDocument(append, context)))
+        .stored
     ).toBe('- gloves')
 
     const create = { path: 'notes/Crew', content: '* Mara\n* Tov' }
     expect(
-      (
-        await answeringStored('create_document', create, context, () =>
-          executeCreateDocument(create, context)
-        )
-      ).stored
+      (await writing('create_document', create, () => executeCreateDocument(create, context)))
+        .stored
     ).toBe('- Mara\n- Tov')
 
     const update = { path: 'Plan', content: '# Plan\n\n* one\n* two' }
     expect(
-      (
-        await answeringStored('update_document', update, context, () =>
-          executeUpdateDocument(update, context)
-        )
-      ).stored
+      (await writing('update_document', update, () => executeUpdateDocument(update, context)))
+        .stored
     ).toBe('# Plan\n\n- one\n- two')
   })
 
@@ -305,9 +158,7 @@ describe('answeringStored', () => {
         { old: 'Bring rope and a lamp.', new: '* rope' },
       ],
     }
-    const answer = await answeringStored('edit_document', args, context, () =>
-      editMany(args, context)
-    )
+    const answer = await writing('edit_document', args, () => executeEditDocument(args, context))
 
     expect(answer.stored).toContain('- rope')
     expect(answer.note).toBe(STORED_NOTE)
@@ -317,7 +168,7 @@ describe('answeringStored', () => {
     const lines = Array.from({ length: 400 }, (_, at) => `* item number ${at}`).join('\n')
     expect(lines.length).toBeGreaterThan(STORED_MOST)
     const args = { path: 'Plan', content: lines }
-    const answer = await answeringStored('update_document', args, context, () =>
+    const answer = await writing('update_document', args, () =>
       executeUpdateDocument(args, context)
     )
 
@@ -328,9 +179,7 @@ describe('answeringStored', () => {
 
   it('hands back a refusal as it is', async () => {
     const args = { path: 'Plan', old: 'no such words', new: 'x' }
-    const answer = await answeringStored('edit_document', args, context, () =>
-      executeEditDocument(args, context)
-    )
+    const answer = await writing('edit_document', args, () => executeEditDocument(args, context))
 
     expect(answer.error).toContain('was not found')
     expect(answer.stored).toBeUndefined()

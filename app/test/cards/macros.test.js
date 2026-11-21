@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { namesOf, storedPassage, substitute } from '@/cards/macros.js'
+import { namesOf, storedPassage, storedPlace, substitute } from '@/cards/macros.js'
 
 describe('cards/macros', () => {
   const names = { char: 'Elara', user: 'Riley' }
@@ -115,6 +115,48 @@ describe('cards/macros', () => {
       expect(
         storedPassage('{{ Char }} nods.', names, 'Elara nods.', 'Elara shrugs.')
       ).toMatchObject({ old: '{{ Char }} nods.' })
+    })
+  })
+
+  describe('storedPlace', () => {
+    // As the chat reads it: "Elara waits. Elara waits by the gate. Riley waits."
+    const text = '{{char}} waits. Elara waits by the gate. {{user}} waits.'
+    const filled = substitute(text, names)
+    /** The stored text with one place of the filled text changed. */
+    const changed = (passage, nth, replacement) => {
+      const at = filled
+        .split(passage)
+        .slice(0, nth + 1)
+        .join(passage).length
+      const place = storedPlace(text, names, at, passage.length, replacement)
+      return text.slice(0, place.from) + place.new + text.slice(place.to)
+    }
+
+    it('finds one place of several a passage is at, past the macros before it', () => {
+      expect(changed('waits', 0, 'rests')).toBe(
+        '{{char}} rests. Elara waits by the gate. {{user}} waits.'
+      )
+      expect(changed('waits', 1, 'rests')).toBe(
+        '{{char}} waits. Elara rests by the gate. {{user}} waits.'
+      )
+      expect(changed('waits', 2, 'rests')).toBe(
+        '{{char}} waits. Elara waits by the gate. {{user}} rests.'
+      )
+    })
+
+    it('takes the macro at a place that is a name, and leaves the name written out alone', () => {
+      expect(changed('Elara', 0, 'Mara')).toBe(
+        'Mara waits. Elara waits by the gate. {{user}} waits.'
+      )
+      expect(changed('Elara', 1, 'Mara')).toBe(
+        '{{char}} waits. Mara waits by the gate. {{user}} waits.'
+      )
+    })
+
+    it('takes the whole macro where a place starts or ends inside a name', () => {
+      expect(changed('lara waits', 0, 'lara rests')).toBe(
+        'Elara rests. Elara waits by the gate. {{user}} waits.'
+      )
     })
   })
 })

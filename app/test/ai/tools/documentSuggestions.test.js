@@ -414,6 +414,66 @@ describe('suggestions from the edit tools', () => {
     expect(edits.at(-1)).not.toHaveProperty('suggested')
   })
 
+  it('makes several edits at once over another’s suggestion, as one change to take back', async () => {
+    const doc = text('Chapter 1', 'A cold night.\n\nThe tide came in. The tide went out.')
+    await executeEditDocument({ path: 'Chapter 1', old: 'cold', new: 'warm' }, asking(OTHER))
+    const [theirs] = idsIn(content(doc.id))
+    const suggested = content(doc.id)
+
+    const made = await executeEditDocument(
+      {
+        path: 'Chapter 1',
+        edits: [
+          { old: 'tide', new: 'sea', all: true },
+          { old: 'The sea came in', new: 'The sea rose' },
+        ],
+      },
+      applying()
+    )
+
+    expect(made).toMatchObject({
+      success: true,
+      edits: 2,
+      charactersRemoved: 4 + 4 + 15,
+      charactersWritten: 3 + 3 + 12,
+    })
+    expect(content(doc.id)).toBe(
+      `A {--cold--}{>>${theirs}<<}{++warm++}{>>${theirs}<<} night.\n\nThe sea rose. The sea went out.`
+    )
+    expect(edits).toHaveLength(2)
+    expect(useDocuments(STORY).revertEdit(edits[1])).toBe(true)
+    expect(content(doc.id)).toBe(suggested)
+  })
+
+  it('folds several edits into its own suggestion where they touch it', async () => {
+    const doc = text('Chapter 1', 'A cold night.\n\nThe tide came in.')
+    const first = await executeEditDocument(
+      { path: 'Chapter 1', old: 'cold', new: 'warm' },
+      asking()
+    )
+
+    const more = await executeEditDocument(
+      {
+        path: 'Chapter 1',
+        edits: [
+          { old: 'A warm night', new: 'A warm, still night' },
+          { old: 'tide', new: 'sea' },
+        ],
+      },
+      asking()
+    )
+
+    expect(more).toMatchObject({ suggested: true, edits: 2 })
+    expect(more.suggestions).toContain(first.suggestion)
+    expect(more.suggestions).toHaveLength(2)
+    const read = await executeReadDocument({ path: 'Chapter 1' }, asking())
+    expect(read.content).toBe('A warm, still night.\n\nThe sea came in.')
+    expect((await executeReadDocument({ path: 'Chapter 1' }, asking(OTHER))).content).toBe(
+      'A cold night.\n\nThe tide came in.'
+    )
+    expect(Object.keys(threads(doc.id))).toHaveLength(2)
+  })
+
   it('keeps its view, its threads and rewinding true over changes made at random', async () => {
     const next = random(73)
     const api = useDocuments(STORY)

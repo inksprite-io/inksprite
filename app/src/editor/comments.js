@@ -446,27 +446,21 @@ function nearest(text, passage, near) {
 }
 
 /**
- * An edit made on the text as it reads, without the comments' markup, as an
- * edit to the markdown that holds them. What it replaces takes in the whole
- * of any comment it reaches, and of any comment over that one. A comment
- * whose passage comes through the edit unchanged is put back on it; one
- * whose passage it changed is resolved, its markup gone with the old words,
- * and is named in what comes back.
+ * A stretch of the text changed, as a change to the markdown that holds the
+ * comments. What it replaces takes in the whole of any comment it reaches,
+ * and of any comment over that one. A comment whose passage comes through
+ * the change unchanged is put back on it; one whose passage it changed is
+ * resolved, its markup gone with the old words, and is named in what comes
+ * back.
  *
- * @param {string} content - The markdown, comments and all
- * @param {string} old - The passage to change, as it reads without them
- * @param {string} replacement - What it becomes, without them
- * @returns {{count: number, old: string, new: string, resolved: FoundComment[]}}
- *   How many times `old` is in the text, and when once, the edit to make
+ * @param {ParsedMarkup} parsed - Markdown with comments in it
+ * @param {number} from - Where the stretch starts in the text without the markup
+ * @param {number} to - Where it ends
+ * @param {string} replacement - What it becomes, without any
+ * @returns {{old: string, new: string, from: number, to: number, resolved: FoundComment[]}}
+ *   The markdown it replaces, where, and what with
  */
-export function editAroundComments(content, old, replacement) {
-  const parsed = parseMarkup(content)
-  const { text, runs } = parsed
-  const count = old ? text.split(old).length - 1 : 0
-  if (count !== 1 || runs.length === 0) return { count, old, new: replacement, resolved: [] }
-
-  const from = text.indexOf(old)
-  const to = from + old.length
+function editStretch(parsed, from, to, replacement) {
   /** @type {FoundComment[]} */
   const lost = []
   /** @type {Set<string>} */
@@ -497,11 +491,53 @@ export function editAroundComments(content, old, replacement) {
   })
 
   // Resolved once no run of it is left, here or in another paragraph.
-  for (const run of runs) if (run.end <= edit.start || run.start >= edit.end) kept.add(run.id)
+  for (const run of parsed.runs) {
+    if (run.end <= edit.start || run.start >= edit.end) kept.add(run.id)
+  }
   const resolved = lost.filter(
     (run, i) => !kept.has(run.id) && lost.findIndex(other => other.id === run.id) === i
   )
-  return { count, old: edit.old, new: edit.new, resolved }
+  return { old: edit.old, new: edit.new, from: edit.from, to: edit.to, resolved }
+}
+
+/**
+ * An edit made on the text as it reads, without the comments' markup, as an
+ * edit to the markdown that holds them (see `editStretch`).
+ *
+ * @param {string} content - The markdown, comments and all
+ * @param {string} old - The passage to change, as it reads without them
+ * @param {string} replacement - What it becomes, without them
+ * @returns {{count: number, old: string, new: string, resolved: FoundComment[]}}
+ *   How many times `old` is in the text, and when once, the edit to make
+ */
+export function editAroundComments(content, old, replacement) {
+  const parsed = parseMarkup(content)
+  const { text, runs } = parsed
+  const count = old ? text.split(old).length - 1 : 0
+  if (count !== 1 || runs.length === 0) return { count, old, new: replacement, resolved: [] }
+
+  const from = text.indexOf(old)
+  const edit = editStretch(parsed, from, from + old.length, replacement)
+  return { count, old: edit.old, new: edit.new, resolved: edit.resolved }
+}
+
+/**
+ * The same edit by where the passage is, for one that is there more than
+ * once: each place is changed on its own.
+ *
+ * @param {string} content - The markdown, comments and all
+ * @param {number} from - Where the passage starts in the text as it reads
+ *   without them
+ * @param {number} to - Where it ends
+ * @param {string} replacement - What it becomes, without them
+ * @returns {{from: number, to: number, new: string, resolved: FoundComment[]}}
+ *   Where the markdown changes, what goes there, and the comments resolved
+ */
+export function editPlaceAroundComments(content, from, to, replacement) {
+  const parsed = parseMarkup(content)
+  if (parsed.runs.length === 0) return { from, to, new: replacement, resolved: [] }
+  const edit = editStretch(parsed, from, to, replacement)
+  return { from: edit.from, to: edit.to, new: edit.new, resolved: edit.resolved }
 }
 
 /**

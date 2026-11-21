@@ -15,6 +15,7 @@ import {
   countOpen,
   commentOn,
   editAroundComments,
+  editPlaceAroundComments,
   findComments,
   keepComments,
   liftThreads,
@@ -319,6 +320,40 @@ describe('edits around comments', () => {
     expect(editAroundComments(LINE, 'the', 'a').count).toBe(1)
     expect(editAroundComments(`${LINE} ${LINE}`, 'ferry', 'boat').count).toBe(2)
     expect(editAroundComments(LINE, 'a bus', 'a car').count).toBe(0)
+  })
+
+  describe('by where the passage is, for one that is there more than once', () => {
+    // "noon" twice: once under the comment, once after it.
+    const TWICE = 'The ferry {==left at noon==}{>>cabcd1<<} and was back by noon.'
+    const text = withoutComments(TWICE)
+    const [first, second] = [text.indexOf('noon'), text.lastIndexOf('noon')]
+    /** The markdown with an edit made to it. */
+    const made = (content, edit) => content.slice(0, edit.from) + edit.new + content.slice(edit.to)
+
+    it('changes the place named and no other, where no comment is reached', () => {
+      const edit = editPlaceAroundComments(TWICE, second, second + 4, 'dusk')
+
+      expect(made(TWICE, edit)).toBe(
+        'The ferry {==left at noon==}{>>cabcd1<<} and was back by dusk.'
+      )
+      expect(edit.resolved).toEqual([])
+    })
+
+    it('resolves the comment whose words the place is in, and takes its markup', () => {
+      const edit = editPlaceAroundComments(TWICE, first, first + 4, 'dusk')
+
+      expect(made(TWICE, edit)).toBe('The ferry left at dusk and was back by noon.')
+      expect(edit.resolved.map(comment => comment.id)).toEqual(['cabcd1'])
+    })
+
+    it('is where it says in text with no comments, with nothing to work out', () => {
+      expect(editPlaceAroundComments('noon, and noon again', 10, 14, 'dusk')).toEqual({
+        from: 10,
+        to: 14,
+        new: 'dusk',
+        resolved: [],
+      })
+    })
   })
 })
 

@@ -82,6 +82,7 @@ import {
   commentsInDoc,
   countOpen,
   editAroundComments,
+  editPlaceAroundComments,
   newCommentId,
   newPost,
   newThread,
@@ -115,7 +116,7 @@ import {
 } from './commentReads.js'
 import { peopleOf } from '@/cloud/people.js'
 import { extensionFor, isData, isUnreadText, sizeLabel } from '@/files/inspect.js'
-import { namesOf, storedPassage, substitute } from '@/cards/macros.js'
+import { namesOf, storedPassage, storedPlace, substitute } from '@/cards/macros.js'
 import { currentDigests } from '@/jobs/index.js'
 
 /**
@@ -3264,10 +3265,17 @@ export async function executeDeleteDocument(args, context) {
 }
 
 // ============================================================================
-// edit_document — one passage, replaced
+// edit_document — passages replaced, the rest left
 // ============================================================================
 
-/** @type {ToolDefinition} */
+/**
+ * What a chat's model is offered: one passage, as `old` and `new`. The tool
+ * takes more than that, several changes as `edits` and `all` for every place
+ * a passage appears (`editsOf`), which a caller that pays a round trip for
+ * each call is offered: a connected app (`apps/tools.js`).
+ *
+ * @type {ToolDefinition}
+ */
 export const editDocumentDefinition = {
   type: /** @type {const} */ ('function'),
   function: {
@@ -3339,6 +3347,15 @@ export function nearestContext(content, passage) {
 }
 
 /**
+ * What a call that gave several edits is told of one that missed, around
+ * what a call with one `old` and `new` is told, for which each is empty:
+ * which edit, that the ones before it had been made to the text it was
+ * looked for in, that `all` changes every place, and that none was made.
+ *
+ * @typedef {{which: string, after: string, orAll: string, none: string}} MissWording
+ */
+
+/**
  * What the model is told when its quote is not in the text once.
  *
  * @param {string} path
@@ -3346,58 +3363,252 @@ export function nearestContext(content, passage) {
  * @param {string} quoted - As the model gave it
  * @param {string} plainQuote - Without any markup
  * @param {number} count
+ * @param {MissWording} said
  * @returns {{error: string, nearest?: string}}
  */
-function missedQuote(path, content, quoted, plainQuote, count) {
+function missedQuote(path, content, quoted, plainQuote, count, { which, after, orAll, none }) {
   if (count > 1) {
     return {
-      error: `"old" appears ${count} times in "${path}". Include more of the surrounding text so it matches once.`,
+      error: `${which}"old" appears ${count} times in "${path}"${after}. Include more of the surrounding text so it matches once${orAll}.${none}`,
     }
   }
   const spacedDifferently = squash(withoutComments(content)).includes(squash(plainQuote))
   return {
     error: spacedDifferently
-      ? `"old" was not found in "${path}" as written, though the words are there: the line breaks or spacing differ. Quote the passage exactly as read_document gave it.`
-      : `"old" was not found in "${path}". Quote the passage exactly as read_document gave it; the nearest lines are in "nearest".`,
+      ? `${which}"old" was not found in "${path}" as written${after}, though the words are there: the line breaks or spacing differ. Quote the passage exactly as read_document gave it.${none}`
+      : `${which}"old" was not found in "${path}"${after}. Quote the passage exactly as read_document gave it; the nearest lines are in "nearest".${none}`,
     nearest: nearestContext(content, quoted),
   }
 }
 
 /**
- * One passage changed in the text as the chat sees it: found there, and the
- * text with it changed suggested or made (see `changeSeen`). A comment on
- * the passage stays on it while the change is suggested, since the text
- * has not changed yet.
+ * One change to a passage, as a call asks for it: the passage as it reads
+ * now, what it becomes, and whether every place it appears is meant.
  *
- * @param {ToolContext} context
- * @param {DocumentsApi} api
- * @param {Document} document
- * @param {import('@/cards/macros.js').Names|null} names
- * @param {string} path - As the model gave it
- * @param {string} quoted
- * @param {string} replacement
+ * @typedef {{old: string, new: string, all: boolean}} PassageEdit
  */
-function editSeen(context, api, document, names, path, quoted, replacement) {
-  const seen = seenToChange(api, document, context.chatId)
-  const quote = quoteWithoutComments(withoutSuggestionMarkup(quoted))
-  const written = quoteWithoutComments(withoutSuggestionMarkup(replacement))
-  // Found as the model sees it, its names filled in, and changed where it is.
-  const found = names ? storedPassage(seen.text, names, quote, written) : null
-  const old = found?.old ?? quote
-  const count = found && found.count !== 1 ? found.count : seen.text.split(old).length - 1
-  if (count !== 1) return missedQuote(path, substitute(seen.text, names), quoted, quote, count)
 
-  const text = seen.text.replace(old, () => found?.new ?? written)
-  const change = changeSeen(context, api, document, 'edit_document', seen, text)
-  if ('error' in change) return change
-  return answerSeen(api, document, change, names, {
-    charactersRemoved: quoted.length,
-    charactersWritten: replacement.length,
-  })
+/** What a call is told when it names no passage. */
+const NO_PASSAGE = 'Give the passage to change as "old"; to add text, use append_document.'
+
+/**
+ * The changes a call asks for, in the order they are made, or what is wrong
+ * with them: one as `old` and `new`, or several as `edits`, each with `all`
+ * for itself or the call with `all` for every one.
+ *
+ * @param {Record<string, any>} args
+ * @returns {{edits: PassageEdit[], listed: boolean}|{error: string}} The
+ *   changes, and whether they came as a list
+ */
+function editsOf(args) {
+  const listed = Array.isArray(args.edits)
+  if (!listed) {
+    if (typeof args.old !== 'string' || !args.old) return { error: NO_PASSAGE }
+    const all = args.all === true
+    // Left out, `new` is nothing and the passage is removed, as it always
+    // was: but not at every place it appears, on the strength of a slip.
+    if (all && typeof args.new !== 'string') return { error: 'Give what it becomes as "new".' }
+    const written = typeof args.new === 'string' ? args.new : ''
+    return { edits: [{ old: args.old, new: written, all }], listed }
+  }
+  if (args.old !== undefined || args.new !== undefined) {
+    return { error: 'Give the changes as "edits", or one as "old" and "new", not both.' }
+  }
+  if (args.edits.length === 0) return { error: 'Give at least one change in "edits".' }
+  /** @type {PassageEdit[]} */
+  const edits = []
+  for (const [at, edit] of args.edits.entries()) {
+    const which = `Edit ${at + 1}: `
+    if (typeof edit?.old !== 'string' || !edit.old) return { error: `${which}${NO_PASSAGE}` }
+    if (typeof edit.new !== 'string') return { error: `${which}Give what it becomes as "new".` }
+    edits.push({ old: edit.old, new: edit.new, all: edit.all === true || args.all === true })
+  }
+  return { edits, listed }
 }
 
 /**
- * @param {{path: string, old: string, new: string}} args
+ * Where a passage is in a text, each place after the one before: the places
+ * a passage is counted at.
+ *
+ * @param {string} text
+ * @param {string} passage
+ * @returns {number[]}
+ */
+function placesOf(text, passage) {
+  /** @type {number[]} */
+  const places = []
+  if (!passage) return places
+  for (let at = text.indexOf(passage); at !== -1; at = text.indexOf(passage, at + passage.length)) {
+    places.push(at)
+  }
+  return places
+}
+
+/**
+ * A change to a document's text, comments and all: the stretch of it that
+ * goes, what goes there, and the comments whose words went with it.
+ *
+ * @typedef {{from: number, to: number, new: string, resolved: string[]}} TextChange
+ */
+
+/**
+ * One passage changed in a document's text, where it is there once. The
+ * passage is found in the text as it reads without the writer's comments,
+ * and changed in the text that holds them (`editAroundComments`).
+ *
+ * A chat with names quotes the text with the names in, which is not what
+ * the document says where it has macros: the passage is found there and
+ * changed where it is in the document. Counted as the model sees it, and not
+ * tried unless it is there once: a quote that is there twice in what it read
+ * could be there once in the document, and be the wrong one. Then it has to
+ * be in the document once as it is written, markup and all.
+ *
+ * @param {string} text - The document's text, comments and all
+ * @param {import('@/cards/macros.js').Names|null} names
+ * @param {string} quote - The passage, without any markup
+ * @param {string} written - What it becomes, without any
+ * @returns {TextChange|{count: number}} The change to make, or how many
+ *   times the passage is there when that is not once
+ */
+function passageChanged(text, names, quote, written) {
+  const found = names ? storedPassage(withoutComments(text), names, quote, written) : null
+  const edit = editAroundComments(text, found?.old ?? quote, found?.new ?? written)
+  if ((found && found.count !== 1) || edit.count !== 1) {
+    return { count: found && found.count !== 1 ? found.count : edit.count }
+  }
+  const count = text.split(edit.old).length - 1
+  if (count !== 1) return { count }
+  const from = text.indexOf(edit.old)
+  return {
+    from,
+    to: from + edit.old.length,
+    new: edit.new,
+    resolved: edit.resolved.map(comment => comment.id),
+  }
+}
+
+/**
+ * A passage changed at one of the places it is in a document's text, for a
+ * passage that is there more than once and is changed at each: what
+ * `passageChanged` does for the one place a passage is at, by where it is.
+ *
+ * @param {string} text - The document's text, comments and all
+ * @param {import('@/cards/macros.js').Names|null} names
+ * @param {number} at - Where the passage is, in the text as the model reads it
+ * @param {number} length - How long it is there
+ * @param {string} written - What it becomes, without any markup
+ * @returns {TextChange}
+ */
+function placeChanged(text, names, at, length, written) {
+  const found = names
+    ? storedPlace(withoutComments(text), names, at, length, written)
+    : { from: at, to: at + length, new: written }
+  const edit = editPlaceAroundComments(text, found.from, found.to, found.new)
+  return { ...edit, resolved: edit.resolved.map(comment => comment.id) }
+}
+
+/**
+ * A text with a stretch of the same length changed at each of some places,
+ * in one pass.
+ *
+ * @param {string} text
+ * @param {number[]} places - Where each stretch starts, in order
+ * @param {number} length
+ * @param {string} written - What each becomes
+ * @returns {string}
+ */
+function changedAt(text, places, length, written) {
+  /** @type {string[]} */
+  const pieces = []
+  let last = 0
+  for (const at of places) {
+    pieces.push(text.slice(last, at), written)
+    last = at + length
+  }
+  pieces.push(text.slice(last))
+  return pieces.join('')
+}
+
+/**
+ * A call's edits made to a document's text, in order, each to the text the
+ * ones before it left, or what the model is told of the first that can't be
+ * made. Nothing is written here: the text comes back for the caller to
+ * write, so the edits are made together or not at all.
+ *
+ * @param {string} before - The document's text, as stored or as the chat
+ *   sees it
+ * @param {{edits: PassageEdit[], listed: boolean}} asked
+ * @param {Object} how
+ * @param {import('@/cards/macros.js').Names|null} how.names
+ * @param {string} how.path - As the model gave it
+ * @param {boolean} how.seen - Whether the text is the document as the chat
+ *   sees it, in which a quote may carry a suggestion's markup
+ * @returns {{text: string, only: {old: string, new: string}|null, resolved: string[], removed: number, written: number}|{error: string, nearest?: string}}
+ *   The text with the edits made, the one change that made it so where one
+ *   did, the comments they resolve, and how many characters were taken out
+ *   and put in
+ */
+function editsMade(before, { edits, listed }, { names, path, seen }) {
+  const several = edits.length > 1
+  /** The text as the model reads it: without the comments, the names in. */
+  const read = (/** @type {string} */ text) => substitute(withoutComments(text), names)
+  let text = before
+  let changes = 0
+  /** @type {{old: string, new: string}|null} */
+  let only = null
+  /** @type {string[]} */
+  const resolved = []
+  let removed = 0
+  let written = 0
+  const make = (/** @type {TextChange} */ change) => {
+    only = changes++ === 0 ? { old: text.slice(change.from, change.to), new: change.new } : null
+    resolved.push(...change.resolved)
+    text = text.slice(0, change.from) + change.new + text.slice(change.to)
+  }
+
+  for (const [at, edit] of edits.entries()) {
+    // A quote may carry the writer's comment markup or leave it out, and
+    // what the model writes never makes a comment, nor a suggestion.
+    const quote = quoteWithoutComments(seen ? withoutSuggestionMarkup(edit.old) : edit.old)
+    const becomes = quoteWithoutComments(withoutSuggestionMarkup(edit.new))
+    const every = edit.all ? placesOf(read(text), quote) : []
+    if (every.length > 1 && !names && !text.includes(OPEN_MARKUP)) {
+      // With no comment in the text and no name read into it, each place is
+      // in the text where the model reads it, with nothing around it to
+      // work out. A place at a time goes over a long text once for each.
+      text = changedAt(text, every, quote.length, becomes)
+      changes += every.length
+      only = null
+    } else if (every.length > 1) {
+      // The last place first, so the ones before it are where they were.
+      for (const place of every.reverse()) {
+        make(placeChanged(text, names, place, quote.length, becomes))
+      }
+    } else {
+      const change = passageChanged(text, names, quote, becomes)
+      if ('count' in change) {
+        return missedQuote(path, read(text), edit.old, quote, change.count, {
+          which: several ? `Edit ${at + 1}: ` : '',
+          after: at > 0 ? ' once the edits before it were made' : '',
+          orAll: listed ? ', or set "all" to change every one' : '',
+          none: several ? ' None of the edits was made.' : '',
+        })
+      }
+      make(change)
+    }
+    const places = Math.max(1, every.length)
+    removed += edit.old.length * places
+    written += edit.new.length * places
+  }
+  return { text, only, resolved, removed, written }
+}
+
+/**
+ * Change passages of a document, leaving the rest as it is: one passage, as
+ * `old` and `new`, or several as `edits`, made in order and together or not
+ * at all, and with `all`, every place a passage appears.
+ *
+ * @param {{path: string, old?: string, new?: string, all?: boolean, edits?: Array<{old: string, new: string, all?: boolean}>}} args
  * @param {ToolContext} context
  */
 export async function executeEditDocument(args, context) {
@@ -3411,88 +3622,81 @@ export async function executeEditDocument(args, context) {
   if (document.type === 'folder') return { error: 'A folder has no content to edit' }
   if (document.type === 'file') return { error: fileIsNotWritten(args.path) }
 
-  const quoted = typeof args.old === 'string' ? args.old : ''
-  const replacement = typeof args.new === 'string' ? args.new : ''
-  if (!quoted)
-    return { error: 'Give the passage to change as "old"; to add text, use append_document.' }
-  if (changesSeen(context, api, document)) {
-    return editSeen(context, api, document, names, args.path, quoted, replacement)
-  }
+  const asked = editsOf(args)
+  if ('error' in asked) return asked
+  const answer = editDocument(context, api, document, names, args.path, asked)
+  // With one shape for one edit and for several: and how many, of several.
+  return asked.edits.length > 1 && !('error' in answer)
+    ? { ...answer, edits: asked.edits.length }
+    : answer
+}
 
-  // The passage is found in the text as it reads without the writer's
-  // comments, so a quote may carry their markup or leave it out, and what
-  // the model writes never makes one, nor a suggestion.
+/**
+ * Make a call's edits to a document, as one change: to the text as the chat
+ * sees it, suggested or made (see `changeSeen`), where the chat suggests or
+ * the document holds suggestions, and to the text as it is stored otherwise.
+ * A comment on a passage stays on it while the change is suggested, since
+ * the text has not changed yet; made, a change resolves the comments whose
+ * words it took.
+ *
+ * @param {ToolContext} context
+ * @param {DocumentsApi} api
+ * @param {Document} document
+ * @param {import('@/cards/macros.js').Names|null} names
+ * @param {string} path - As the model gave it
+ * @param {{edits: PassageEdit[], listed: boolean}} asked
+ * @returns {Record<string, any>}
+ */
+function editDocument(context, api, document, names, path, asked) {
+  const seen = changesSeen(context, api, document)
+    ? seenToChange(api, document, context.chatId)
+    : null
   const stored = api.currentContent(document.id)
-  const plain = withoutComments(stored)
-  const plainQuote = quoteWithoutComments(quoted)
-  const plainReplacement = quoteWithoutComments(withoutSuggestionMarkup(replacement))
+  const made = editsMade(seen ? seen.text : stored, asked, { names, path, seen: !!seen })
+  if ('error' in made) return made
+  const counts = { charactersRemoved: made.removed, charactersWritten: made.written }
 
-  // A chat with names quotes the text with the names in, which is not what
-  // the document says where it has macros: the passage is found there and
-  // changed where it is in the document. Counted as the model sees it.
-  const found = names ? storedPassage(plain, names, plainQuote, plainReplacement) : null
-  const edit = editAroundComments(stored, found?.old ?? plainQuote, found?.new ?? plainReplacement)
-  const { old, new: written, resolved } = edit
-  const comments = resolving(
-    api,
-    document.id,
-    resolved.map(comment => comment.id)
-  )
-
-  // Not tried unless it is there once as the model sees it: a quote that is
-  // there twice in what it read could be there once in the document, and be
-  // the wrong one.
-  /** @type {{applied: boolean, count: number}} */
-  let outcome = { applied: false, count: 0 }
-  if ((found && found.count !== 1) || edit.count !== 1) {
-    outcome = { applied: false, count: found && found.count !== 1 ? found.count : edit.count }
-  } else if (context.propose) {
-    // Checked as if applied, so a misquote is corrected now rather than when
-    // the writer accepts.
-    const count = api.currentContent(document.id).split(old).length - 1
-    outcome = { applied: count === 1, count }
-  } else {
-    recording(
-      context,
-      api,
-      document,
-      'edit_document',
-      () => {
-        outcome = api.replaceText(document.id, old, written)
-        if (outcome.applied && comments.length) api.changeThreads(document.id, comments, false)
-      },
-      comments
-    )
-  }
-  const { applied, count } = outcome
-  if (!applied) {
-    const content = substitute(withoutComments(api.currentContent(document.id)), names)
-    return missedQuote(args.path, content, quoted, plainQuote, count)
+  if (seen) {
+    const change = changeSeen(context, api, document, 'edit_document', seen, made.text)
+    return 'error' in change ? change : answerSeen(api, document, change, names, counts)
   }
 
+  const comments = resolving(api, document.id, made.resolved)
   // What was said on each comment the edit resolved, for the model to see
   // what went with the old words.
   const resolvedComments = resolvedNote(comments, names)
 
   if (context.propose) {
+    // One change is proposed as it was found, and several as the one
+    // passage that holds them all: what the writer's Accept can make.
+    const pair = made.only ?? diffEdit(stored, made.text) ?? { old: stored, new: stored }
     return {
       ...propose(context, {
         documentId: document.id,
         path: pathOf(api, document),
         tool: 'edit_document',
-        old,
-        new: written,
+        ...pair,
         ...(comments.length ? { comments } : {}),
       }),
       ...resolvedComments,
     }
   }
 
+  recording(
+    context,
+    api,
+    document,
+    'edit_document',
+    () => {
+      api.setContent(document.id, made.text)
+      if (comments.length) api.changeThreads(document.id, comments, false)
+    },
+    comments
+  )
   return {
     success: true,
     document: { id: document.id, title: document.title, path: pathOf(api, document) },
-    charactersRemoved: quoted.length,
-    charactersWritten: replacement.length,
+    ...counts,
     ...resolvedComments,
   }
 }

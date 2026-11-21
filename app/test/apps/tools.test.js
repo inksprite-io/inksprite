@@ -1,5 +1,5 @@
 /* global AbortController */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
 vi.mock('@/stores/db', () => ({
@@ -48,6 +48,31 @@ vi.mock('@/platform/apps.js', () => ({
   forgetReadsOf: vi.fn(),
 }))
 
+/** How often a document is taken as a connection reads it, counted: the real thing runs. */
+vi.mock('@/apps/revisions.js', async importOriginal => {
+  const real = await importOriginal()
+  return { ...real, stateAt: vi.fn(real.stateAt) }
+})
+
+/** How often the editor is written out whole, counted: the real thing runs. */
+const written = vi.hoisted(() => ({ out: 0 }))
+vi.mock('@/composables/useEditor.js', async importOriginal => {
+  const real = await importOriginal()
+  return {
+    ...real,
+    useEditor: () => {
+      const editor = real.useEditor()
+      return {
+        ...editor,
+        flush: id => {
+          if (id == null) written.out++
+          editor.flush(id)
+        },
+      }
+    },
+  }
+})
+
 /** What makes an export ready for an app to fetch, stood in for (`apps/exports.test.js`). */
 const exporting = vi.hoisted(() => ({ exportFor: vi.fn() }))
 vi.mock('@/apps/exports.js', () => exporting)
@@ -60,9 +85,11 @@ const projects = vi.hoisted(() => ({
 vi.mock('@/apps/projects.js', () => projects)
 
 import { LIST_PROJECTS, callTool, toResult, toolsFor } from '@/apps/tools.js'
+import { stateAt } from '@/apps/revisions.js'
 import { executeReadDocument, projectOverview } from '@/ai/tools/documents.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { clearDocumentInstances } from '@/composables/useDocuments'
+import { clearEditor, useEditor } from '@/composables/useEditor.js'
 import { useComments } from '@/composables/useComments.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
@@ -754,6 +781,172 @@ describe('callTool', () => {
       note: expect.stringContaining('`stored`'),
     })
     expect(stored).toBe('- rope\n- a lamp')
+  })
+})
+
+describe('around a call', () => {
+  /** @type {ReturnType<typeof useDocumentsStore>} */
+  let store
+
+  const PLAN = 'The vault opens at noon.\n\nBring {==rope==}{>>cabcd1<<} and a lamp.'
+
+  /** Type into the plan where it is open in the editor, after some words of it. */
+  const type = (after, typed) => {
+    const editor = useEditor()
+    const state = editor.stateOf('doc_plan')
+    let at = -1
+    state.doc.descendants((node, pos) => {
+      const found = node.isText ? node.text.indexOf(after) : -1
+      if (found !== -1) at = pos + found + after.length
+    })
+    editor.dispatch('doc_plan', state.tr.insertText(typed, at))
+  }
+
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    clearDocumentInstances()
+    clearEditor()
+    vi.clearAllMocks()
+    records.kept = new Map()
+    written.out = 0
+    store = useDocumentsStore()
+    projects.findProject.mockResolvedValue({ id: STORY, name: 'Thief', summary: '' })
+    projects.inProject.mockImplementation(async (_, work) => ({ value: await work() }))
+    await projectOverview(STORY)
+    store.createDocument({
+      id: 'doc_plan',
+      storyId: STORY,
+      parentId: rootIdFor(STORY),
+      type: 'text',
+      title: 'Plan',
+      content: PLAN,
+      comments: {
+        cabcd1: {
+          status: 'open',
+          quote: 'rope',
+          posts: [{ author: 'writer', text: 'How much?', created: 1 }],
+        },
+      },
+    })
+    store.createDocument({
+      id: 'doc_script',
+      storyId: STORY,
+      parentId: rootIdFor(STORY),
+      type: 'text',
+      title: 'odds.py',
+      content: 'print(1)',
+      plain: true,
+    })
+    useEditor().open('doc_plan', PLAN)
+  })
+
+  afterEach(() => clearEditor())
+
+  it('reads what was typed up to it, whichever tool is called', async () => {
+    type('at noon', ', by the harbour clock')
+    type('ro', 'wing ro')
+    // Not yet written out: the store hears of typing after a pause.
+    expect(store.getDocument('doc_plan').content).toBe(PLAN)
+
+    const listed = parts(await callTool(APP, 'list_documents', {}, signal))[0]
+    expect(listed).toContain('Plan — 15 words')
+
+    type('lamp', ' with a blue shade')
+    const found = JSON.parse(
+      parts(await callTool(APP, 'search_documents', { query: 'blue shade' }, signal))[0]
+    )
+    expect(found.results.map(hit => hit.path)).toEqual(['Plan'])
+
+    type('shade', ', trimmed')
+    const described = JSON.parse(
+      parts(await callTool(APP, 'describe_document', { path: 'Plan' }, signal))[0]
+    )
+    expect(described.words).toBe(20)
+
+    type('rowing ro', 'pe and ro')
+    const comments = JSON.parse(parts(await callTool(APP, 'list_comments', {}, signal))[0])
+    expect(comments.comments.map(comment => comment.passage)).toEqual(['rowing rope and rope'])
+
+    type('trimmed', ' twice')
+    const read = parts(await callTool(APP, 'read_document', { path: 'Plan' }, signal))
+    expect(read[1]).toBe(
+      'The vault opens at noon, by the harbour clock.\n\nBring rowing rope and rope and a lamp with a blue shade, trimmed twice.'
+    )
+  })
+
+  it('writes the editor out once, and takes the document once before and once after', async () => {
+    const counted = async (app, name, args) => {
+      written.out = 0
+      stateAt.mockClear()
+      const answer = await callTool(app, name, args, signal)
+      return { answer, flushed: written.out, taken: stateAt.mock.calls.length }
+    }
+
+    const read = await counted(WRITER, 'read_document', { path: 'Plan' })
+    expect(read).toMatchObject({ flushed: 1, taken: 2 })
+    const { revision } = JSON.parse(parts(read.answer)[0])
+
+    // Still at the revision held: answered from the document as it is.
+    expect(await counted(WRITER, 'read_document', { path: 'Plan', revision })).toMatchObject({
+      flushed: 1,
+      taken: 1,
+    })
+
+    const edit = { path: 'Plan', old: 'at noon', new: 'at dusk' }
+    const made = await counted(WRITER, 'edit_document', edit)
+    expect(made).toMatchObject({ flushed: 1, taken: 2 })
+    expect(JSON.parse(parts(made.answer)[0])).toMatchObject({ success: true })
+
+    const suggested = await counted(WRITER, 'append_document', {
+      path: 'Plan',
+      text: '* chalk',
+      suggest: true,
+    })
+    expect(suggested).toMatchObject({ flushed: 1, taken: 2 })
+    expect(parts(suggested.answer)[1]).toBe('- chalk')
+
+    // Refused from the document as it is before: the tool is not run.
+    const refused = await counted(WRITER, 'edit_document', {
+      path: 'odds.py',
+      old: 'print(1)',
+      new: 'print(2)',
+      suggest: true,
+    })
+    expect(refused).toMatchObject({ flushed: 1, taken: 1 })
+    expect(refused.answer.result.isError).toBe(true)
+
+    for (const [name, args] of [
+      ['list_documents', {}],
+      ['search_documents', { query: 'vault' }],
+      ['describe_document', { path: 'Plan' }],
+      ['list_comments', {}],
+      ['move_document', { path: 'odds.py', to: 'evens.py' }],
+    ]) {
+      expect(await counted(WRITER, name, args), name).toMatchObject({ flushed: 1, taken: 0 })
+    }
+  })
+
+  it('says what a write left from one pair: its revision, and how the text was stored', async () => {
+    const read = await callTool(WRITER, 'read_document', { path: 'Plan' }, signal)
+    type('at noon', ' sharp')
+
+    const answer = await callTool(
+      WRITER,
+      'edit_document',
+      { path: 'Plan', old: 'Bring rope and a lamp.', new: '* rope\n* a lamp' },
+      signal
+    )
+
+    const [about, stored] = parts(answer)
+    expect(stored).toBe('- rope\n- a lamp')
+    // What was typed before the call is not the call's own change.
+    expect(JSON.parse(about).changedSince).toEqual({
+      revision: JSON.parse(parts(read)[0]).revision,
+      note: expect.stringContaining('changes_since'),
+    })
+    expect(JSON.parse(about).revision).toBe(
+      (await stateAt({ storyId: STORY, chatId: 'app:app_1' }, 'Plan')).seen.revision
+    )
   })
 })
 
