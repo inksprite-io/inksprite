@@ -1983,7 +1983,6 @@ describe('DocumentNode in a project shared with only some of its documents', () 
   }
 
   beforeEach(async () => {
-    vi.stubEnv('VITE_PREVIEW', 'selective-sharing')
     setActivePinia(createPinia())
     clearDocumentInstances()
     vi.clearAllMocks()
@@ -1995,7 +1994,6 @@ describe('DocumentNode in a project shared with only some of its documents', () 
 
   afterEach(() => {
     sharing.value = { me: null, projects: {}, selective: [], invitations: [] }
-    vi.unstubAllEnvs()
   })
 
   /** @param {string} id */
@@ -2074,20 +2072,27 @@ describe('DocumentNode in a project shared with only some of its documents', () 
     expect(store.getDocument(escape.id).unshared).toBe(true)
   })
 
-  it('shows nothing of it before anyone else is in the project, or without the preview', () => {
+  it('marks its rows and offers to stop sharing one before anyone else is in the project', () => {
     const chapter = api.createTextDocument('root_story_1', 'Chapter 1')
-    const labels = (/** @type {import('@vue/test-utils').VueWrapper} */ wrapper) =>
-      items(wrapper).map((/** @type {any} */ item) => item.label)
 
+    // What to hold back is chosen before the first friend is asked in.
     sharing.value = { ...PEOPLE, projects: {} }
-    let wrapper = mountNode(chapter.id)
-    expect(wrapper.find('[data-share-mark]').exists()).toBe(false)
-    expect(labels(wrapper)).not.toContain('Stop sharing')
+    const wrapper = mountNode(chapter.id)
+    const mark = wrapper.find('[data-share-mark]')
+    expect(mark.attributes('data-share-mark')).toBe('shared')
+    expect(mark.attributes('role')).toBe('img')
+    expect(mark.attributes('aria-label')).toBe('Shared')
+    expect(items(wrapper).map((/** @type {any} */ item) => item.label)).toContain('Stop sharing')
+  })
 
-    sharing.value = PEOPLE
-    vi.stubEnv('VITE_PREVIEW', '')
-    wrapper = mountNode(chapter.id)
+  it('shows nothing of it in a project shared whole', () => {
+    const chapter = api.createTextDocument('root_story_1', 'Chapter 1')
+
+    sharing.value = { ...PEOPLE, selective: [] }
+    const wrapper = mountNode(chapter.id)
     expect(wrapper.find('[data-share-mark]').exists()).toBe(false)
-    expect(labels(wrapper)).not.toContain('Stop sharing')
+    const labels = items(wrapper).map((/** @type {any} */ item) => item.label)
+    expect(labels).not.toContain('Stop sharing')
+    expect(labels).not.toContain('Share')
   })
 })

@@ -1,4 +1,4 @@
-/* global Event */
+/* global Event, KeyboardEvent */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
@@ -72,7 +72,6 @@ afterEach(() => {
   me.value = null
   sharing.value = { me: null, projects: {}, selective: [], invitations: [] }
   cloud.people.value = null
-  vi.unstubAllEnvs()
 })
 
 describe('ProjectSharing', () => {
@@ -238,7 +237,6 @@ describe('ProjectSharing, sharing only some documents', () => {
   let api
 
   beforeEach(async () => {
-    vi.stubEnv('VITE_PREVIEW', 'selective-sharing')
     api = useDocuments('story_1')
     await api.init()
   })
@@ -264,16 +262,14 @@ describe('ProjectSharing, sharing only some documents', () => {
     const note = api.createTextDocument(notes.id, 'A note')
     const chapter = api.createTextDocument(api.root.value.id, 'Chapter 1')
     await mountSharing()
-    // Shared whole, every box is ticked and none can be clicked.
+    // Shared whole, there is nothing to choose, and no boxes.
     expect(whole().checked).toBe(true)
-    expect(find('[data-share-tree]').getAttribute('aria-disabled')).toBe('true')
-    expect(box(notes.id).checked).toBe(true)
-    expect(box(notes.id).disabled).toBe(true)
+    expect(find('[data-share-tree]')).toBeNull()
 
     await flip()
     expect(cloud.setSelective).toHaveBeenCalledWith('story_1', true)
     expect(whole().checked).toBe(false)
-    expect(find('[data-share-tree]').getAttribute('aria-disabled')).toBeNull()
+    expect(find('[data-share-tree]')).not.toBeNull()
     expect(box(chapter.id).checked).toBe(true)
     expect(box(chapter.id).disabled).toBe(false)
 
@@ -294,8 +290,9 @@ describe('ProjectSharing, sharing only some documents', () => {
     await flip()
     expect(cloud.setSelective).toHaveBeenLastCalledWith('story_1', false)
     expect(whole().checked).toBe(true)
-    expect(box(notes.id).checked).toBe(true)
-    expect(box(notes.id).disabled).toBe(true)
+    expect(find('[data-share-tree]')).toBeNull()
+    // What was ticked is kept for the next time only some is shared.
+    expect(store.getDocument(notes.id).unshared).toBe(true)
   })
 
   it('opens as the project is shared, and goes back when the choice can’t be made', async () => {
@@ -308,12 +305,49 @@ describe('ProjectSharing, sharing only some documents', () => {
     )
     await flip()
     expect(whole().checked).toBe(false)
-    expect(find('[data-share-error]').textContent?.trim()).toBe(
+    // Said under the switch, and not where sharing with someone says its own.
+    expect(find('[data-share-whole-error]').textContent?.trim()).toBe(
       "This project isn't on the sync server yet. Try again once it has synced."
     )
+    expect(find('[data-share-error]')).toBeNull()
+    expect(find('[data-share-tree]')).not.toBeNull()
   })
 
-  it('offers no choice to someone it is shared with, or without the preview', async () => {
+  it('leaves the Share button as it is while the choice is made', async () => {
+    /** @type {() => void} */
+    let made = () => {}
+    cloud.setSelective.mockImplementation(() => new Promise(resolve => (made = () => resolve())))
+    await mountSharing()
+
+    whole().click()
+    await flushPromises()
+    // The switch waits; the button above it is not what is working.
+    expect(whole().disabled).toBe(true)
+    expect(find('[data-action="share"]').querySelector('.p-button-loading-icon')).toBeNull()
+
+    made()
+    await flushPromises()
+    expect(whole().disabled).toBe(false)
+  })
+
+  it('lets an Escape pressed on a box out of the tree, for the settings to close on', async () => {
+    sharing.value = { me: null, projects: {}, selective: ['story_1'], invitations: [] }
+    const chapter = api.createTextDocument(api.root.value.id, 'Chapter 1')
+    await mountSharing()
+    const heard = vi.fn()
+    document.addEventListener('keydown', heard)
+    try {
+      box(chapter.id).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      box(chapter.id).dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true }))
+    } finally {
+      document.removeEventListener('keydown', heard)
+    }
+    expect(heard).toHaveBeenCalledTimes(1)
+    expect(heard.mock.calls[0][0].key).toBe('Escape')
+    expect(find('[data-share-tree]').contains(heard.mock.calls[0][0].target)).toBe(true)
+  })
+
+  it('offers no choice to someone it is shared with', async () => {
     sharing.value = {
       me: 2,
       projects: {
@@ -329,13 +363,6 @@ describe('ProjectSharing, sharing only some documents', () => {
       selective: [],
       invitations: [],
     }
-    await mountSharing()
-    expect(find('[data-field="share-whole"]')).toBeNull()
-    expect(find('[data-share-tree]')).toBeNull()
-    wrapper?.unmount()
-
-    sharing.value = { me: null, projects: {}, selective: [], invitations: [] }
-    vi.stubEnv('VITE_PREVIEW', '')
     await mountSharing()
     expect(find('[data-field="share-whole"]')).toBeNull()
     expect(find('[data-share-tree]')).toBeNull()

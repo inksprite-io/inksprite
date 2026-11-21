@@ -1,7 +1,8 @@
 /**
  * Sync and sharing, gone through in a browser as writers go through them:
- * accounts made, friend codes passed, projects shared, accepted, rejected,
- * left and taken back, people blocked, devices signed out.
+ * accounts made, friend codes passed, projects shared, whole or with only
+ * some of their documents, accepted, rejected, left and taken back, people
+ * blocked, devices signed out.
  *
  *   npm run sync-flows                    # from app/, every flow
  *   npm run sync-flows -- --only block    # the flows whose names have this in them

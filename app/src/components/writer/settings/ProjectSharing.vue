@@ -123,7 +123,7 @@
       </ul>
     </section>
 
-    <template v-if="owns && choosesDocuments">
+    <template v-if="owns">
       <div class="flex items-center justify-between gap-2">
         <label for="share-whole" class="text-xs font-medium text-surface-700 dark:text-surface-200"
           >Share entire project</label
@@ -132,24 +132,28 @@
           :model-value="!selective"
           input-id="share-whole"
           class="flex-none"
-          :disabled="busy"
+          :disabled="busy || choosing !== null"
           data-field="share-whole"
           @update:model-value="whole => choose(!whole)"
         />
       </div>
+      <p v-if="choiceFailure" class="text-xs text-red-600 dark:text-red-400" data-share-whole-error>
+        {{ choiceFailure }}
+      </p>
       <!-- Each its own box: ticked where shared, half where seen only on
            the way to something shared. A click goes for everything in it,
-           and leaves the folders above as they are. Shared whole, it is all
-           ticked, and greyed until the switch is turned off. -->
+           and leaves the folders above as they are. There while only some
+           is shared: shared whole, there is nothing to choose. -->
       <div
+        v-if="selective"
+        ref="boxes"
         class="max-h-[min(18rem,40vh)] overflow-y-auto"
-        :class="{ 'opacity-50': !selective }"
-        :aria-disabled="!selective || undefined"
         data-share-tree
       >
         <Tree
           v-model:expanded-keys="expanded"
           :value="nodes"
+          aria-label="Shared documents"
           :pt="{
             root: { class: '!p-0 !bg-transparent' },
             node: { class: '!outline-none' },
@@ -159,16 +163,15 @@
         >
           <template #default="{ node }">
             <label
-              class="flex items-center gap-2"
-              :class="selective ? 'cursor-pointer' : 'cursor-default'"
+              class="flex items-center gap-2 cursor-pointer"
               :data-share-node="node.key"
+              @keydown.escape="passOn"
             >
               <Checkbox
-                :model-value="!selective || shares.sharingOf(node.key) === 'shared'"
-                :indeterminate="selective && shares.sharingOf(node.key) === 'partly'"
+                :model-value="shares.sharingOf(node.key) === 'shared'"
+                :indeterminate="shares.sharingOf(node.key) === 'partly'"
                 binary
                 size="small"
-                :disabled="!selective"
                 @update:model-value="value => shares.setShared(node.key, value)"
               />
               <span>{{ node.label }}</span>
@@ -189,7 +192,6 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import Tree from 'primevue/tree'
 import { readFriendCode } from '@/cloud/crypto.js'
 import { me, sharing } from '@/cloud/people.js'
-import { inPreview } from '@/config/preview.js'
 import { useCloudSync } from '@/composables/useCloudSync.js'
 import { useDocuments } from '@/composables/useDocuments'
 import { useSharedDocuments } from '@/composables/useSharedDocuments.js'
@@ -202,9 +204,9 @@ import { shareTree } from '@/utils/sharedDocuments.js'
  * its owner, sharing it with someone else by their friend code, or by the
  * name of someone among the people this account shares with, or taking
  * someone out, or an invitation back. The owner also chooses whether it is
- * shared whole or only some of its documents, ticked in a tree of boxes;
- * either takes effect at once. See composables/useCloudSync.js and
- * composables/useSharedDocuments.js.
+ * shared whole or only some of its documents, ticked in a tree of boxes that
+ * is there while only some is; either takes effect at once. See
+ * composables/useCloudSync.js and composables/useSharedDocuments.js.
  *
  * @typedef {import('@/cloud/api.js').Member} Member
  *
@@ -219,9 +221,6 @@ const cloud = useCloudSync()
 const store = useDocumentsStore()
 const { displayTitle } = useDocuments(props.storyId)
 const shares = useSharedDocuments(props.storyId)
-
-/** Whether the owner may share only some of the documents. */
-const choosesDocuments = inPreview('selective-sharing')
 
 const code = ref('')
 const busy = ref(false)
@@ -323,14 +322,25 @@ onMounted(() => {
 
 /** The choice being made, until sync has it. @type {import('vue').Ref<boolean|null>} */
 const choosing = ref(null)
+/** Why the choice couldn't be made, said under its switch. @type {import('vue').Ref<string|null>} */
+const choiceFailure = ref(null)
 
 /** Whether it is shared with only some of its documents. */
-const selective = computed(
-  () => choosing.value ?? (choosesDocuments && sharing.value.selective.includes(props.storyId))
-)
+const selective = computed(() => choosing.value ?? sharing.value.selective.includes(props.storyId))
 
 /** @type {import('vue').Ref<Record<string, boolean>>} */
 const expanded = ref({ [store.getRoot(props.storyId)?.id ?? '']: true })
+
+/** What the boxes are in. @type {import('vue').Ref<HTMLElement|null>} */
+const boxes = ref(null)
+
+/**
+ * The tree keeps to itself every key pressed in a row's label, where its box
+ * is, so an Escape on a box never reached the settings to close them. It is
+ * sent on from around the tree.
+ * @param {KeyboardEvent} event
+ */
+const passOn = event => boxes.value?.dispatchEvent(new window.KeyboardEvent('keydown', event))
 
 /** The project's documents, as boxes. */
 const nodes = computed(() => {
@@ -343,17 +353,17 @@ const nodes = computed(() => {
  * @param {boolean} value
  */
 async function choose(value) {
-  if (busy.value || value === selective.value) return
+  if (busy.value || choosing.value !== null || value === selective.value) return
+  // Its own wait and its own word: the Share button above is not what is
+  // working, and what went wrong is said where the switch is.
   choosing.value = value
-  busy.value = true
-  failure.value = null
+  choiceFailure.value = null
   try {
     await cloud.setSelective(props.storyId, value)
   } catch (error) {
-    failure.value = /** @type {Error} */ (error).message
+    choiceFailure.value = /** @type {Error} */ (error).message
   } finally {
     choosing.value = null
-    busy.value = false
   }
 }
 

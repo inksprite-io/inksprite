@@ -30,6 +30,10 @@ export async function makeWriter(context, { app, server, name, shots, label = na
     page.getByRole('button', { name: text, exact: true })
   const dialog = (/** @type {string} */ text) => page.getByRole('dialog', { name: text })
   const settings = dialog('Settings')
+  /** The open project's outline, and a row of it by its title. */
+  const outline = page.getByRole('tree', { name: 'Documents' })
+  const row = (/** @type {string} */ title) =>
+    outline.getByRole('treeitem', { name: title, exact: true }).first()
 
   await page.goto(app)
   await dialog('Welcome').waitFor()
@@ -54,6 +58,28 @@ export async function makeWriter(context, { app, server, name, shots, label = na
   const closeSettings = async () => {
     if (await settings.isVisible()) await page.keyboard.press('Escape')
     await settings.waitFor({ state: 'hidden' })
+  }
+
+  /**
+   * Wait until the page shows what it should, read again until it does; what
+   * it showed instead is the failure.
+   * @param {() => Promise<string[]>} read
+   * @param {string[]} wanted - In any order
+   * @param {string} what - What is read, for the failure to say
+   */
+  const settles = async (read, wanted, what) => {
+    const same = (/** @type {string[]} */ lines) => [...lines].sort().join('\n')
+    const until = Date.now() + SYNCED
+    for (;;) {
+      const seen = await read()
+      if (same(seen) === same(wanted)) return
+      if (Date.now() > until) {
+        throw new Error(
+          `Expected ${what} to be ${[...wanted].sort().join(', ') || 'nothing'}. ${label} has ${[...seen].sort().join(', ') || 'nothing'}.`
+        )
+      }
+      await page.waitForTimeout(500)
+    }
   }
 
   /** Fill the sign-in form. @param {'Sign in'|'Create account'|'Recover'} mode */
@@ -181,14 +207,136 @@ export async function makeWriter(context, { app, server, name, shots, label = na
       await page.getByRole('treeitem', { name: title }).first().waitFor()
     },
 
-    /** Make a document in the open project and write in it. @param {string} title @param {string} text */
-    async newDocument(title, text) {
+    /**
+     * Make a document in the open project, at its top or in a folder of it,
+     * and write in it.
+     * @param {string} title @param {string} text @param {string} [within] - The folder's title
+     */
+    async newDocument(title, text, within) {
       await closeSettings()
-      await button('New document').first().click()
+      if (within) await writer.menu(within, 'New document')
+      else await button('New document').first().click()
       await page.keyboard.type(title)
       await page.keyboard.press('Enter')
+      await row(title).waitFor()
       await page.locator('.ProseMirror').click()
       await page.keyboard.type(text)
+    },
+
+    /** Make a folder in the open project: in a folder of it, or in the project itself. @param {string} title @param {string} within */
+    async newFolder(title, within) {
+      await writer.menu(within, 'New folder')
+      await page.keyboard.type(title)
+      await page.keyboard.press('Enter')
+      await row(title).waitFor()
+    },
+
+    /** Open the menu of a row of the open project's outline. @param {string} title */
+    async openMenu(title) {
+      await closeSettings()
+      await row(title).getByText(title, { exact: true }).first().click({ button: 'right' })
+      await page.getByRole('menuitem').first().waitFor()
+      // The keys are the menu's a moment after it shows, Escape among them.
+      await page.waitForFunction(() => document.activeElement?.closest('.p-contextmenu'))
+    },
+
+    /** Pick from the menu of a row of the open project's outline. @param {string} title @param {string} item */
+    async menu(title, item) {
+      await writer.openMenu(title)
+      await page.getByRole('menuitem', { name: item, exact: true }).click()
+    },
+
+    /** What the menu of a row of the open project's outline offers. @param {string} title */
+    async menuItems(title) {
+      await writer.openMenu(title)
+      const items = await page.getByRole('menuitem').allTextContents()
+      await page.keyboard.press('Escape')
+      await page.getByRole('menuitem').first().waitFor({ state: 'hidden' })
+      return items.map(item => item.replace(/\s+/g, ' ').trim())
+    },
+
+    /**
+     * The open project's outline with every folder open: each document by
+     * its path from the project, with what its row marks it as to the people
+     * the project is shared with ('shared', or 'partly' for a folder they
+     * see only on the way to something), if anything.
+     * @returns {Promise<Record<string, string|null>>}
+     */
+    async outline() {
+      await closeSettings()
+      const shut = outline.locator('[role="treeitem"][aria-expanded="false"]')
+      for (let opened = 0; opened < 50 && (await shut.count()) > 0; opened++) {
+        await shut.first().locator('button[aria-label="Expand"]').click()
+      }
+      return outline.locator('[role="treeitem"]').evaluateAll(rows => {
+        /** @type {string[]} */
+        const path = []
+        /** @type {Record<string, string|null>} */
+        const seen = {}
+        for (const one of rows) {
+          // The first level is the project itself.
+          const level = Number(one.getAttribute('aria-level'))
+          if (level < 2) continue
+          path.length = level - 2
+          path.push(one.getAttribute('aria-label') ?? '')
+          seen[path.join('/')] =
+            one.querySelector('[data-share-mark]')?.getAttribute('data-share-mark') ?? null
+        }
+        return seen
+      })
+    },
+
+    /** Wait until the open project's outline has these documents and no others, each by its path. @param {string[]} paths */
+    async sees(paths) {
+      await settles(async () => Object.keys(await writer.outline()), paths, 'the outline')
+    },
+
+    /**
+     * Wait until the open project's outline marks these documents as shared
+     * and no others: each by its path, 'partly' for a folder the others see
+     * only on the way to something.
+     * @param {Record<string, 'shared'|'partly'>} marks
+     */
+    async marks(marks) {
+      const lines = (/** @type {Record<string, string|null>} */ rows) =>
+        Object.entries(rows)
+          .filter(([, mark]) => mark)
+          .map(([path, mark]) => `${path} (${mark})`)
+      await settles(async () => lines(await writer.outline()), lines(marks), "the outline's marks")
+    },
+
+    /**
+     * Whether anything this device keeps says this, in the outline or out of
+     * it: a row of any table of the app's database, as it is stored.
+     * @param {string} text
+     */
+    async keeps(text) {
+      return page.evaluate(async said => {
+        /** @template T @param {IDBRequest<T>} request @returns {Promise<T>} */
+        const done = request =>
+          new Promise((resolve, reject) => {
+            request.onsuccess = () => resolve(request.result)
+            request.onerror = () => reject(request.error)
+          })
+        const db = await done(window.indexedDB.open('inksprite'))
+        try {
+          for (const table of db.objectStoreNames) {
+            const rows = await done(db.transaction(table).objectStore(table).getAll())
+            if (rows.some(row => JSON.stringify(row)?.includes(said))) return true
+          }
+          return false
+        } finally {
+          db.close()
+        }
+      }, text)
+    },
+
+    /** Wait until this device keeps nothing that says this: what sync takes away goes from the database a moment after the page. @param {string} text */
+    async forgets(text) {
+      for (let waited = 0; await writer.keeps(text); waited += 500) {
+        if (waited >= SYNCED) throw new Error(`Expected ${label} to keep nothing saying ${text}.`)
+        await page.waitForTimeout(500)
+      }
     },
 
     /** Open a document of the open project. @param {string} title */
@@ -261,8 +409,10 @@ export async function makeWriter(context, { app, server, name, shots, label = na
       await writer.closeProjects()
     },
 
-    /** The open project's sharing, in Settings: from the outline's Share… or People…. @param {string} title */
+    /** The open project's sharing, in Settings: from the outline's Share… or People…, or as it is showing. @param {string} title */
     async sharing(title) {
+      const showing = settings.locator('[data-share]')
+      if (await showing.isVisible()) return showing
       await closeSettings()
       await page
         .getByRole('treeitem', { name: title })
@@ -296,6 +446,86 @@ export async function makeWriter(context, { app, server, name, shots, label = na
         throw new Error(((await share.locator('[data-share-error]').textContent()) || '').trim())
       }
       return share
+    },
+
+    /**
+     * Share the open project whole, or only the documents ticked, from the
+     * switch over its boxes.
+     * @param {string} title @param {boolean} whole
+     */
+    async shareWhole(title, whole) {
+      const share = await writer.sharing(title)
+      const field = share.locator('[data-field="share-whole"] input')
+      if ((await field.isChecked()) === whole) return
+      await field.click()
+      // The switch is the choice at once, and can be clicked again when sync has it.
+      await share.locator('[data-field="share-whole"] input:not([disabled])').waitFor()
+      if (await share.locator('[data-share-error]').isVisible()) {
+        throw new Error(((await share.locator('[data-share-error]').textContent()) || '').trim())
+      }
+      if ((await field.isChecked()) !== whole) {
+        throw new Error(`The project is ${whole ? 'not ' : ''}shared whole still.`)
+      }
+    },
+
+    /**
+     * The boxes of the open project's sharing, every folder open: each
+     * document by its path from the project, the project itself as '', and
+     * its box as ticked, half ticked or empty.
+     * @param {string} title
+     * @returns {Promise<Record<string, 'ticked'|'half'|'empty'>>}
+     */
+    async boxes(title) {
+      const share = await writer.sharing(title)
+      const tree = share.locator('[data-share-tree]')
+      const shut = tree.locator(
+        'li[role="treeitem"][aria-expanded="false"]:has(> div > button[data-p-leaf="false"])'
+      )
+      for (let opened = 0; opened < 50 && (await shut.count()) > 0; opened++) {
+        await shut.first().locator(':scope > div > button').click()
+      }
+      return tree.locator('li[role="treeitem"]').evaluateAll(nodes => {
+        /** @type {string[]} */
+        const path = []
+        /** @type {Record<string, 'ticked'|'half'|'empty'>} */
+        const seen = {}
+        for (const node of nodes) {
+          const level = Number(node.getAttribute('aria-level'))
+          path.length = Math.max(level - 2, 0)
+          if (level > 1) path.push(node.getAttribute('aria-label') ?? '')
+          const box = /** @type {HTMLInputElement|null} */ (
+            node.querySelector(':scope > div input[type="checkbox"]')
+          )
+          seen[path.join('/')] = box?.checked
+            ? 'ticked'
+            : box?.closest('[data-p-indeterminate]')
+              ? 'half'
+              : 'empty'
+        }
+        return seen
+      })
+    },
+
+    /**
+     * Tick a document's box in the open project's sharing, or untick it,
+     * opening the folders it is in.
+     * @param {string} title @param {string} path - From the project @param {boolean} shared
+     */
+    async tick(title, path, shared) {
+      const share = await writer.sharing(title)
+      let node = share.locator('[data-share-tree] li[role="treeitem"]').first()
+      for (const name of path.split('/')) {
+        if ((await node.getAttribute('aria-expanded')) !== 'true') {
+          await node.locator(':scope > div > button').click()
+        }
+        node = node.locator(`:scope > ul > li[role="treeitem"][aria-label="${name}"]`)
+      }
+      const box = node.locator(':scope > div input[type="checkbox"]')
+      if ((await box.isChecked()) !== shared) await box.click()
+      for (let waited = 0; (await box.isChecked()) !== shared; waited += 100) {
+        if (waited >= 5000) throw new Error(`The box of ${path} didn't change.`)
+        await page.waitForTimeout(100)
+      }
     },
 
     /** Whether Share can be clicked with this typed. @param {string} title @param {string} whom */
@@ -410,11 +640,37 @@ export async function makeWriter(context, { app, server, name, shots, label = na
       await page.getByRole('treeitem', { name: title }).first().waitFor({ state: 'hidden' })
     },
 
+    /** The documents of the open project in the trash, by title: none while the trash holds nothing. */
+    async trash() {
+      await closeSettings()
+      await button('Projects').click()
+      const item = page.getByRole('menuitem', { name: 'Open trash…', exact: true })
+      await page.getByRole('menuitem', { name: 'New project…' }).waitFor()
+      if (!(await item.isVisible())) {
+        await page.keyboard.press('Escape')
+        return []
+      }
+      await item.click()
+      const trash = page.locator('[data-trash-dialog]')
+      await trash.waitFor()
+      const titles = await trash
+        .locator('[data-trash-item] span.truncate:first-child')
+        .allTextContents()
+      await page.keyboard.press('Escape')
+      await trash.waitFor({ state: 'hidden' })
+      return titles.map(title => title.trim())
+    },
+
+    /** Take this device off the network, or put it back on. @param {boolean} off */
+    async offline(off) {
+      await context.setOffline(off)
+    },
+
     /** Bring a removed project back from the trash. @param {string} title */
     async restoreProject(title) {
       await closeSettings()
       await button('Projects').click()
-      await page.getByRole('menuitem', { name: 'Trash', exact: true }).click()
+      await page.getByRole('menuitem', { name: 'Open trash…', exact: true }).click()
       const trash = page.locator('[data-trash-dialog]')
       await trash
         .locator('[data-trash-project]')

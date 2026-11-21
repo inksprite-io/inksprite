@@ -27,10 +27,7 @@
  *
  * @type {Record<string, string>}
  */
-export const PREVIEWS = {
-  // A project shared with only some of its documents: .llm/sync_design.md, "Only some documents".
-  'selective-sharing': '2026-10-24',
-}
+export const PREVIEWS = {}
 
 /**
  * The names a value of VITE_PREVIEW gives.

@@ -107,7 +107,9 @@
         class="flex-none pi pi-users text-surface-400 dark:text-surface-500"
         :class="shareMark === 'partly' && 'opacity-50'"
         style="font-size: 0.65rem"
+        role="img"
         :title="shareMark === 'shared' ? 'Shared' : 'Partly shared'"
+        :aria-label="shareMark === 'shared' ? 'Shared' : 'Partly shared'"
         :data-share-mark="shareMark"
       />
 
