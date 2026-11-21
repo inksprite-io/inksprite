@@ -107,134 +107,153 @@
   - [Parameters][103]
 - [substitute][104]
   - [Parameters][105]
-- [storedPassage][106]
-  - [Parameters][107]
-- [spans][108]
-- [match][109]
-- [][110]
-- [cards/png][111]
-- [SIGNATURE][112]
-- [KEYWORDS][113]
-- [textChunks][114]
-  - [Parameters][115]
-- [chunks][116]
-- [cardFromPng][117]
-  - [Parameters][118]
-- [decodeBase64][119]
-  - [Parameters][120]
-- [latin1][121]
-  - [Parameters][122]
-- [cards/sources][123]
-- [CardLink][124]
-  - [Properties][125]
-- [CHUB_HOSTS][126]
-- [CHUB_PATH][127]
-- [chub][128]
+- [FilledSpan][106]
+- [filledWith][107]
+  - [Parameters][108]
+- [spans][109]
+- [match][110]
+- [StoredChange][111]
+- [storedStretches][112]
+  - [Parameters][113]
+- [longer][114]
+- [namesBefore][115]
+  - [Parameters][116]
+- [][117]
+- [inside][118]
+  - [Parameters][119]
+- [][120]
+- [written][121]
+- [stored][122]
+  - [Parameters][123]
+- [][124]
+- [changes][125]
+- [storedPassage][126]
+  - [Parameters][127]
+- [storedPlaces][128]
   - [Parameters][129]
-- [cardLink][130]
-  - [Parameters][131]
-- [url][132]
-- [cards/thumbnail][133]
-- [THUMBNAIL_WIDTH][134]
-- [makeThumbnail][135]
-  - [Parameters][136]
-- [isOpaque][137]
-  - [Parameters][138]
-- [cards/transcript][139]
-- [UNUSED][140]
-- [UNUSED][141]
-- [UNUSED][142]
-- [Transcript][143]
+- [cards/png][130]
+- [SIGNATURE][131]
+- [KEYWORDS][132]
+- [textChunks][133]
+  - [Parameters][134]
+- [chunks][135]
+- [cardFromPng][136]
+  - [Parameters][137]
+- [decodeBase64][138]
+  - [Parameters][139]
+- [latin1][140]
+  - [Parameters][141]
+- [cards/sources][142]
+- [CardLink][143]
   - [Properties][144]
-- [isTranscript][145]
-  - [Parameters][146]
-- [readTranscript][147]
+- [CHUB_HOSTS][145]
+- [CHUB_PATH][146]
+- [chub][147]
   - [Parameters][148]
-- [messageFrom][149]
+- [cardLink][149]
   - [Parameters][150]
-- [alternates][151]
-- [answerFrom][152]
-  - [Parameters][153]
-- [noteOf][154]
+- [url][151]
+- [cards/thumbnail][152]
+- [THUMBNAIL_WIDTH][153]
+- [makeThumbnail][154]
   - [Parameters][155]
-- [isMessage][156]
+- [isOpaque][156]
   - [Parameters][157]
-- [firstLine][158]
-  - [Parameters][159]
-- [parseLine][160]
-  - [Parameters][161]
-- [textOf][162]
-  - [Parameters][163]
-- [named][164]
+- [cards/transcript][158]
+- [UNUSED][159]
+- [UNUSED][160]
+- [UNUSED][161]
+- [Transcript][162]
+  - [Properties][163]
+- [isTranscript][164]
   - [Parameters][165]
-- [named][166]
-- [commonest][167]
-  - [Parameters][168]
-- [when][169]
-  - [Parameters][170]
-- [titleFrom][171]
+- [readTranscript][166]
+  - [Parameters][167]
+- [messageFrom][168]
+  - [Parameters][169]
+- [alternates][170]
+- [answerFrom][171]
   - [Parameters][172]
-- [cards/write][173]
-- [SIDECAR_TITLE][174]
-- [SIDECAR_TITLE][175]
-- [SIDECAR_TITLE][176]
-- [SIDECAR_TITLE][177]
-- [Written][178]
-  - [Properties][179]
-- [writeCard][180]
-  - [Parameters][181]
-- [reimportCard][182]
-  - [Parameters][183]
-- [left][184]
-- [take][185]
-  - [Parameters][186]
-- [discard][187]
-  - [Parameters][188]
-- [][189]
-- [greetingIds][190]
-- [place][191]
-  - [Parameters][192]
-- [shift][193]
-- [CardPart][194]
-  - [Properties][195]
-- [CARD_KINDS][196]
-- [LORE_KINDS][197]
-- [byOrder][198]
-  - [Parameters][199]
-- [partsOf][200]
-  - [Parameters][201]
-- [fields][202]
-- [field][203]
-  - [Parameters][204]
-- [][205]
-- [][206]
-- [loreParts][207]
-  - [Parameters][208]
-- [id][209]
-- [fillCard][210]
+- [noteOf][173]
+  - [Parameters][174]
+- [isMessage][175]
+  - [Parameters][176]
+- [firstLine][177]
+  - [Parameters][178]
+- [parseLine][179]
+  - [Parameters][180]
+- [textOf][181]
+  - [Parameters][182]
+- [named][183]
+  - [Parameters][184]
+- [named][185]
+- [commonest][186]
+  - [Parameters][187]
+- [when][188]
+  - [Parameters][189]
+- [titleFrom][190]
+  - [Parameters][191]
+- [cards/write][192]
+- [SIDECAR_TITLE][193]
+- [SIDECAR_TITLE][194]
+- [SIDECAR_TITLE][195]
+- [SIDECAR_TITLE][196]
+- [Written][197]
+  - [Properties][198]
+- [writeCard][199]
+  - [Parameters][200]
+- [reimportCard][201]
+  - [Parameters][202]
+- [left][203]
+- [take][204]
+  - [Parameters][205]
+- [discard][206]
+  - [Parameters][207]
+- [][208]
+- [greetingIds][209]
+- [place][210]
   - [Parameters][211]
-- [write][212]
-  - [Parameters][213]
-- [writePortrait][214]
-  - [Parameters][215]
-- [writeMarkdown][216]
-  - [Parameters][217]
-- [writeLorebook][218]
-  - [Parameters][219]
-- [writeLore][220]
-  - [Parameters][221]
-- [writeSidecar][222]
+- [shift][212]
+- [CardPart][213]
+  - [Properties][214]
+- [CARD_KINDS][215]
+- [LORE_KINDS][216]
+- [byOrder][217]
+  - [Parameters][218]
+- [partsOf][219]
+  - [Parameters][220]
+- [fields][221]
+- [field][222]
   - [Parameters][223]
-- [SHELF_KINDS][224]
-- [SHELF_TITLES][225]
-- [shelfFor][226]
+- [][224]
+- [][225]
+- [loreParts][226]
   - [Parameters][227]
-- [find][228]
-  - [Parameters][229]
-- [walk][230]
-  - [Parameters][231]
-- [make][232]
-  - [Parameters][233]
+- [id][228]
+- [fillCard][229]
+  - [Parameters][230]
+- [write][231]
+  - [Parameters][232]
+- [writePortrait][233]
+  - [Parameters][234]
+- [writeMarkdown][235]
+  - [Parameters][236]
+- [writeLorebook][237]
+  - [Parameters][238]
+- [writeLore][239]
+  - [Parameters][240]
+- [writeSidecar][241]
+  - [Parameters][242]
+- [SHELF_KINDS][243]
+- [SHELF_TITLES][244]
+- [shelfFor][245]
+  - [Parameters][246]
+- [find][247]
+  - [Parameters][248]
+- [walk][249]
+  - [Parameters][250]
+- [make][251]
+  - [Parameters][252]
 
 ## cards/card
 
@@ -259,30 +278,30 @@ original goes to the sidecar whole, and export merges over it.
 
 A card, flattened.
 
-Type: [Object][234]
+Type: [Object][253]
 
 ### Properties
 
-- `name` **[string][235]** The character's, and what `{{char}}` becomes
-- `title` **[string][235]** What to call the folder: the nickname when there
+- `name` **[string][254]** The character's, and what `{{char}}` becomes
+- `title` **[string][254]** What to call the folder: the nickname when there
   is one, because that is what the card is known by where people browse for
   it, and on a scenario card it has nothing to do with the character's name
-- `description` **[string][235]**&#x20;
-- `personality` **[string][235]**&#x20;
-- `scenario` **[string][235]**&#x20;
-- `examples` **[string][235]** `mes_example`
-- `greetings` **[Array][236]<[string][235]>** `first_mes` first, then the alternates
-- `systemPrompt` **[string][235]** Rare, usually an ST preset's scaffolding
-- `rules` **[string][235]** `post_history_instructions`, which a chat on it
+- `description` **[string][254]**&#x20;
+- `personality` **[string][254]**&#x20;
+- `scenario` **[string][254]**&#x20;
+- `examples` **[string][254]** `mes_example`
+- `greetings` **[Array][255]<[string][254]>** `first_mes` first, then the alternates
+- `systemPrompt` **[string][254]** Rare, usually an ST preset's scaffolding
+- `rules` **[string][254]** `post_history_instructions`, which a chat on it
   sends after its author's note. See `withOriginal`.
-- `tags` **[Array][236]<[string][235]>**&#x20;
-- `creator` **[string][235]**&#x20;
-- `lore` **[Array][236]<[LoreEntry][2]>**&#x20;
+- `tags` **[Array][255]<[string][254]>**&#x20;
+- `creator` **[string][254]**&#x20;
+- `lore` **[Array][255]<[LoreEntry][2]>**&#x20;
 - `raw` **any** Exactly what arrived, for the sidecar
-- `title` **[string][235]** `comment` or `name`; the memo ST shows in its list
-- `content` **[string][235]**&#x20;
-- `keys` **[Array][236]<[string][235]>**&#x20;
-- `constant` **[boolean][237]** Always in context, rather than looked up
+- `title` **[string][254]** `comment` or `name`; the memo ST shows in its list
+- `content` **[string][254]**&#x20;
+- `keys` **[Array][255]<[string][254]>**&#x20;
+- `constant` **[boolean][256]** Always in context, rather than looked up
 
 ## CHARACTER_FIELDS
 
@@ -331,11 +350,11 @@ as empty documents that say nothing to anyone.
 
 - `value` **any** A `character_book`, a `lorebook`, or a World Info export
 
-Returns **{name: [string][235], entries: [Array][236]<[LoreEntry][2]>, raw: any}**&#x20;
+Returns **{name: [string][254], entries: [Array][255]<[LoreEntry][2]>, raw: any}**&#x20;
 
 ## entries
 
-Type: [Array][236]<[LoreEntry][2]>
+Type: [Array][255]<[LoreEntry][2]>
 
 ## uncomment
 
@@ -348,9 +367,9 @@ a line of its own takes the line with it. The sidecar keeps them.
 
 ### Parameters
 
-- `value` **[string][235]**&#x20;
+- `value` **[string][254]**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## LINE_END
 
@@ -377,10 +396,10 @@ it and the profile's part is whatever the profile says now.
 
 ### Parameters
 
-- `value` **([string][235] | null | [undefined][238])** The chat's roleplay text, if any
-- `original` **([string][235] | null | [undefined][238])?** What it adds to (optional, default `''`)
+- `value` **([string][254] | null | [undefined][257])** The chat's roleplay text, if any
+- `original` **([string][254] | null | [undefined][257])?** What it adds to (optional, default `''`)
 
-Returns **[string][235]** What the turn sends
+Returns **[string][254]** What the turn sends
 
 ## undecorate
 
@@ -395,9 +414,9 @@ than becoming empty.
 
 ### Parameters
 
-- `title` **[string][235]**&#x20;
+- `title` **[string][254]**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## KEEP_AT_END
 
@@ -436,7 +455,7 @@ whether the opener's own match is the last character.
 
 - `value` **any**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## list
 
@@ -444,7 +463,7 @@ Returns **[string][235]**&#x20;
 
 - `value` **any**&#x20;
 
-Returns **[Array][236]\<any>**&#x20;
+Returns **[Array][255]\<any>**&#x20;
 
 ## cards/chat
 
@@ -465,26 +484,26 @@ Design: `.llm/character_cards_design.md`.
 
 What a card folder has in it that a chat cares about.
 
-Type: [Object][234]
+Type: [Object][253]
 
 ### Properties
 
-- `title` **[string][235]** The card's, and the chat's
-- `name` **[string][235]** The character's: what `{{char}}` becomes in a chat
+- `title` **[string][254]** The card's, and the chat's
+- `name` **[string][254]** The character's: what `{{char}}` becomes in a chat
   on the card. See `characterOf`.
-- `openingIds` **[Array][236]<[string][235]>** The documents a chat on it opens with, ahead
+- `openingIds` **[Array][255]<[string][254]>** The documents a chat on it opens with, ahead
   of its greeting; see `useCardChat`
-- `hiddenIds` **[Array][236]<[string][235]>** What a chat on this card hides: the shelf the
+- `hiddenIds` **[Array][255]<[string][254]>** What a chat on this card hides: the shelf the
   other characters are on, when the card is on one, and its greetings
-- `shownIds` **[Array][236]<[string][235]>** What it shows under that: the card itself
-- `greetings` **[Array][236]<[Greeting][32]>** In the card's own order; the first is its `first_mes`
-- `rules` **[string][235]** The card's post-history instructions, as written,
+- `shownIds` **[Array][255]<[string][254]>** What it shows under that: the card itself
+- `greetings` **[Array][255]<[Greeting][32]>** In the card's own order; the first is its `first_mes`
+- `rules` **[string][254]** The card's post-history instructions, as written,
   `{{original}}` and all: what a chat on it sends after its author's note
-- `systemPrompt` **[string][235]** What a chat on it sends after its profile's
+- `systemPrompt` **[string][254]** What a chat on it sends after its profile's
   prompt, when the card had one and the writer kept it
-- `id` **[string][235]**&#x20;
-- `title` **[string][235]**&#x20;
-- `content` **[string][235]**&#x20;
+- `id` **[string][254]**&#x20;
+- `title` **[string][254]**&#x20;
+- `content` **[string][254]**&#x20;
 
 ## OPENING_KINDS
 
@@ -503,7 +522,7 @@ folder, or a card's portrait holding its documents
 
 - `document` **any**&#x20;
 
-Returns **[boolean][237]**&#x20;
+Returns **[boolean][256]**&#x20;
 
 ## characterOf
 
@@ -520,7 +539,7 @@ by hand — goes by its title.
 - `api` &#x20;
 - `folder` **any** A card folder
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## cardsNamed
 
@@ -534,18 +553,18 @@ and which was meant is not something to guess at.
 
 ### Parameters
 
-- `storyId` **[string][235]**&#x20;
-- `name` **[string][235]**&#x20;
+- `storyId` **[string][254]**&#x20;
+- `name` **[string][254]**&#x20;
 
-Returns **[Promise][239]<[Array][236]\<any>>** Card folders, in tree order
+Returns **[Promise][258]<[Array][255]\<any>>** Card folders, in tree order
 
 ## found
 
-Type: [Array][236]\<any>
+Type: [Array][255]\<any>
 
 ##
 
-Type: [string][235]
+Type: [string][254]
 
 ## readCardChat
 
@@ -558,26 +577,26 @@ through the project block, and this is the route they were hidden for.
 
 ### Parameters
 
-- `storyId` **[string][235]**&#x20;
-- `folderId` **[string][235]**&#x20;
+- `storyId` **[string][254]**&#x20;
+- `folderId` **[string][254]**&#x20;
 
-Returns **[Promise][239]<(CardChat | null)>** Null if that is not a card folder
+Returns **[Promise][258]<(CardChat | null)>** Null if that is not a card folder
 
 ## documents
 
-Type: [Array][236]\<any>
+Type: [Array][255]\<any>
 
 ##
 
-Type: [string][235]
+Type: [string][254]
 
 ##
 
-Type: [string][235]
+Type: [string][254]
 
 ##
 
-Type: [string][235]
+Type: [string][254]
 
 ## cards
 
@@ -637,17 +656,17 @@ Pure: nothing here touches a store. Design: `.llm/card_library_design.md`.
 
 ## NOTES_LENGTH
 
-Type: [number][240]
+Type: [number][259]
 
 ## NOTES_LENGTH
 
-Type: [number][240]
+Type: [number][259]
 
 ## NOTES_LENGTH
 
 How long a card's notes are kept for the hover, in characters.
 
-Type: [number][240]
+Type: [number][259]
 
 ## CardOrder
 
@@ -692,9 +711,9 @@ of that is shown here: only what they say.
 
 ### Parameters
 
-- `value` **[string][235]**&#x20;
+- `value` **[string][254]**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## shorten
 
@@ -702,10 +721,10 @@ At most `length` characters, cut at a word.
 
 ### Parameters
 
-- `value` **[string][235]**&#x20;
-- `length` **[number][240]**&#x20;
+- `value` **[string][254]**&#x20;
+- `length` **[number][259]**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## tagKey
 
@@ -714,9 +733,9 @@ spaces they stand for, as the sites that tag cards write them both ways.
 
 ### Parameters
 
-- `tag` **[string][235]**&#x20;
+- `tag` **[string][254]**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## tagLabel
 
@@ -724,9 +743,9 @@ A tag as it is shown: its underscores as spaces.
 
 ### Parameters
 
-- `tag` **[string][235]**&#x20;
+- `tag` **[string][254]**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## NSFW_TAGS
 
@@ -741,7 +760,7 @@ Whether a card is tagged NSFW or NSFL, so its picture may be blurred.
 
 - `card` **Pick\<LibraryCard, `"tags"`>**&#x20;
 
-Returns **[boolean][237]**&#x20;
+Returns **[boolean][256]**&#x20;
 
 ## TAG_WORD
 
@@ -754,9 +773,9 @@ A search as typed, in its parts: the words to find, and the tags its
 
 ### Parameters
 
-- `query` **[string][235]**&#x20;
+- `query` **[string][254]**&#x20;
 
-Returns **{words: [Array][236]<[string][235]>, tags: [Array][236]<[string][235]>}**&#x20;
+Returns **{words: [Array][255]<[string][254]>, tags: [Array][255]<[string][254]>}**&#x20;
 
 ## cardMatches
 
@@ -767,10 +786,10 @@ the search with `tag:`, among its tags. None of it cares about case.
 ### Parameters
 
 - `card` **LibraryCard**&#x20;
-- `query` **[string][235]**&#x20;
-- `tags` **[Array][236]<[string][235]>?** (optional, default `[]`)
+- `query` **[string][254]**&#x20;
+- `tags` **[Array][255]<[string][254]>?** (optional, default `[]`)
 
-Returns **[boolean][237]**&#x20;
+Returns **[boolean][256]**&#x20;
 
 ## tagCounts
 
@@ -779,17 +798,17 @@ have it, most used first. Each is shown as it was first written.
 
 ### Parameters
 
-- `cards` **[Array][236]\<LibraryCard>**&#x20;
+- `cards` **[Array][255]\<LibraryCard>**&#x20;
 
-Returns **[Array][236]<{tag: [string][235], count: [number][240]}>**&#x20;
-
-## counts
-
-Type: [Map][241]<[string][235], {tag: [string][235], count: [number][240]}>
+Returns **[Array][255]<{tag: [string][254], count: [number][259]}>**&#x20;
 
 ## counts
 
-Type: [Map][241]<[string][235], [number][240]>
+Type: [Map][260]<[string][254], {tag: [string][254], count: [number][259]}>
+
+## counts
+
+Type: [Map][260]<[string][254], [number][259]>
 
 ## suggestTags
 
@@ -799,12 +818,12 @@ each, leaving out the tags already chosen.
 
 ### Parameters
 
-- `cards` **[Array][236]\<LibraryCard>**&#x20;
-- `word` **[string][235]** What has been typed of it, without `tag:`
-- `chosen` **[Array][236]<[string][235]>**&#x20;
-- `limit` **[number][240]**&#x20;
+- `cards` **[Array][255]\<LibraryCard>**&#x20;
+- `word` **[string][254]** What has been typed of it, without `tag:`
+- `chosen` **[Array][255]<[string][254]>**&#x20;
+- `limit` **[number][259]**&#x20;
 
-Returns **[Array][236]<{tag: [string][235], count: [number][240]}>**&#x20;
+Returns **[Array][255]<{tag: [string][254], count: [number][259]}>**&#x20;
 
 ## sortCards
 
@@ -813,10 +832,10 @@ in a project first, with those never used after them, newest first.
 
 ### Parameters
 
-- `cards` **[Array][236]\<LibraryCard>**&#x20;
+- `cards` **[Array][255]\<LibraryCard>**&#x20;
 - `order` **[CardOrder][56]**&#x20;
 
-Returns **[Array][236]\<LibraryCard>**&#x20;
+Returns **[Array][255]\<LibraryCard>**&#x20;
 
 ##
 
@@ -832,10 +851,10 @@ The tags the library uses most, most used first.
 
 ### Parameters
 
-- `cards` **[Array][236]\<LibraryCard>**&#x20;
-- `limit` **[number][240]**&#x20;
+- `cards` **[Array][255]\<LibraryCard>**&#x20;
+- `limit` **[number][259]**&#x20;
 
-Returns **[Array][236]<[string][235]>**&#x20;
+Returns **[Array][255]<[string][254]>**&#x20;
 
 ## describeSkipped
 
@@ -844,9 +863,9 @@ part of adding the library shows nowhere else.
 
 ### Parameters
 
-- `skipped` **[Array][236]<[string][235]>** Their names
+- `skipped` **[Array][255]<[string][254]>** Their names
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## cardDownload
 
@@ -858,7 +877,7 @@ or its JSON when it came without a picture. Named for what it is known by.
 - `card` **LibraryCard**&#x20;
 - `file` **CardFile**&#x20;
 
-Returns **{blob: [Blob][242], filename: [string][235]}**&#x20;
+Returns **{blob: [Blob][261], filename: [string][254]}**&#x20;
 
 ## cards/macros
 
@@ -895,12 +914,12 @@ The two macros a chat has names for.
 What the macros become in one chat. Either can be empty: a macro with no
 name to become is left as it is.
 
-Type: [Object][234]
+Type: [Object][253]
 
 ### Properties
 
-- `char` **[string][235]** What `{{char}}` becomes: the character's name
-- `user` **[string][235]** What `{{user}}` becomes: the writer's, in this chat
+- `char` **[string][254]** What `{{char}}` becomes: the character's name
+- `user` **[string][254]** What `{{user}}` becomes: the writer's, in this chat
 
 ## namesOf
 
@@ -917,10 +936,10 @@ Returns **([Names][98] | null)**&#x20;
 
 ### Parameters
 
-- `which` **[string][235]** `char` or `user`, in any case
+- `which` **[string][254]** `char` or `user`, in any case
 - `names` **[Names][98]**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## substitute
 
@@ -928,10 +947,119 @@ Text with its macros filled in.
 
 ### Parameters
 
-- `value` **([string][235] | null | [undefined][238])**&#x20;
+- `value` **([string][254] | null | [undefined][257])**&#x20;
 - `names` **([Names][98] | null)?** Nothing is filled in without them
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
+
+## FilledSpan
+
+A macro filled in: where it is in the text as stored, and where its name
+is in the filled text.
+
+Type: {from: [number][259], to: [number][259], at: [number][259], until: [number][259]}
+
+## filledWith
+
+A text with its macros filled in, and where each one was.
+
+### Parameters
+
+- `text` **[string][254]** The document as stored
+- `names` **[Names][98]**&#x20;
+
+Returns **{filled: [string][254], spans: [Array][255]<[FilledSpan][106]>}**&#x20;
+
+## spans
+
+Type: [Array][255]<[FilledSpan][106]>
+
+## match
+
+Type: [number][259]
+
+## StoredChange
+
+A change to the stored text: the stretch of it that goes, and what goes
+there.
+
+Type: {from: [number][259], to: [number][259], new: [string][254]}
+
+## storedStretches
+
+Stretches of the filled text, each as the stretch of the stored text that
+reads as it, and what a replacement for it becomes there. Where a stretch
+starts or ends partway through a name, the stored one takes the whole
+macro, and the replacement the part of the name left out.
+
+The stretches are changed the last first, each in the stored text the ones
+after it left. A change that starts partway through a name writes the name
+out up to there, so in that much of it the stored text reads as the filled,
+and a stretch there is where it reads.
+
+### Parameters
+
+- `filling` **{filled: [string][254], spans: [Array][255]<[FilledSpan][106]>}**&#x20;
+  - `filling.filled` &#x20;
+  - `filling.spans` &#x20;
+
+- `places` **[Array][255]<[number][259]>** Where each stretch starts in the filled text, in
+  order, each past the end of the one before
+- `length` **[number][259]** How long each is there
+- `replacement` **[string][254]**&#x20;
+
+Returns **[Array][255]<[StoredChange][111]>** One for each stretch, the last first
+
+## longer
+
+How much longer the stored text is than the filled, up to each macro and past the last.
+
+## namesBefore
+
+How many names start before a place in the filled text.
+
+### Parameters
+
+- `offset` &#x20;
+
+##
+
+Type: [number][259]
+
+## inside
+
+The name a place in the filled text is partway through.
+
+### Parameters
+
+- `offset` &#x20;
+
+##
+
+Type: [number][259]
+
+## written
+
+A name a change after this one wrote out, where it starts in each text:
+from there to that change, the stored text reads as the filled.
+
+Type: ({at: [number][259], from: [number][259]} | null)
+
+## stored
+
+Where a place in the filled text is in the stored one, outside any name.
+
+### Parameters
+
+- `offset` &#x20;
+
+##
+
+Type: [number][259]
+
+## changes
+
+Type: [Array][255]<[StoredChange][111]>
 
 ## storedPassage
 
@@ -951,25 +1079,32 @@ even where the document spells the two differently.
 
 ### Parameters
 
-- `text` **[string][235]** The document as stored
+- `text` **[string][254]** The document as stored
 - `names` **[Names][98]**&#x20;
-- `passage` **[string][235]** As the model quoted it
-- `replacement` **[string][235]** What it should read instead
+- `passage` **[string][254]** As the model quoted it
+- `replacement` **[string][254]** What it should read instead
 
-Returns **{count: [number][240], old: [string][235], new: [string][235]}** The passage and its
+Returns **{count: [number][259], old: [string][254], new: [string][254]}** The passage and its
 replacement as they apply to the stored text, when the count is one
 
-## spans
+## storedPlaces
 
-Each macro filled in: where it is in `text`, and where its name is in `filled`.
+Every place a passage is in the filled text, as the document stores it:
+what `storedPassage` gives for a passage that is there once, for one that
+is there more than once and is changed at each. The places are changed the
+last first, and each is where it is in the stored text once the ones after
+it are changed.
 
-## match
+### Parameters
 
-Type: [number][240]
+- `text` **[string][254]** The document as stored
+- `names` **[Names][98]**&#x20;
+- `places` **[Array][255]<[number][259]>** Where the passage is in the filled text, in order
+- `length` **[number][259]** How long it is there
+- `replacement` **[string][254]** What it should read instead
 
-##
-
-Type: [number][240]
+Returns **[Array][255]<[StoredChange][111]>** For each place, the last first: where the
+passage is in the stored text, and its replacement as it applies there
 
 ## cards/png
 
@@ -1004,13 +1139,13 @@ carrying an inflate for a case nobody has met is a cost with no reader.
 
 ### Parameters
 
-- `data` **([ArrayBuffer][243] | [Uint8Array][244])** The file
+- `data` **([ArrayBuffer][262] | [Uint8Array][263])** The file
 
-Returns **[Map][241]<[string][235], [string][235]>** Keyword to its text
+Returns **[Map][260]<[string][254], [string][254]>** Keyword to its text
 
 ## chunks
 
-Type: [Map][241]<[string][235], [string][235]>
+Type: [Map][260]<[string][254], [string][254]>
 
 ## cardFromPng
 
@@ -1018,7 +1153,7 @@ The card in a PNG, still in whatever spec version it was written for.
 
 ### Parameters
 
-- `data` **([ArrayBuffer][243] | [Uint8Array][244])** The file
+- `data` **([ArrayBuffer][262] | [Uint8Array][263])** The file
 
 Returns **(any | null)** The parsed card, or null if the image carries none
 
@@ -1032,9 +1167,9 @@ go back through a UTF-8 decoder to come out as what was written.
 
 ### Parameters
 
-- `value` **[string][235]**&#x20;
+- `value` **[string][254]**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## latin1
 
@@ -1047,9 +1182,9 @@ on the call, not on the string, so slices of it cost nothing.
 
 ### Parameters
 
-- `bytes` **[Uint8Array][244]**&#x20;
+- `bytes` **[Uint8Array][263]**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## cards/sources
 
@@ -1072,14 +1207,14 @@ Pure: nothing here fetches. Design: `.llm/card_library_design.md`.
 
 Where to download a card from, and what to call the file.
 
-Type: [Object][234]
+Type: [Object][253]
 
 ### Properties
 
-- `url` **[string][235]**&#x20;
-- `name` **[string][235]** A filename for it, without an extension: what
+- `url` **[string][254]**&#x20;
+- `name` **[string][254]** A filename for it, without an extension: what
   the response's type says the file is decides that
-- `site` **[string][235]** The site as the writer knows it, for saying
+- `site` **[string][254]** The site as the writer knows it, for saying
   what could not be reached: `chub.ai` for a Chub card, though its PNG is
   elsewhere
 
@@ -1097,10 +1232,10 @@ A Chub card's PNG, from its creator and name.
 
 ### Parameters
 
-- `creator` **[string][235]**&#x20;
-- `name` **[string][235]**&#x20;
+- `creator` **[string][254]**&#x20;
+- `name` **[string][254]**&#x20;
 
-Returns **[CardLink][124]**&#x20;
+Returns **[CardLink][143]**&#x20;
 
 ## cardLink
 
@@ -1109,14 +1244,14 @@ not a link at all.
 
 ### Parameters
 
-- `input` **[string][235]** As typed or dropped: a page, a download link, or
+- `input` **[string][254]** As typed or dropped: a page, a download link, or
   Chub's `creator/name`
 
-Returns **([CardLink][124] | null)**&#x20;
+Returns **([CardLink][143] | null)**&#x20;
 
 ## url
 
-Type: [URL][245]
+Type: [URL][264]
 
 ## cards/thumbnail
 
@@ -1131,7 +1266,7 @@ once and kept.
 
 Wide enough for a grid cell at twice its size.
 
-Type: [number][240]
+Type: [number][259]
 
 ## makeThumbnail
 
@@ -1144,20 +1279,20 @@ do not come out black.
 
 ### Parameters
 
-- `image` **[Blob][242]**&#x20;
-- `width` **[number][240]?** (optional, default `THUMBNAIL_WIDTH`)
+- `image` **[Blob][261]**&#x20;
+- `width` **[number][259]?** (optional, default `THUMBNAIL_WIDTH`)
 
-Returns **[Promise][239]<([Blob][242] | null)>**&#x20;
+Returns **[Promise][258]<([Blob][261] | null)>**&#x20;
 
 ## isOpaque
 
 ### Parameters
 
-- `context` **[CanvasRenderingContext2D][246]**&#x20;
-- `width` **[number][240]**&#x20;
-- `height` **[number][240]**&#x20;
+- `context` **[CanvasRenderingContext2D][265]**&#x20;
+- `width` **[number][259]**&#x20;
+- `height` **[number][259]**&#x20;
 
-Returns **[boolean][237]**&#x20;
+Returns **[boolean][256]**&#x20;
 
 ## cards/transcript
 
@@ -1179,32 +1314,32 @@ Design: `.llm/character_cards_design.md`.
 
 ## UNUSED
 
-Type: [string][235]
+Type: [string][254]
 
 ## UNUSED
 
-Type: [string][235]
+Type: [string][254]
 
 ## UNUSED
 
 What ST writes where a name used to go, since it stopped using the header's.
 
-Type: [string][235]
+Type: [string][254]
 
 ## Transcript
 
-Type: [Object][234]
+Type: [Object][253]
 
 ### Properties
 
-- `title` **[string][235]** The file's name, without the timestamp ST puts in it
-- `character` **[string][235]** Who the chat was with, by the name on their
+- `title` **[string][254]** The file's name, without the timestamp ST puts in it
+- `character` **[string][254]** Who the chat was with, by the name on their
   messages. Empty when nobody but the writer spoke.
-- `user` **[string][235]** The writer's name in it, which is their persona's.
+- `user` **[string][254]** The writer's name in it, which is their persona's.
   Empty when the file never says it.
-- `note` **[string][235]** The Author's Note, the one piece of the prompt a
+- `note` **[string][254]** The Author's Note, the one piece of the prompt a
   chat file carries. Empty for most, and when the chat had it switched off.
-- `messages` **[Array][236]\<Message>** In order, under placeholder ids: an import
+- `messages` **[Array][255]\<Message>** In order, under placeholder ids: an import
   gives everything fresh ones
 
 ## isTranscript
@@ -1217,9 +1352,9 @@ which is an object with ST's header on it or a message's fields.
 
 ### Parameters
 
-- `text` **[string][235]**&#x20;
+- `text` **[string][254]**&#x20;
 
-Returns **[boolean][237]**&#x20;
+Returns **[boolean][256]**&#x20;
 
 ## readTranscript
 
@@ -1227,14 +1362,14 @@ Read an ST chat.
 
 ### Parameters
 
-- `text` **[string][235]** The file
-- `filename` **[string][235]?** For the title, which the file does not hold (optional, default `''`)
+- `text` **[string][254]** The file
+- `filename` **[string][254]?** For the title, which the file does not hold (optional, default `''`)
 
 <!---->
 
-- Throws **[Error][247]** If there is no message in it
+- Throws **[Error][266]** If there is no message in it
 
-Returns **[Transcript][143]**&#x20;
+Returns **[Transcript][162]**&#x20;
 
 ## messageFrom
 
@@ -1248,15 +1383,15 @@ than one the writer has to trim.
 ### Parameters
 
 - `row` **any**&#x20;
-- `at` **[number][240]** Where it is in the chat
-- `created` **[number][240]**&#x20;
-- `names` **{char: [string][235], user: [string][235]}**&#x20;
+- `at` **[number][259]** Where it is in the chat
+- `created` **[number][259]**&#x20;
+- `names` **{char: [string][254], user: [string][254]}**&#x20;
 
 Returns **Message**&#x20;
 
 ## alternates
 
-Type: ([Array][236]\<MessageAlternate> | null)
+Type: ([Array][255]\<MessageAlternate> | null)
 
 ## answerFrom
 
@@ -1264,9 +1399,9 @@ What one generation wrote: a message's own fields, or one of its swipes'.
 
 ### Parameters
 
-- `content` **[string][235]**&#x20;
+- `content` **[string][254]**&#x20;
 - `info` **any** The message, or the swipe's entry in `swipe_info`
-- `names` **{char: [string][235], user: [string][235]}**&#x20;
+- `names` **{char: [string][254], user: [string][254]}**&#x20;
 
 Returns **Required\<MessageAlternate>**&#x20;
 
@@ -1283,7 +1418,7 @@ sent, so it is not carried either.
 
 - `metadata` **any** The header's `chat_metadata`
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## isMessage
 
@@ -1295,13 +1430,13 @@ Returns **[string][235]**&#x20;
 
 ### Parameters
 
-- `text` **[string][235]**&#x20;
+- `text` **[string][254]**&#x20;
 
 ## parseLine
 
 ### Parameters
 
-- `line` **[string][235]**&#x20;
+- `line` **[string][254]**&#x20;
 
 Returns **any** The object on it, or null if it does not hold one
 
@@ -1329,9 +1464,9 @@ the chat was with.
 
 ### Parameters
 
-- `rows` **[Array][236]\<any>**&#x20;
+- `rows` **[Array][255]\<any>**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## when
 
@@ -1346,7 +1481,7 @@ that is not ISO is the browser's business, and this runs in more than one.
 
 - `value` **any**&#x20;
 
-Returns **([number][240] | null)** Null when it says nothing this can read
+Returns **([number][259] | null)** Null when it says nothing this can read
 
 ## titleFrom
 
@@ -1356,9 +1491,9 @@ The stamp says when the chat was started, which the messages say already.
 
 ### Parameters
 
-- `filename` **[string][235]**&#x20;
+- `filename` **[string][254]**&#x20;
 
-Returns **[string][235]**&#x20;
+Returns **[string][254]**&#x20;
 
 ## cards/write
 
@@ -1383,37 +1518,37 @@ Design: `.llm/character_cards_design.md`.
 
 ## SIDECAR_TITLE
 
-Type: [string][235]
+Type: [string][254]
 
 ## SIDECAR_TITLE
 
-Type: [string][235]
+Type: [string][254]
 
 ## SIDECAR_TITLE
 
-Type: [string][235]
+Type: [string][254]
 
 ## SIDECAR_TITLE
 
 What the sidecar is called, and what it holds.
 
-Type: [string][235]
+Type: [string][254]
 
 ## Written
 
 What an import left behind.
 
-Type: [Object][234]
+Type: [Object][253]
 
 ### Properties
 
-- `folderId` **[string][235]** The folder the card became, or its portrait
+- `folderId` **[string][254]** The folder the card became, or its portrait
   holding its documents, or the one document an import that had only one
   to write
-- `title` **[string][235]** What it ended up called
-- `greetingIds` **[Array][236]<[string][235]>** The greetings, in the card's own order
-- `documents` **[number][240]** How many were written, sidecar included
-- `scan` **[boolean][237]?** The one document is a PDF with no text in it,
+- `title` **[string][254]** What it ended up called
+- `greetingIds` **[Array][255]<[string][254]>** The greetings, in the card's own order
+- `documents` **[number][259]** How many were written, sidecar included
+- `scan` **[boolean][256]?** The one document is a PDF with no text in it,
   which the writer is told of: a model can't read a scan
 
 ## writeCard
@@ -1424,19 +1559,19 @@ file is a folder of them.
 
 ### Parameters
 
-- `storyId` **[string][235]**&#x20;
+- `storyId` **[string][254]**&#x20;
 - `card` **Card**&#x20;
-- `options` **[Object][234]?** (optional, default `{}`)
-  - `options.parentId` **[string][235]?** Where to put it; the project root otherwise
-  - `options.useSystemPrompt` **[boolean][237]?** Keep the card's prompt override as
+- `options` **[Object][253]?** (optional, default `{}`)
+  - `options.parentId` **[string][254]?** Where to put it; the project root otherwise
+  - `options.useSystemPrompt` **[boolean][256]?** Keep the card's prompt override as
     a document of its own. Off by default: most cards that carry one are
     carrying an ST preset's scaffolding rather than anything about the
     character, and it is in the sidecar either way. (optional, default `false`)
-  - `options.portrait` **[Blob][242]?** The image the card came in, which the
+  - `options.portrait` **[Blob][261]?** The image the card came in, which the
     card is then. It is what the card looks like where people browse for
     them, and a model that can see it may as well.
 
-Returns **[Promise][239]<[Written][178]>**&#x20;
+Returns **[Promise][258]<[Written][121]>**&#x20;
 
 ## reimportCard
 
@@ -1455,18 +1590,18 @@ way, and stays that.
 
 ### Parameters
 
-- `storyId` **[string][235]**&#x20;
-- `folderId` **[string][235]** A card: its folder, or its portrait
+- `storyId` **[string][254]**&#x20;
+- `folderId` **[string][254]** A card: its folder, or its portrait
 - `card` **Card**&#x20;
-- `options` **[Object][234]?** (optional, default `{}`)
-  - `options.useSystemPrompt` **[boolean][237]?** (optional, default `false`)
-  - `options.portrait` **[Blob][242]?** The image, where the folder has none yet
+- `options` **[Object][253]?** (optional, default `{}`)
+  - `options.useSystemPrompt` **[boolean][256]?** (optional, default `false`)
+  - `options.portrait` **[Blob][261]?** The image, where the folder has none yet
 
 <!---->
 
-- Throws **[Error][247]** When the document is not a card
+- Throws **[Error][266]** When the document is not a card
 
-Returns **[Promise][239]<[Written][178]>**&#x20;
+Returns **[Promise][258]<[Written][121]>**&#x20;
 
 ## left
 
@@ -1488,11 +1623,11 @@ What is no longer the card's: to the trash.
 
 ##
 
-Type: [string][235]
+Type: [string][254]
 
 ## greetingIds
 
-Type: [Array][236]<[string][235]>
+Type: [Array][255]<[string][254]>
 
 ## place
 
@@ -1500,29 +1635,29 @@ Give a part the document it was written as before, or a new one.
 
 ### Parameters
 
-- `parentId` **[string][235]**&#x20;
-- `part` **[CardPart][194]**&#x20;
-- `found` **([Document][248] | null)**&#x20;
+- `parentId` **[string][254]**&#x20;
+- `part` **[CardPart][213]**&#x20;
+- `found` **([Document][267] | null)**&#x20;
 
-Returns **[string][235]** The document's id
+Returns **[string][254]** The document's id
 
 ## shift
 
-Type: [Document][248]
+Type: [Document][267]
 
 ## CardPart
 
 One of the documents a card is written as: what it says, and what it is,
 by which a re-import finds it again.
 
-Type: [Object][234]
+Type: [Object][253]
 
 ### Properties
 
-- `title` **[string][235]**&#x20;
-- `kind` **[string][235]**&#x20;
-- `content` **[string][235]**&#x20;
-- `hidden` **[boolean][237]?** Kept from the model
+- `title` **[string][254]**&#x20;
+- `kind` **[string][254]**&#x20;
+- `content` **[string][254]**&#x20;
+- `hidden` **[boolean][256]?** Kept from the model
 
 ## CARD_KINDS
 
@@ -1536,7 +1671,7 @@ The kinds of a lorebook's entries.
 
 ### Parameters
 
-- `a` **[Document][248]** @param {Document} b
+- `a` **[Document][267]** @param {Document} b
 - `b` &#x20;
 
 ## partsOf
@@ -1547,12 +1682,12 @@ greetings, its lore's entries, and its JSON.
 ### Parameters
 
 - `card` **Card**&#x20;
-- `options` **{useSystemPrompt: [boolean][237]}**&#x20;
+- `options` **{useSystemPrompt: [boolean][256]}**&#x20;
   - `options.useSystemPrompt` &#x20;
 
 ## fields
 
-Type: [Array][236]<[CardPart][194]>
+Type: [Array][255]<[CardPart][213]>
 
 ## field
 
@@ -1566,16 +1701,16 @@ model to read past.
 - `title` &#x20;
 - `kind` &#x20;
 - `value` &#x20;
-- `$3` **[Object][234]** (optional, default `{}`)
+- `$3` **[Object][253]** (optional, default `{}`)
   - `$3.hidden` (optional, default `false`)
 
 ##
 
-Type: [string][235]
+Type: [string][254]
 
 ##
 
-Type: [string][235]
+Type: [string][254]
 
 ## loreParts
 
@@ -1588,13 +1723,13 @@ it said.
 
 ### Parameters
 
-- `entries` **[Array][236]<[LoreEntry][2]>**&#x20;
+- `entries` **[Array][255]<[LoreEntry][2]>**&#x20;
 
-Returns **[Array][236]<[CardPart][194]>**&#x20;
+Returns **[Array][255]<[CardPart][213]>**&#x20;
 
 ## id
 
-Type: [Document][248]
+Type: [Document][267]
 
 ## fillCard
 
@@ -1602,20 +1737,20 @@ The documents a card is made of, written into its folder or its image.
 
 ### Parameters
 
-- `storyId` **[string][235]**&#x20;
-- `folderId` **[string][235]**&#x20;
+- `storyId` **[string][254]**&#x20;
+- `folderId` **[string][254]**&#x20;
 - `card` **Card**&#x20;
-- `options` **[Object][234]**&#x20;
-  - `options.useSystemPrompt` **[boolean][237]**&#x20;
+- `options` **[Object][253]**&#x20;
+  - `options.useSystemPrompt` **[boolean][256]**&#x20;
 
-Returns **[Promise][239]\<Pick<[Written][178], (`"greetingIds"` | `"documents"`)>>** The
+Returns **[Promise][258]\<Pick<[Written][121], (`"greetingIds"` | `"documents"`)>>** The
 count is of what this wrote: the folder is not counted here
 
 ## write
 
 ### Parameters
 
-- `part` **[CardPart][194]**&#x20;
+- `part` **[CardPart][213]**&#x20;
 
 ## writePortrait
 
@@ -1631,11 +1766,11 @@ holds its pixels; between them the card round-trips.
 ### Parameters
 
 - `store` &#x20;
-- `storyId` **[string][235]**&#x20;
-- `folderId` **[string][235]**&#x20;
-- `portrait` **[Blob][242]**&#x20;
+- `storyId` **[string][254]**&#x20;
+- `folderId` **[string][254]**&#x20;
+- `portrait` **[Blob][261]**&#x20;
 
-Returns **[Promise][239]<[number][240]>** How many documents this wrote
+Returns **[Promise][258]<[number][259]>** How many documents this wrote
 
 ## writeMarkdown
 
@@ -1655,16 +1790,16 @@ merges against.
 
 ### Parameters
 
-- `storyId` **[string][235]**&#x20;
-- `title` **[string][235]**&#x20;
-- `content` **[string][235]** With a marker where each of `pictures` was
-- `options` **[Object][234]?** (optional, default `{}`)
-  - `options.parentId` **[string][235]?**&#x20;
+- `storyId` **[string][254]**&#x20;
+- `title` **[string][254]**&#x20;
+- `content` **[string][254]** With a marker where each of `pictures` was
+- `options` **[Object][253]?** (optional, default `{}`)
+  - `options.parentId` **[string][254]?**&#x20;
   - `options.drive` &#x20;
   - `options.base` &#x20;
   - `options.pictures` &#x20;
 
-Returns **[Promise][239]<[Written][178]>**&#x20;
+Returns **[Promise][258]<[Written][121]>**&#x20;
 
 ## writeLorebook
 
@@ -1675,13 +1810,13 @@ The same documents, with no card around them.
 
 ### Parameters
 
-- `storyId` **[string][235]**&#x20;
-- `book` **{name: [string][235], entries: [Array][236]<[LoreEntry][2]>, raw: any}**&#x20;
-- `options` **[Object][234]?** (optional, default `{}`)
-  - `options.parentId` **[string][235]?**&#x20;
-  - `options.title` **[string][235]?** Overrides the book's own name
+- `storyId` **[string][254]**&#x20;
+- `book` **{name: [string][254], entries: [Array][255]<[LoreEntry][2]>, raw: any}**&#x20;
+- `options` **[Object][253]?** (optional, default `{}`)
+  - `options.parentId` **[string][254]?**&#x20;
+  - `options.title` **[string][254]?** Overrides the book's own name
 
-Returns **[Promise][239]<[Written][178]>**&#x20;
+Returns **[Promise][258]<[Written][121]>**&#x20;
 
 ## writeLore
 
@@ -1706,13 +1841,13 @@ words in the entry's mouth.
 ### Parameters
 
 - `store` &#x20;
-- `storyId` **[string][235]**&#x20;
-- `folderId` **[string][235]** The card's folder, or the book's own
-- `entries` **[Array][236]<[LoreEntry][2]>**&#x20;
-- `$4` **[Object][234]** (optional, default `{}`)
+- `storyId` **[string][254]**&#x20;
+- `folderId` **[string][254]** The card's folder, or the book's own
+- `entries` **[Array][255]<[LoreEntry][2]>**&#x20;
+- `$4` **[Object][253]** (optional, default `{}`)
   - `$4.into` &#x20;
 
-Returns **[number][240]** How many documents it wrote
+Returns **[number][259]** How many documents it wrote
 
 ## writeSidecar
 
@@ -1727,11 +1862,11 @@ file that rots.
 ### Parameters
 
 - `store` &#x20;
-- `storyId` **[string][235]**&#x20;
-- `folderId` **[string][235]**&#x20;
+- `storyId` **[string][254]**&#x20;
+- `folderId` **[string][254]**&#x20;
 - `raw` **any**&#x20;
 
-Returns **[number][240]** How many documents this wrote
+Returns **[number][259]** How many documents this wrote
 
 ## SHELF_KINDS
 
@@ -1756,16 +1891,16 @@ renamed it to.
 
 ### Parameters
 
-- `storyId` **[string][235]**&#x20;
+- `storyId` **[string][254]**&#x20;
 - `which` **(`"characters"` | `"lorebooks"`)**&#x20;
 
-Returns **[Promise][239]<[string][235]>** The folder's id
+Returns **[Promise][258]<[string][254]>** The folder's id
 
 ## find
 
 ### Parameters
 
-- `kind` **[string][235]**&#x20;
+- `kind` **[string][254]**&#x20;
 
 Returns **any**&#x20;
 
@@ -1773,13 +1908,13 @@ Returns **any**&#x20;
 
 ### Parameters
 
-- `id` **[string][235]** @returns {any}
+- `id` **[string][254]** @returns {any}
 
 ## make
 
 ### Parameters
 
-- `parentId` **[string][235]**&#x20;
+- `parentId` **[string][254]**&#x20;
 - `name` &#x20;
 
 [1]: #cardscard
@@ -1887,146 +2022,165 @@ Returns **any**&#x20;
 [103]: #parameters-31
 [104]: #substitute
 [105]: #parameters-32
-[106]: #storedpassage
-[107]: #parameters-33
-[108]: #spans
-[109]: #match
-[110]: #-6
-[111]: #cardspng
-[112]: #signature
-[113]: #keywords
-[114]: #textchunks
-[115]: #parameters-34
-[116]: #chunks
-[117]: #cardfrompng
-[118]: #parameters-35
-[119]: #decodebase64
-[120]: #parameters-36
-[121]: #latin1
-[122]: #parameters-37
-[123]: #cardssources
-[124]: #cardlink
-[125]: #properties-3
-[126]: #chub_hosts
-[127]: #chub_path
-[128]: #chub
-[129]: #parameters-38
-[130]: #cardlink-1
-[131]: #parameters-39
-[132]: #url
-[133]: #cardsthumbnail
-[134]: #thumbnail_width
-[135]: #makethumbnail
-[136]: #parameters-40
-[137]: #isopaque
-[138]: #parameters-41
-[139]: #cardstranscript
-[140]: #unused
-[141]: #unused-1
-[142]: #unused-2
-[143]: #transcript
-[144]: #properties-4
-[145]: #istranscript
-[146]: #parameters-42
-[147]: #readtranscript
-[148]: #parameters-43
-[149]: #messagefrom
-[150]: #parameters-44
-[151]: #alternates
-[152]: #answerfrom
-[153]: #parameters-45
-[154]: #noteof
+[106]: #filledspan
+[107]: #filledwith
+[108]: #parameters-33
+[109]: #spans
+[110]: #match
+[111]: #storedchange
+[112]: #storedstretches
+[113]: #parameters-34
+[114]: #longer
+[115]: #namesbefore
+[116]: #parameters-35
+[117]: #-6
+[118]: #inside
+[119]: #parameters-36
+[120]: #-7
+[121]: #written
+[122]: #stored
+[123]: #parameters-37
+[124]: #-8
+[125]: #changes
+[126]: #storedpassage
+[127]: #parameters-38
+[128]: #storedplaces
+[129]: #parameters-39
+[130]: #cardspng
+[131]: #signature
+[132]: #keywords
+[133]: #textchunks
+[134]: #parameters-40
+[135]: #chunks
+[136]: #cardfrompng
+[137]: #parameters-41
+[138]: #decodebase64
+[139]: #parameters-42
+[140]: #latin1
+[141]: #parameters-43
+[142]: #cardssources
+[143]: #cardlink
+[144]: #properties-3
+[145]: #chub_hosts
+[146]: #chub_path
+[147]: #chub
+[148]: #parameters-44
+[149]: #cardlink-1
+[150]: #parameters-45
+[151]: #url
+[152]: #cardsthumbnail
+[153]: #thumbnail_width
+[154]: #makethumbnail
 [155]: #parameters-46
-[156]: #ismessage
+[156]: #isopaque
 [157]: #parameters-47
-[158]: #firstline
-[159]: #parameters-48
-[160]: #parseline
-[161]: #parameters-49
-[162]: #textof
-[163]: #parameters-50
-[164]: #named
-[165]: #parameters-51
-[166]: #named-1
-[167]: #commonest
-[168]: #parameters-52
-[169]: #when
-[170]: #parameters-53
-[171]: #titlefrom
-[172]: #parameters-54
-[173]: #cardswrite
-[174]: #sidecar_title
-[175]: #sidecar_title-1
-[176]: #sidecar_title-2
-[177]: #sidecar_title-3
-[178]: #written
-[179]: #properties-5
-[180]: #writecard
-[181]: #parameters-55
-[182]: #reimportcard
-[183]: #parameters-56
-[184]: #left
-[185]: #take
-[186]: #parameters-57
-[187]: #discard
-[188]: #parameters-58
-[189]: #-7
-[190]: #greetingids
-[191]: #place
-[192]: #parameters-59
-[193]: #shift
-[194]: #cardpart
-[195]: #properties-6
-[196]: #card_kinds
-[197]: #lore_kinds
-[198]: #byorder
-[199]: #parameters-60
-[200]: #partsof
-[201]: #parameters-61
-[202]: #fields
-[203]: #field
-[204]: #parameters-62
-[205]: #-8
-[206]: #-9
-[207]: #loreparts
-[208]: #parameters-63
-[209]: #id
-[210]: #fillcard
-[211]: #parameters-64
-[212]: #write
-[213]: #parameters-65
-[214]: #writeportrait
-[215]: #parameters-66
-[216]: #writemarkdown
-[217]: #parameters-67
-[218]: #writelorebook
-[219]: #parameters-68
-[220]: #writelore
-[221]: #parameters-69
-[222]: #writesidecar
-[223]: #parameters-70
-[224]: #shelf_kinds
-[225]: #shelf_titles
-[226]: #shelffor
-[227]: #parameters-71
-[228]: #find
-[229]: #parameters-72
-[230]: #walk
-[231]: #parameters-73
-[232]: #make
-[233]: #parameters-74
-[234]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[235]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[236]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[237]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[238]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[239]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[240]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[241]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[242]: https://developer.mozilla.org/docs/Web/API/Blob
-[243]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
-[244]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[245]: https://developer.mozilla.org/docs/Web/API/URL/URL
-[246]: https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D
-[247]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[248]: https://developer.mozilla.org/docs/Web/API/Document
+[158]: #cardstranscript
+[159]: #unused
+[160]: #unused-1
+[161]: #unused-2
+[162]: #transcript
+[163]: #properties-4
+[164]: #istranscript
+[165]: #parameters-48
+[166]: #readtranscript
+[167]: #parameters-49
+[168]: #messagefrom
+[169]: #parameters-50
+[170]: #alternates
+[171]: #answerfrom
+[172]: #parameters-51
+[173]: #noteof
+[174]: #parameters-52
+[175]: #ismessage
+[176]: #parameters-53
+[177]: #firstline
+[178]: #parameters-54
+[179]: #parseline
+[180]: #parameters-55
+[181]: #textof
+[182]: #parameters-56
+[183]: #named
+[184]: #parameters-57
+[185]: #named-1
+[186]: #commonest
+[187]: #parameters-58
+[188]: #when
+[189]: #parameters-59
+[190]: #titlefrom
+[191]: #parameters-60
+[192]: #cardswrite
+[193]: #sidecar_title
+[194]: #sidecar_title-1
+[195]: #sidecar_title-2
+[196]: #sidecar_title-3
+[197]: #written-1
+[198]: #properties-5
+[199]: #writecard
+[200]: #parameters-61
+[201]: #reimportcard
+[202]: #parameters-62
+[203]: #left
+[204]: #take
+[205]: #parameters-63
+[206]: #discard
+[207]: #parameters-64
+[208]: #-9
+[209]: #greetingids
+[210]: #place
+[211]: #parameters-65
+[212]: #shift
+[213]: #cardpart
+[214]: #properties-6
+[215]: #card_kinds
+[216]: #lore_kinds
+[217]: #byorder
+[218]: #parameters-66
+[219]: #partsof
+[220]: #parameters-67
+[221]: #fields
+[222]: #field
+[223]: #parameters-68
+[224]: #-10
+[225]: #-11
+[226]: #loreparts
+[227]: #parameters-69
+[228]: #id
+[229]: #fillcard
+[230]: #parameters-70
+[231]: #write
+[232]: #parameters-71
+[233]: #writeportrait
+[234]: #parameters-72
+[235]: #writemarkdown
+[236]: #parameters-73
+[237]: #writelorebook
+[238]: #parameters-74
+[239]: #writelore
+[240]: #parameters-75
+[241]: #writesidecar
+[242]: #parameters-76
+[243]: #shelf_kinds
+[244]: #shelf_titles
+[245]: #shelffor
+[246]: #parameters-77
+[247]: #find
+[248]: #parameters-78
+[249]: #walk
+[250]: #parameters-79
+[251]: #make
+[252]: #parameters-80
+[253]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[254]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[255]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[256]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[257]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[258]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[259]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[260]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[261]: https://developer.mozilla.org/docs/Web/API/Blob
+[262]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
+[263]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[264]: https://developer.mozilla.org/docs/Web/API/URL/URL
+[265]: https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D
+[266]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[267]: https://developer.mozilla.org/docs/Web/API/Document

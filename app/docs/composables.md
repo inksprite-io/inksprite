@@ -2896,9 +2896,10 @@ await sendMessage('Help me develop this character')
 
 A project its owner shares with only some of its documents, as the owner
 sees and changes it (`utils/sharedDocuments.js`): what the others see of
-each document, which the outline marks once the project is shared with
-someone, and a document shared, or no longer, with everything in it, from
-its menu or **Share…**. Only in the preview `selective-sharing`.
+each document, which the outline marks from the moment the owner chooses
+to share only some, before anyone is in the project as after, and a
+document shared, or no longer, with everything in it, from its menu or
+the boxes in Settings › Project.
 
 Design: `.llm/sync_design.md`, "Only some documents".
 
@@ -16072,7 +16073,9 @@ its rows, by the store they read.
 
 ## active
 
-Whether the project is shared with only some documents, and with someone.
+Whether the project is one its owner shares only some documents of.
+With nobody in it yet as well: what to hold back is chosen before the
+first friend is asked in.
 
 ## sharingOfDocument
 
