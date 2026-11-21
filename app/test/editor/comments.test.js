@@ -15,7 +15,7 @@ import {
   countOpen,
   commentOn,
   editAroundComments,
-  editPlaceAroundComments,
+  editPlacesAroundComments,
   findComments,
   keepComments,
   liftThreads,
@@ -327,32 +327,91 @@ describe('edits around comments', () => {
     const TWICE = 'The ferry {==left at noon==}{>>cabcd1<<} and was back by noon.'
     const text = withoutComments(TWICE)
     const [first, second] = [text.indexOf('noon'), text.lastIndexOf('noon')]
-    /** The markdown with an edit made to it. */
-    const made = (content, edit) => content.slice(0, edit.from) + edit.new + content.slice(edit.to)
+    /** A change to "noon" where it starts. */
+    const dusk = at => ({ from: at, to: at + 4, new: 'dusk' })
+    /** The markdown with a change at every place a passage is, the last first. */
+    const every = (content, passage, replacement) => {
+      const plain = withoutComments(content)
+      /** @type {Array<{from: number, to: number, new: string}>} */
+      const changes = []
+      for (
+        let at = plain.indexOf(passage);
+        at !== -1;
+        at = plain.indexOf(passage, at + passage.length)
+      ) {
+        changes.unshift({ from: at, to: at + passage.length, new: replacement })
+      }
+      return editPlacesAroundComments(content, changes)
+    }
+    const ids = edit => edit.resolved.map(comment => comment.id)
 
     it('changes the place named and no other, where no comment is reached', () => {
-      const edit = editPlaceAroundComments(TWICE, second, second + 4, 'dusk')
+      const edit = editPlacesAroundComments(TWICE, [dusk(second)])
 
-      expect(made(TWICE, edit)).toBe(
-        'The ferry {==left at noon==}{>>cabcd1<<} and was back by dusk.'
-      )
+      expect(edit.content).toBe('The ferry {==left at noon==}{>>cabcd1<<} and was back by dusk.')
       expect(edit.resolved).toEqual([])
     })
 
     it('resolves the comment whose words the place is in, and takes its markup', () => {
-      const edit = editPlaceAroundComments(TWICE, first, first + 4, 'dusk')
+      const edit = editPlacesAroundComments(TWICE, [dusk(first)])
 
-      expect(made(TWICE, edit)).toBe('The ferry left at dusk and was back by noon.')
-      expect(edit.resolved.map(comment => comment.id)).toEqual(['cabcd1'])
+      expect(edit.content).toBe('The ferry left at dusk and was back by noon.')
+      expect(ids(edit)).toEqual(['cabcd1'])
     })
 
     it('is where it says in text with no comments, with nothing to work out', () => {
-      expect(editPlaceAroundComments('noon, and noon again', 10, 14, 'dusk')).toEqual({
-        from: 10,
-        to: 14,
-        new: 'dusk',
+      expect(editPlacesAroundComments('noon, and noon again', [dusk(10)])).toEqual({
+        content: 'noon, and dusk again',
         resolved: [],
       })
+    })
+
+    it('makes each change in the text the ones before it left, in any order', () => {
+      const changed = 'The ferry left at dusk and was back by dusk.'
+      for (const changes of [
+        [dusk(second), dusk(first)],
+        [dusk(first), dusk(second)],
+      ]) {
+        const edit = editPlacesAroundComments(TWICE, changes)
+        expect(edit.content).toBe(changed)
+        expect(ids(edit)).toEqual(['cabcd1'])
+      }
+    })
+
+    it('keeps a comment on its words where a change leaves them, for the next change to reach', () => {
+      const BOTH = '{==noon, at noon==}{>>cabcd1<<}'
+      const last = withoutComments(BOTH).lastIndexOf('noon')
+
+      const once = editPlacesAroundComments(BOTH, [{ from: last, to: last + 4, new: 'noon sharp' }])
+      expect(once.content).toBe('{==noon, at noon==}{>>cabcd1<<} sharp')
+      expect(once.resolved).toEqual([])
+
+      const twice = every(BOTH, 'noon', 'noon sharp')
+      expect(twice.content).toBe('noon sharp, at noon sharp')
+      expect(ids(twice)).toEqual(['cabcd1'])
+    })
+
+    it('resolves a comment over two paragraphs once its run in each is changed', () => {
+      const PARAS = 'The bell at {==noon==}{>>cabcd1<<}.\n\nAnd at {==noon==}{>>cabcd1<<} again.'
+      const later = withoutComments(PARAS).lastIndexOf('noon')
+
+      const once = editPlacesAroundComments(PARAS, [dusk(later)])
+      expect(once.content).toBe('The bell at {==noon==}{>>cabcd1<<}.\n\nAnd at dusk again.')
+      expect(once.resolved).toEqual([])
+
+      const both = every(PARAS, 'noon', 'dusk')
+      expect(both.content).toBe('The bell at dusk.\n\nAnd at dusk again.')
+      expect(ids(both)).toEqual(['cabcd1'])
+    })
+
+    it('reads two runs of a comment as one where a change brings them together', () => {
+      // The blank line goes first, and the run before it then goes on into
+      // the one after: a change in either takes both.
+      const JOINED = 'We {==set out\nat dawn==}{>>cabcd1<<}\n\n{==and rode==}{>>cabcd1<<} west.'
+      const edit = every(JOINED, '\n', '')
+
+      expect(edit.content).toBe('We set outat dawnand rode west.')
+      expect(ids(edit)).toEqual(['cabcd1'])
     })
   })
 })

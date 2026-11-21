@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { namesOf, storedPassage, storedPlace, substitute } from '@/cards/macros.js'
+import { namesOf, storedPassage, storedPlaces, substitute } from '@/cards/macros.js'
 
 describe('cards/macros', () => {
   const names = { char: 'Elara', user: 'Riley' }
@@ -118,18 +118,36 @@ describe('cards/macros', () => {
     })
   })
 
-  describe('storedPlace', () => {
+  describe('storedPlaces', () => {
     // As the chat reads it: "Elara waits. Elara waits by the gate. Riley waits."
     const text = '{{char}} waits. Elara waits by the gate. {{user}} waits.'
     const filled = substitute(text, names)
+    /** The stored text with changes made in the order given. */
+    const made = changes =>
+      changes.reduce(
+        (stored, change) => stored.slice(0, change.from) + change.new + stored.slice(change.to),
+        text
+      )
     /** The stored text with one place of the filled text changed. */
     const changed = (passage, nth, replacement) => {
       const at = filled
         .split(passage)
         .slice(0, nth + 1)
         .join(passage).length
-      const place = storedPlace(text, names, at, passage.length, replacement)
-      return text.slice(0, place.from) + place.new + text.slice(place.to)
+      return made(storedPlaces(text, names, [at], passage.length, replacement))
+    }
+    /** And with every place changed. */
+    const everyPlace = (passage, replacement) => {
+      /** @type {number[]} */
+      const places = []
+      for (
+        let at = filled.indexOf(passage);
+        at !== -1;
+        at = filled.indexOf(passage, at + passage.length)
+      ) {
+        places.push(at)
+      }
+      return made(storedPlaces(text, names, places, passage.length, replacement))
     }
 
     it('finds one place of several a passage is at, past the macros before it', () => {
@@ -157,6 +175,21 @@ describe('cards/macros', () => {
       expect(changed('lara waits', 0, 'lara rests')).toBe(
         'Elara rests. Elara waits by the gate. {{user}} waits.'
       )
+    })
+
+    it('gives every place the last first, each where it is once the ones after it are changed', () => {
+      expect(everyPlace('waits', 'rests')).toBe(
+        '{{char}} rests. Elara rests by the gate. {{user}} rests.'
+      )
+      expect(everyPlace('Elara', 'Mara')).toBe(
+        'Mara waits. Mara waits by the gate. {{user}} waits.'
+      )
+    })
+
+    it('finds a place in a name an earlier change wrote out where it reads', () => {
+      // The last "a" of the first name writes the macro out; the one before
+      // it is then in the name as written.
+      expect(everyPlace('a', 'X')).toBe('ElXrX wXits. ElXrX wXits by the gXte. {{user}} wXits.')
     })
   })
 })

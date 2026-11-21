@@ -82,7 +82,7 @@ import {
   commentsInDoc,
   countOpen,
   editAroundComments,
-  editPlaceAroundComments,
+  editPlacesAroundComments,
   newCommentId,
   newPost,
   newThread,
@@ -116,7 +116,7 @@ import {
 } from './commentReads.js'
 import { peopleOf } from '@/cloud/people.js'
 import { extensionFor, isData, isUnreadText, sizeLabel } from '@/files/inspect.js'
-import { namesOf, storedPassage, storedPlace, substitute } from '@/cards/macros.js'
+import { namesOf, storedPassage, storedPlaces, substitute } from '@/cards/macros.js'
 import { currentDigests } from '@/jobs/index.js'
 
 /**
@@ -3488,23 +3488,34 @@ function passageChanged(text, names, quote, written) {
 }
 
 /**
- * A passage changed at one of the places it is in a document's text, for a
- * passage that is there more than once and is changed at each: what
- * `passageChanged` does for the one place a passage is at, by where it is.
+ * A passage changed at every place it is in a document's text, for a
+ * passage that is there more than once: what `passageChanged` does for the
+ * one place a passage is at, at each, the last first so that the ones
+ * before it are where they were. Each place is found in the text as the
+ * model reads it, then in the text without the comments where the chat
+ * fills in names (`storedPlaces`), then changed in the text that holds the
+ * comments (`editPlacesAroundComments`), reading the text once for them all.
  *
  * @param {string} text - The document's text, comments and all
  * @param {import('@/cards/macros.js').Names|null} names
- * @param {number} at - Where the passage is, in the text as the model reads it
+ * @param {number[]} places - Where the passage is, in the text as the model
+ *   reads it, in order
  * @param {number} length - How long it is there
  * @param {string} written - What it becomes, without any markup
- * @returns {TextChange}
+ * @returns {{text: string, resolved: string[]}} The text with every place
+ *   changed, and the comments resolved
  */
-function placeChanged(text, names, at, length, written) {
-  const found = names
-    ? storedPlace(withoutComments(text), names, at, length, written)
-    : { from: at, to: at + length, new: written }
-  const edit = editPlaceAroundComments(text, found.from, found.to, found.new)
-  return { ...edit, resolved: edit.resolved.map(comment => comment.id) }
+function placesChanged(text, names, places, length, written) {
+  // With no comment in the text and no name read into it, each place is in
+  // the text where the model reads it, with nothing around it to work out.
+  if (!names && !text.includes(OPEN_MARKUP)) {
+    return { text: changedAt(text, places, length, written), resolved: [] }
+  }
+  const changes = names
+    ? storedPlaces(withoutComments(text), names, places, length, written)
+    : places.map(at => ({ from: at, to: at + length, new: written })).reverse()
+  const edit = editPlacesAroundComments(text, changes)
+  return { text: edit.content, resolved: edit.resolved.map(comment => comment.id) }
 }
 
 /**
@@ -3572,18 +3583,12 @@ function editsMade(before, { edits, listed }, { names, path, seen }) {
     const quote = quoteWithoutComments(seen ? withoutSuggestionMarkup(edit.old) : edit.old)
     const becomes = quoteWithoutComments(withoutSuggestionMarkup(edit.new))
     const every = edit.all ? placesOf(read(text), quote) : []
-    if (every.length > 1 && !names && !text.includes(OPEN_MARKUP)) {
-      // With no comment in the text and no name read into it, each place is
-      // in the text where the model reads it, with nothing around it to
-      // work out. A place at a time goes over a long text once for each.
-      text = changedAt(text, every, quote.length, becomes)
+    if (every.length > 1) {
+      const made = placesChanged(text, names, every, quote.length, becomes)
+      text = made.text
+      resolved.push(...made.resolved)
       changes += every.length
       only = null
-    } else if (every.length > 1) {
-      // The last place first, so the ones before it are where they were.
-      for (const place of every.reverse()) {
-        make(placeChanged(text, names, place, quote.length, becomes))
-      }
     } else {
       const change = passageChanged(text, names, quote, becomes)
       if ('count' in change) {

@@ -165,6 +165,31 @@ describe('a chat that plays a card', () => {
     )
   })
 
+  it('reads a long text a few times for all the places it changes, not once for each', async () => {
+    // How much text a call reads for comments' markup and for macros: the
+    // length of every string scanned for either, summed. Both scan with
+    // `matchAll`.
+    const line = '{{char}} waits by the gate until noon. '
+    const long = line.replace('gate', '{==gate==}{>>cabcd1<<}') + line.repeat(400)
+    store.updateDocument(description.id, { content: long })
+    const scan = vi.spyOn(String.prototype, 'matchAll')
+    let scanned = 0
+    try {
+      await executeEditDocument(
+        { path: 'Elara/Description', old: 'waits', new: 'rests', all: true },
+        as(playing)
+      )
+      scanned = scan.mock.contexts.reduce((sum, text) => sum + String(text).length, 0)
+    } finally {
+      scan.mockRestore()
+    }
+
+    expect(store.getDocument(description.id).content).toBe(long.replaceAll('waits', 'rests'))
+    // Once for each of the 401 places would be hundreds of times its length.
+    expect(scanned).toBeGreaterThanOrEqual(long.length)
+    expect(scanned).toBeLessThan(10 * long.length)
+  })
+
   it('changes a name at every place it reads it, where it is a macro and where it is written out', async () => {
     store.updateDocument(description.id, {
       content: '{{char}} waits. Elara waits by the gate. {{user}} waits.',

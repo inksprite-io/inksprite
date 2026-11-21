@@ -109,41 +109,86 @@ function filledWith(text, names) {
 }
 
 /**
- * A stretch of the filled text as the stretch of the stored text that reads
- * as it, and what a replacement for it becomes there. Where the stretch
+ * A change to the stored text: the stretch of it that goes, and what goes
+ * there.
+ *
+ * @typedef {{from: number, to: number, new: string}} StoredChange
+ */
+
+/**
+ * Stretches of the filled text, each as the stretch of the stored text that
+ * reads as it, and what a replacement for it becomes there. Where a stretch
  * starts or ends partway through a name, the stored one takes the whole
  * macro, and the replacement the part of the name left out.
  *
+ * The stretches are changed the last first, each in the stored text the ones
+ * after it left. A change that starts partway through a name writes the name
+ * out up to there, so in that much of it the stored text reads as the filled,
+ * and a stretch there is where it reads.
+ *
  * @param {{filled: string, spans: FilledSpan[]}} filling
- * @param {number} at - Where the stretch starts in the filled text
- * @param {number} until - Where it ends
+ * @param {number[]} places - Where each stretch starts in the filled text, in
+ *   order, each past the end of the one before
+ * @param {number} length - How long each is there
  * @param {string} replacement
- * @returns {{from: number, to: number, new: string}} Where it is in the
- *   stored text, and what goes there
+ * @returns {StoredChange[]} One for each stretch, the last first
  */
-function storedStretch({ filled, spans }, at, until, replacement) {
-  // Where a place in the filled text is in the stored one, outside any name.
-  const stored = (/** @type {number} */ offset) => {
-    let shift = 0
-    for (const span of spans) {
-      if (span.until > offset) break
-      shift += span.to - span.from - (span.until - span.at)
+function storedStretches({ filled, spans }, places, length, replacement) {
+  /** How much longer the stored text is than the filled, up to each macro and past the last. */
+  const longer = [0]
+  for (const span of spans) {
+    longer.push(longer[longer.length - 1] + span.to - span.from - span.until + span.at)
+  }
+  /** How many names start before a place in the filled text. */
+  const namesBefore = (/** @type {number} */ offset) => {
+    let low = 0
+    let high = spans.length
+    while (low < high) {
+      const mid = (low + high) >> 1
+      if (spans[mid].at < offset) low = mid + 1
+      else high = mid
     }
-    return offset + shift
+    return low
+  }
+  /** The name a place in the filled text is partway through. */
+  const inside = (/** @type {number} */ offset) => {
+    const span = spans[namesBefore(offset) - 1]
+    return span && offset < span.until ? span : undefined
   }
 
-  const opening = spans.find(span => span.at < at && at < span.until)
-  const closing = spans.find(span => span.at < until && until < span.until)
+  /**
+   * A name a change after this one wrote out, where it starts in each text:
+   * from there to that change, the stored text reads as the filled.
+   *
+   * @type {{at: number, from: number}|null}
+   */
+  let written = null
+  /** Where a place in the filled text is in the stored one, outside any name. */
+  const stored = (/** @type {number} */ offset) =>
+    written && offset >= written.at
+      ? written.from + offset - written.at
+      : offset + longer[namesBefore(offset)]
 
-  return {
-    from: opening ? opening.from : stored(at),
-    to: closing ? closing.to : stored(until),
-    new: [
-      opening ? filled.slice(opening.at, at) : '',
-      replacement,
-      closing ? filled.slice(until, closing.until) : '',
-    ].join(''),
+  /** @type {StoredChange[]} */
+  const changes = []
+  for (let i = places.length - 1; i >= 0; i--) {
+    const at = places[i]
+    const until = at + length
+    const opening = written && at >= written.at ? undefined : inside(at)
+    const closing = written && until >= written.at ? undefined : inside(until)
+    changes.push({
+      from: opening ? opening.from : stored(at),
+      to: closing ? closing.to : stored(until),
+      new: [
+        opening ? filled.slice(opening.at, at) : '',
+        replacement,
+        closing ? filled.slice(until, closing.until) : '',
+      ].join(''),
+    })
+    if (opening) written = { at: opening.at, from: opening.from }
+    else if (written && at < written.at) written = null
   }
+  return changes
 }
 
 /**
@@ -174,24 +219,25 @@ export function storedPassage(text, names, passage, replacement) {
   const count = passage ? filled.split(passage).length - 1 : 0
   if (count !== 1 || spans.length === 0) return { count, old: passage, new: replacement }
 
-  const at = filled.indexOf(passage)
-  const stretch = storedStretch(filling, at, at + passage.length, replacement)
+  const [stretch] = storedStretches(filling, [filled.indexOf(passage)], passage.length, replacement)
   return { count, old: text.slice(stretch.from, stretch.to), new: stretch.new }
 }
 
 /**
- * One place in the filled text, as the document stores it: for a passage
- * that is there more than once, each place changed on its own. What
- * `storedPassage` gives for a passage that is there once, by where it is.
+ * Every place a passage is in the filled text, as the document stores it:
+ * what `storedPassage` gives for a passage that is there once, for one that
+ * is there more than once and is changed at each. The places are changed the
+ * last first, and each is where it is in the stored text once the ones after
+ * it are changed.
  *
  * @param {string} text - The document as stored
  * @param {Names} names
- * @param {number} at - Where the passage is in the filled text
+ * @param {number[]} places - Where the passage is in the filled text, in order
  * @param {number} length - How long it is there
  * @param {string} replacement - What it should read instead
- * @returns {{from: number, to: number, new: string}} Where the passage is in
- *   the stored text, and its replacement as it applies there
+ * @returns {StoredChange[]} For each place, the last first: where the
+ *   passage is in the stored text, and its replacement as it applies there
  */
-export function storedPlace(text, names, at, length, replacement) {
-  return storedStretch(filledWith(text, names), at, at + length, replacement)
+export function storedPlaces(text, names, places, length, replacement) {
+  return storedStretches(filledWith(text, names), places, length, replacement)
 }

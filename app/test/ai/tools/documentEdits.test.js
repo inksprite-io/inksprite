@@ -526,3 +526,39 @@ describe('several edits in a call', () => {
     })
   })
 })
+
+describe('every place in a long text with a comment', () => {
+  /**
+   * How much text a call reads for comments' markup: the length of every
+   * string scanned for it, summed. The parser scans with `matchAll`.
+   *
+   * @param {() => Promise<unknown>} call
+   * @returns {Promise<number>}
+   */
+  const scannedBy = async call => {
+    const scan = vi.spyOn(String.prototype, 'matchAll')
+    try {
+      await call()
+      return scan.mock.contexts.reduce((sum, text) => sum + String(text).length, 0)
+    } finally {
+      scan.mockRestore()
+    }
+  }
+
+  it('reads the text a few times for all the places, not once for each', async () => {
+    const sentence = 'The guards change at noon, and the vault opens at noon. '
+    const long = (
+      sentence.replace('guards', '{==guards==}{>>cabcd1<<}') + sentence.repeat(400)
+    ).trim()
+    store.updateDocument('doc_plan', { content: long })
+
+    const scanned = await scannedBy(() =>
+      executeEditDocument({ path: 'Plan', old: 'noon', new: 'dusk', all: true }, context)
+    )
+
+    expect(store.getDocument('doc_plan').content).toBe(long.replaceAll('noon', 'dusk'))
+    // Once for each of the 802 places would be 802 times its length.
+    expect(scanned).toBeGreaterThanOrEqual(long.length)
+    expect(scanned).toBeLessThan(10 * long.length)
+  })
+})

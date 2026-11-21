@@ -291,25 +291,64 @@ function joinRuns(runs) {
 }
 
 /**
+ * The halves of a parse's markup in the order written, each with whether it
+ * closes, and how long the markup is before each of them and after the last:
+ * for finding where a place in the text is in the markdown without going
+ * over them all.
+ *
+ * @typedef {{halves: Array<MarkupToken & {closes: boolean}>, before: number[]}} Halves
+ */
+
+/**
+ * @param {ParsedMarkup} parsed
+ * @returns {Halves}
+ */
+function halvesOf(parsed) {
+  const halves = parsed.runs
+    .flatMap(run => [
+      { ...run.open, closes: false },
+      { ...run.close, closes: true },
+    ])
+    .sort((a, b) => a.from - b.from)
+  const before = [0]
+  for (const half of halves) before.push(before[before.length - 1] + half.to - half.from)
+  return { halves, before }
+}
+
+/**
+ * How many of a sorted list come before the first for which `ahead` is false.
+ *
+ * @template T
+ * @param {T[]} list
+ * @param {(item: T) => boolean} ahead - True for a first stretch of the list
+ * @returns {number}
+ */
+function countAhead(list, ahead) {
+  let low = 0
+  let high = list.length
+  while (low < high) {
+    const mid = (low + high) >> 1
+    if (ahead(list[mid])) low = mid + 1
+    else high = mid
+  }
+  return low
+}
+
+/**
  * Where a place in the text without the markup is in the markdown: after
  * the comments that close there and before those that open.
  *
- * @param {ParsedMarkup} parsed
+ * @param {Halves} markup
  * @param {number} at
  * @returns {number}
  */
-function markupOffset(parsed, at) {
-  let offset = at
+function markupOffset({ halves, before }, at) {
+  let i = countAhead(halves, half => half.at < at)
+  let offset = at + before[i]
   let opens = Infinity
-  for (const run of parsed.runs) {
-    for (const [token, kind] of /** @type {const} */ ([
-      [run.open, 'open'],
-      [run.close, 'close'],
-    ])) {
-      const length = token.to - token.from
-      if (token.at < at || (token.at === at && kind === 'close')) offset += length
-      else if (token.at === at) opens = Math.min(opens, token.from)
-    }
+  for (; i < halves.length && halves[i].at === at; i++) {
+    if (halves[i].closes) offset += halves[i].to - halves[i].from
+    else opens = Math.min(opens, halves[i].from)
   }
   return Math.min(offset, opens)
 }
@@ -348,8 +387,9 @@ function changeStretch(parsed, from, to, change) {
     .filter(run => run.start >= start && run.end <= end && run.end > run.start)
     .map(run => ({ ...run, start: run.start - start, end: run.end - start }))
   const changed = change({ start, text: parsed.text.slice(start, end), runs: inside })
-  const markupFrom = markupOffset(parsed, start)
-  const markupTo = markupOffset(parsed, end)
+  const markup = halvesOf(parsed)
+  const markupFrom = markupOffset(markup, start)
+  const markupTo = markupOffset(markup, end)
   return {
     old: parsed.source.slice(markupFrom, markupTo),
     new: renderMarkup(changed.text, changed.runs),
@@ -457,10 +497,12 @@ function nearest(text, passage, near) {
  * @param {number} from - Where the stretch starts in the text without the markup
  * @param {number} to - Where it ends
  * @param {string} replacement - What it becomes, without any
+ * @param {(id: string) => boolean} [elsewhere] - Whether a comment has a run
+ *   outside this markdown, for markdown that is a piece of a document
  * @returns {{old: string, new: string, from: number, to: number, resolved: FoundComment[]}}
  *   The markdown it replaces, where, and what with
  */
-function editStretch(parsed, from, to, replacement) {
+function editStretch(parsed, from, to, replacement, elsewhere = () => false) {
   /** @type {FoundComment[]} */
   const lost = []
   /** @type {Set<string>} */
@@ -495,7 +537,8 @@ function editStretch(parsed, from, to, replacement) {
     if (run.end <= edit.start || run.start >= edit.end) kept.add(run.id)
   }
   const resolved = lost.filter(
-    (run, i) => !kept.has(run.id) && lost.findIndex(other => other.id === run.id) === i
+    (run, i) =>
+      !kept.has(run.id) && !elsewhere(run.id) && lost.findIndex(other => other.id === run.id) === i
   )
   return { old: edit.old, new: edit.new, from: edit.from, to: edit.to, resolved }
 }
@@ -522,22 +565,358 @@ export function editAroundComments(content, old, replacement) {
 }
 
 /**
- * The same edit by where the passage is, for one that is there more than
- * once: each place is changed on its own.
+ * Markdown read for its comments, for cutting it where no comment's run
+ * crosses: where its markup is, where runs overlap, and which comments' runs
+ * start and end where.
+ *
+ * @typedef {Object} IndexedMarkup
+ * @property {ParsedMarkup} parsed
+ * @property {Halves} markup
+ * @property {Array<{start: number, end: number}>} knots - The stretches of
+ *   the text comments' runs are on, one for runs that overlap: an edit that
+ *   reaches into one takes it whole, as `changeStretch` widens. In order,
+ *   and apart.
+ * @property {Map<number, string[]>} startsAt - The comments with a run that
+ *   starts at a place in the text, the pieces of one that touch as one run
+ * @property {Map<number, string[]>} endsAt - And that ends there
+ */
+
+/**
+ * @param {string} source
+ * @returns {IndexedMarkup}
+ */
+function indexMarkup(source) {
+  const parsed = parseMarkup(source)
+  /** @type {Array<{start: number, end: number}>} */
+  const knots = []
+  /** @type {Map<number, string[]>} */
+  const startsAt = new Map()
+  /** @type {Map<number, string[]>} */
+  const endsAt = new Map()
+  for (const run of joinRuns(parsed.runs)) {
+    if (run.end <= run.start) continue
+    const last = knots.at(-1)
+    if (last && run.start < last.end) last.end = Math.max(last.end, run.end)
+    else knots.push({ start: run.start, end: run.end })
+    startsAt.set(run.start, [...(startsAt.get(run.start) ?? []), run.id])
+    endsAt.set(run.end, [...(endsAt.get(run.end) ?? []), run.id])
+  }
+  return { parsed, markup: halvesOf(parsed), knots, startsAt, endsAt }
+}
+
+/**
+ * The last knot of a text that starts before a place, and the first that
+ * starts there or after.
+ *
+ * @param {IndexedMarkup} index
+ * @param {number} at
+ * @returns {{last?: {start: number, end: number}, next?: {start: number, end: number}}}
+ */
+function knotsBy({ knots }, at) {
+  const i = countAhead(knots, knot => knot.start < at)
+  return { last: knots[i - 1], next: knots[i] }
+}
+
+/**
+ * The knot a place in a text is inside, not at either end of.
+ *
+ * @param {IndexedMarkup} index
+ * @param {number} at
+ * @returns {{start: number, end: number}|undefined}
+ */
+function knotAround(index, at) {
+  const { last } = knotsBy(index, at)
+  return last && last.end > at ? last : undefined
+}
+
+/**
+ * Comments' runs counted by id, added to a tally or taken from it.
+ *
+ * @param {Map<string, number>} tally
+ * @param {MarkedRun[]} runs
+ * @param {number} by
+ * @returns {Map<string, number>}
+ */
+function counted(tally, runs, by) {
+  for (const run of runs) tally.set(run.id, (tally.get(run.id) ?? 0) + by)
+  return tally
+}
+
+/**
+ * A stretch of a piece of markdown, as part of the document a run of edits
+ * is making: the stretch of the piece's text it holds and of its markdown,
+ * and where it starts in the document's text.
+ *
+ * @typedef {Object} Part
+ * @property {IndexedMarkup} index - The piece
+ * @property {number} from - Where the part starts in the piece's text
+ * @property {number} to - Where it ends
+ * @property {number} markupFrom - Where it starts in the piece's markdown
+ * @property {number} markupTo - Where it ends
+ * @property {number} at - Where it starts in the document's text
+ */
+
+/** @param {Part} part */
+const lengthOf = part => part.to - part.from
+
+/** @param {Part} part */
+const endOf = part => part.at + lengthOf(part)
+
+/** @param {Part} part */
+const markdownOf = part => part.index.parsed.source.slice(part.markupFrom, part.markupTo)
+
+/**
+ * A part cut down to a stretch of the document's text inside it.
+ *
+ * @param {Part} part
+ * @param {number} from - In the document's text
+ * @param {number} to
+ * @returns {Part}
+ */
+function cutPart(part, from, to) {
+  const local = (/** @type {number} */ at) => part.from + at - part.at
+  return {
+    index: part.index,
+    from: local(from),
+    to: local(to),
+    markupFrom: from === part.at ? part.markupFrom : markupOffset(part.index.markup, local(from)),
+    markupTo: to === endOf(part) ? part.markupTo : markupOffset(part.index.markup, local(to)),
+    at: from,
+  }
+}
+
+/**
+ * Whether a comment's run goes on from one part into the next: a run ending
+ * where the first does and one of the same comment starting the next, which
+ * read as one run once the parts are one text.
+ *
+ * @param {Part} left
+ * @param {Part} right
+ * @returns {boolean}
+ */
+function joinedAcross(left, right) {
+  const starting = right.index.startsAt.get(right.from) ?? []
+  return (left.index.endsAt.get(left.to) ?? []).some(id => starting.includes(id))
+}
+
+/**
+ * Stretches of the text changed one after another, each as `editStretch`
+ * changes it in the markdown the ones before it left: what making them one
+ * at a time gives, but reading the markdown once and then only around each
+ * change, not all of it again for each.
+ *
+ * The document is held as parts in order, each a stretch of a piece of
+ * markdown read once: at first the whole of it, then what each change wrote
+ * between what it left. Parts meet only where no comment's run crosses, so
+ * the stretch an edit takes, widened over every comment it reaches as
+ * `changeStretch` widens, is found from the parts around it, and the parts
+ * that hold it read as one piece of markdown just as they read in the
+ * document. Whether a comment the edit took has a run left elsewhere, which
+ * is whether it is resolved, is counted over the whole document.
+ *
+ * Each change is made where it says in the text as the ones before it left
+ * it. Made from the end of the text back, as edits at several places are, a
+ * change is never far from the one before.
+ *
+ * Markup the app does not write can read otherwise in a part than in the
+ * whole once a change is made beside it: the halves of a comment either side
+ * of a blank line the change takes out, or a comment on no words. There the
+ * changes after it are made as the parts read.
  *
  * @param {string} content - The markdown, comments and all
- * @param {number} from - Where the passage starts in the text as it reads
- *   without them
- * @param {number} to - Where it ends
- * @param {string} replacement - What it becomes, without them
- * @returns {{from: number, to: number, new: string, resolved: FoundComment[]}}
- *   Where the markdown changes, what goes there, and the comments resolved
+ * @param {Array<{from: number, to: number, new: string}>} changes - In the
+ *   order they are made: the stretch of the text without the markup, and
+ *   what it becomes, without any
+ * @returns {{content: string, resolved: FoundComment[]}} The markdown with
+ *   every change made, and the comments they resolved, in the order resolved
  */
-export function editPlaceAroundComments(content, from, to, replacement) {
-  const parsed = parseMarkup(content)
-  if (parsed.runs.length === 0) return { from, to, new: replacement, resolved: [] }
-  const edit = editStretch(parsed, from, to, replacement)
-  return { from: edit.from, to: edit.to, new: edit.new, resolved: edit.resolved }
+export function editPlacesAroundComments(content, changes) {
+  const whole = indexMarkup(content)
+  /** @type {Part[]} The document up to the latest change's end, in order. */
+  const before = [
+    {
+      index: whole,
+      from: 0,
+      to: whole.parsed.text.length,
+      markupFrom: 0,
+      markupTo: content.length,
+      at: 0,
+    },
+  ]
+  /** @type {Part[]} And after it, the nearest last. */
+  const after = []
+  const runs = counted(new Map(), whole.parsed.runs, 1)
+  /** @type {FoundComment[]} */
+  const resolved = []
+
+  /** Where the parts before the latest change's end end. */
+  const reached = () => {
+    const last = before.at(-1)
+    return last ? endOf(last) : 0
+  }
+
+  /** The part after the latest change's end brought back before it. */
+  const bringBack = () => {
+    const part = /** @type {Part} */ (after.pop())
+    part.at = reached()
+    before.push(part)
+  }
+
+  /**
+   * The part with text at a place, or at a meeting of two, the one that
+   * starts there or the one that ends there.
+   *
+   * @param {number} at
+   * @param {boolean} starting
+   * @returns {number} Its index in `before`
+   */
+  const partAt = (at, starting) => {
+    let i = before.length - 1
+    while (lengthOf(before[i]) === 0 || (starting ? before[i].at > at : before[i].at >= at)) i--
+    return i
+  }
+
+  /**
+   * The next part with text, before or after one, bringing it back from
+   * after the latest change where it is there.
+   *
+   * @param {number} i
+   * @param {number} step - -1 or 1
+   * @returns {Part|undefined}
+   */
+  const neighbour = (i, step) => {
+    for (let j = i + step; j >= 0; j += step) {
+      if (j === before.length) {
+        if (after.length === 0) return undefined
+        bringBack()
+      }
+      if (lengthOf(before[j]) > 0) return before[j]
+    }
+    return undefined
+  }
+
+  /**
+   * Where an edit's stretch starts: before every knot it starts inside, and
+   * every run that goes on into its part from the part before.
+   *
+   * @param {number} at
+   * @returns {number}
+   */
+  const stretchStart = at => {
+    for (;;) {
+      const i = partAt(at, true)
+      const part = before[i]
+      if (part.at < at) {
+        const knot = knotAround(part.index, part.from + at - part.at)
+        if (!knot) return at
+        at = part.at + knot.start - part.from
+        continue
+      }
+      const previous = neighbour(i, -1)
+      if (!previous || !joinedAcross(previous, part)) return at
+      // The run that goes on is in the last knot of the part before.
+      const knot = /** @type {{start: number}} */ (knotsBy(previous.index, previous.to).last)
+      at = previous.at + knot.start - previous.from
+    }
+  }
+
+  /**
+   * Where it ends: past every knot it ends inside, and every run that goes
+   * on from its part into the next.
+   *
+   * @param {number} at
+   * @returns {number}
+   */
+  const stretchEnd = at => {
+    for (;;) {
+      const i = partAt(at, false)
+      const part = before[i]
+      if (at < endOf(part)) {
+        const knot = knotAround(part.index, part.from + at - part.at)
+        if (!knot) return at
+        at = part.at + knot.end - part.from
+        continue
+      }
+      const next = neighbour(i, 1)
+      if (!next || !joinedAcross(part, next)) return at
+      // And its other piece is in the first knot of the part after.
+      const knot = /** @type {{end: number}} */ (knotsBy(next.index, next.from).next)
+      at = next.at + knot.end - next.from
+    }
+  }
+
+  /**
+   * The parts that hold a stretch of the text, cut at its ends and taken
+   * out, in order. What lies past the stretch goes after the latest change,
+   * and what lies before it stays.
+   *
+   * @param {number} start
+   * @param {number} end
+   * @returns {Part[]}
+   */
+  const take = (start, end) => {
+    /** @type {Part[]} */
+    const taken = []
+    for (;;) {
+      let part = /** @type {Part} */ (before.pop())
+      if (part.at >= end) {
+        after.push(part)
+        continue
+      }
+      if (lengthOf(part) === 0) {
+        // Markup with no text: in the stretch only strictly inside it.
+        if (part.at > start) {
+          taken.push(part)
+          continue
+        }
+        before.push(part)
+        break
+      }
+      if (endOf(part) > end) {
+        after.push(cutPart(part, end, endOf(part)))
+        part = cutPart(part, part.at, end)
+      }
+      if (part.at < start) {
+        before.push(cutPart(part, part.at, start))
+        taken.push(cutPart(part, start, endOf(part)))
+        break
+      }
+      taken.push(part)
+      if (part.at === start) break
+    }
+    return taken.reverse()
+  }
+
+  for (const change of changes) {
+    while (after.length > 0 && reached() < change.to) bringBack()
+    const start = stretchStart(change.from)
+    const markdown = take(start, stretchEnd(change.to)).map(markdownOf).join('')
+    const piece = parseMarkup(markdown)
+    const here = counted(new Map(), piece.runs, 1)
+    const edit = editStretch(
+      piece,
+      change.from - start,
+      change.to - start,
+      change.new,
+      id => (runs.get(id) ?? 0) > (here.get(id) ?? 0)
+    )
+    resolved.push(...edit.resolved)
+    const written = markdown.slice(0, edit.from) + edit.new + markdown.slice(edit.to)
+    const index = indexMarkup(written)
+    counted(runs, piece.runs, -1)
+    counted(runs, index.parsed.runs, 1)
+    if (written) {
+      before.push({
+        index,
+        from: 0,
+        to: index.parsed.text.length,
+        markupFrom: 0,
+        markupTo: written.length,
+        at: start,
+      })
+    }
+  }
+  return { content: [...before, ...after.reverse()].map(markdownOf).join(''), resolved }
 }
 
 /**
