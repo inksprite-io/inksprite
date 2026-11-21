@@ -8,9 +8,10 @@ for its tag at the top of the release's notes.
 
 ## v0.1.0-dev.30
 
-A terminal in the desktop app and keys for its tabs, tabs you can drag,
-security fixes after a review of the app and the sync service, the model
-asking before it reads some pages, and tools set once for every chat.
+A terminal and connected apps in the desktop app, keys for its tabs, tabs you
+can drag, sharing only some of a project's documents, security fixes after a
+review of the app and the sync service, the model asking before it reads some
+pages, and tools set once for every chat.
 
 The desktop app:
 
@@ -18,6 +19,12 @@ The desktop app:
   **Settings** › **Extensions**: your own shell in a tab beside your chats.
   A terminal belongs to its project, and keeps running while another
   project is open. No chat can type in one or read one.
+- **Connected apps**: another app on your computer, such as a coding agent,
+  can work in the projects you tick for it. Add one in **Settings** ›
+  **Connections** › **Connected apps** and give the app the command or the
+  address on its card. It reads, edits and comments on your documents as the
+  chat's model does, suggests its changes when you ask it to, and can put
+  documents into a repository as files.
 - Keys for tabs, as a browser has for its own: Command-N for a new document,
   Command-T for a new chat, Command-W to close the tab, Shift-Command-T to
   reopen the one you closed last, Control-Tab and Command-1 to 9 to go from
@@ -41,6 +48,13 @@ Search:
   list of its own among the icons at the far left, and in the **⋯** menu on
   a phone. Shift-Command-F (Shift-Control-F on Windows and Linux) opens it
   as before.
+
+Sync:
+
+- A project can be shared with only some of its documents. Turn off **Share
+  entire project** under **Sharing** in **Settings** › **Project**, and tick
+  what to share. Your outline marks what's shared, and **Share** and **Stop
+  sharing** are on each row's menu.
 
 Suggestions:
 
@@ -120,8 +134,8 @@ Also:
   trash…**. It is no longer on a project's own menu.
 - The model's edits to a long document that repeats itself a lot no longer
   freeze the app.
-- The guide has pages on Keyboard Shortcuts and the Terminal, and a section
-  on searching a project.
+- The guide has pages on Keyboard Shortcuts, the Terminal and Connected Apps,
+  and sections on searching a project and on sharing only some documents.
 
 ## v0.1.0-dev.29
 
