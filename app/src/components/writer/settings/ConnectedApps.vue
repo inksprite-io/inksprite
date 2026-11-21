@@ -1,80 +1,85 @@
 <template>
   <div ref="root" class="flex flex-col gap-2" data-connected-apps>
     <Teleport defer :to="heading" :disabled="!heading">
-      <HeaderButton
-        icon="pi pi-cog"
-        label="MCP server"
-        aria-haspopup="true"
-        data-action="apps-server"
-        @click="serverPanel?.toggle($event)"
-      />
       <HeaderButton icon="pi pi-plus" label="Add an app" data-action="add-app" @click="add" />
     </Teleport>
 
-    <!-- The server every app comes in by: whether it runs, on which port, and
-         where that leaves it. -->
-    <Popover ref="serverPanel" data-apps-server @show="alignServerPanel">
-      <div class="flex flex-col gap-3 w-72 text-sm">
-        <div class="flex items-center justify-between gap-2">
-          <label
-            :for="`${id}-enabled`"
-            class="text-xs font-medium text-surface-700 dark:text-surface-200"
-            >Enable MCP server</label
+    <!-- The server every app comes in by: whether it runs, and where an app
+         reaches it while it does. -->
+    <CardList v-if="state" data-apps-server>
+      <div class="flex items-center gap-2 pl-3 pr-1.5 min-h-10 text-sm">
+        <span class="flex-1 min-w-0 truncate" data-apps-status>
+          <span class="text-surface-500 dark:text-surface-400">Status: </span>
+          <span
+            :class="
+              state.problem
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-surface-800 dark:text-surface-100'
+            "
+            >{{ status }}</span
           >
-          <ToggleSwitch
-            :key="redrawn"
-            :model-value="enabled"
-            :input-id="`${id}-enabled`"
-            class="flex-none"
-            data-apps-enabled
-            @update:model-value="switchServer"
-          />
-        </div>
-        <div class="flex items-center justify-between gap-2">
-          <label
-            :for="`${id}-port`"
-            class="text-xs font-medium text-surface-700 dark:text-surface-200"
-            >Port</label
-          >
-          <InputText
-            :id="`${id}-port`"
-            v-model="portDraft"
-            size="small"
-            class="w-24 dark:!bg-surface-900"
-            inputmode="numeric"
-            :disabled="!enabled"
-            data-field="apps-port"
-            @blur="savePort"
-            @keydown.enter="savePort"
-            @keydown.esc="showPort"
-          />
-        </div>
-        <p
-          v-if="status"
-          class="text-xs break-all"
-          :class="
-            state?.problem
-              ? 'text-red-600 dark:text-red-400'
-              : 'text-surface-600 dark:text-surface-300'
-          "
-          data-apps-status
+        </span>
+        <ToggleSwitch
+          :key="redrawn"
+          :model-value="enabled"
+          :dt="SMALL_SWITCH"
+          class="flex-none"
+          aria-label="MCP server"
+          data-apps-enabled
+          @update:model-value="switchServer"
+        />
+        <HeaderButton
+          icon="pi pi-cog"
+          label="Port"
+          aria-haspopup="true"
+          data-action="apps-port"
+          @click="portPanel?.toggle($event)"
+        />
+      </div>
+      <div
+        v-if="reachable"
+        class="flex items-center gap-2 pl-3 pr-1.5 min-h-10 text-sm border-t border-surface-200 dark:border-surface-700"
+        data-apps-address
+      >
+        <span class="flex-1 min-w-0 truncate">
+          <span class="text-surface-500 dark:text-surface-400">Reachable at </span>
+          <code class="text-xs text-surface-900 dark:text-surface-0 select-all">{{ address }}</code>
+        </span>
+        <button
+          v-tooltip.bottom="copied === ADDRESS ? 'Copied' : 'Copy'"
+          type="button"
+          class="flex-none w-7 h-7 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
+          aria-label="Copy address"
+          data-action="copy-address"
+          @click="copyText(ADDRESS, address)"
         >
-          {{ status }}
-        </p>
+          <i :class="copied === ADDRESS ? 'pi pi-check' : 'pi pi-copy'" style="font-size: 0.7rem" />
+        </button>
+      </div>
+    </CardList>
+
+    <!-- The port, behind the cog on the server's card. -->
+    <Popover ref="portPanel" data-apps-port @show="alignPortPanel">
+      <div class="flex items-center justify-between gap-3 text-sm">
+        <label
+          :for="`${id}-port`"
+          class="text-xs font-medium text-surface-700 dark:text-surface-200"
+          >Port</label
+        >
+        <InputText
+          :id="`${id}-port`"
+          v-model="portDraft"
+          size="small"
+          class="w-24 dark:!bg-surface-900"
+          inputmode="numeric"
+          :disabled="!enabled"
+          data-field="apps-port"
+          @blur="savePort"
+          @keydown.enter="savePort"
+          @keydown.esc="showPort"
+        />
       </div>
     </Popover>
-
-    <!-- What keeps every app out, said where the apps are: the popup is shut. -->
-    <p
-      v-if="state && connections.length > 0 && (state.problem || !enabled)"
-      class="text-xs"
-      :class="
-        state.problem ? 'text-red-600 dark:text-red-400' : 'text-surface-500 dark:text-surface-400'
-      "
-      data-apps-problem
-    >
-      {{ state.problem || 'The MCP server is off.' }}
-    </p>
 
     <CardList v-if="connections.length > 0" data-list="apps">
       <CardItem
@@ -234,8 +239,9 @@ import { projectsNamed } from '@/utils/projectList.js'
  * to start with. Adding one makes it, under a name to change, and opens its
  * card, whole: its token is what the app is set up with.
  *
- * The server they all come in by is behind the cog in the heading: whether
- * it runs, its port, and where that leaves it. See
+ * The server they all come in by has a card of its own above theirs:
+ * whether it runs, with its switch, its port behind a cog, and under those,
+ * while it runs, the address an app reaches it at. See
  * composables/useConnectedApps.js and `.llm/mcp_server_design.md`.
  */
 
@@ -417,13 +423,14 @@ const setupOf = one => {
 const copied = ref(/** @type {string|null} */ (null))
 
 /**
- * @param {AppConnection} one
- * @param {{id: string, label: string, text: string}} row
+ * Copy something, and mark its button as having copied for a moment.
+ *
+ * @param {string} key - What marks the button: a card's row, or the address
+ * @param {string} text
  */
-const copy = async (one, row) => {
+const copyText = async (key, text) => {
   try {
-    await navigator.clipboard.writeText(row.text)
-    const key = `${one.id}:${row.id}`
+    await navigator.clipboard.writeText(text)
     copied.value = key
     setTimeout(() => {
       if (copied.value === key) copied.value = null
@@ -433,17 +440,33 @@ const copy = async (one, row) => {
   }
 }
 
-// The server, behind the cog.
-const serverPanel = ref(/** @type {any} */ (null))
+/**
+ * @param {AppConnection} one
+ * @param {{id: string, label: string, text: string}} row
+ */
+const copy = (one, row) => copyText(`${one.id}:${row.id}`, row.text)
+
+// The server every app comes in by, on a card of its own above theirs.
+
+/** What marks the address's copy button as having copied. */
+const ADDRESS = 'address'
 
 /**
- * Have the popup open under the cog with their right edges in line. A popup
- * opens to the right of what opened it, and the cog is at the section's
- * right edge: it would hang out of the settings.
+ * The switch at the size of the line it is on: the default is half again
+ * as tall as the text beside it.
  */
-const alignServerPanel = () => {
-  const panel = /** @type {HTMLElement|null} */ (document.querySelector('[data-apps-server]'))
-  const cog = document.querySelector('[data-action="apps-server"]')
+const SMALL_SWITCH = { width: '1.75rem', height: '1rem', handle: { size: '0.75rem' } }
+
+const portPanel = ref(/** @type {any} */ (null))
+
+/**
+ * Have the port's popup open under the cog with their right edges in line.
+ * A popup opens to the right of what opened it, and the cog is at the
+ * card's right edge: it would hang out of the settings.
+ */
+const alignPortPanel = () => {
+  const panel = /** @type {HTMLElement|null} */ (document.querySelector('[data-apps-port]'))
+  const cog = document.querySelector('[data-action="apps-port"]')
   if (!panel || !cog) return
   const over = panel.getBoundingClientRect().right - cog.getBoundingClientRect().right
   if (over <= 0) return
@@ -456,15 +479,17 @@ const alignServerPanel = () => {
 const enabled = computed(() => state.value?.enabled !== false)
 
 /**
- * Where the server is, in a line: running at its address, kept from it, or
- * waiting for an app to run for. Nothing while it is off, which its switch
- * says.
+ * What the server is doing, in a word, or what keeps it from its port. It
+ * runs while it is switched on: with no app yet there is nobody to reach it,
+ * and it listens from the first one.
  */
-const status = computed(() => {
-  if (!state.value || !enabled.value) return ''
-  if (state.value.problem) return state.value.problem
-  return state.value.listening ? `Running on ${appAddress(state.value.port)}` : ''
-})
+const status = computed(() => state.value?.problem || (enabled.value ? 'Running' : 'Stopped'))
+
+/** Where an app reaches the server. */
+const address = computed(() => appAddress(state.value?.port ?? 0))
+
+/** Whether there is an address to give out: the server is on, and has its port. */
+const reachable = computed(() => enabled.value && !state.value?.problem)
 
 /** @param {boolean} on */
 const switchServer = async on => {

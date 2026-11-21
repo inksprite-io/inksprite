@@ -24,17 +24,16 @@
  *   stamped with its document, for the app's own shell to fetch by a link
  */
 
-import { inPreview } from '@/config/preview.js'
 import { answerApps, canConnectApps } from '@/platform/apps.js'
 import { answerRequest } from './protocol.js'
 
 /**
  * Whether other apps can be let into the writer's projects here: in the
- * desktop app, while the feature is in preview.
+ * desktop app, one new enough to.
  *
  * @returns {boolean}
  */
-export const appsOffered = () => inPreview('mcp-server') && canConnectApps()
+export const appsOffered = () => canConnectApps()
 
 /**
  * Have this window answer what connected apps ask. Called once, as the app

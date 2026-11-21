@@ -30,9 +30,6 @@
 export const PREVIEWS = {
   // A project shared with only some of its documents: .llm/sync_design.md, "Only some documents".
   'selective-sharing': '2026-10-24',
-  // Other apps on the same computer working in a project's documents, over
-  // MCP, in the desktop app: .llm/mcp_server_design.md.
-  'mcp-server': '2026-11-20',
 }
 
 /**

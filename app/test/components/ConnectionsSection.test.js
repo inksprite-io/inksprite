@@ -548,12 +548,10 @@ describe('ConnectionsSection, a part at a time', () => {
     }
 
     afterEach(() => {
-      vi.unstubAllEnvs()
       delete globalThis.__INKSPRITE_DESKTOP__
     })
 
-    it('shows them alone, in the desktop app while they are in preview', async () => {
-      vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+    it('shows them alone, in the desktop app', async () => {
       inDesktopApp()
       const wrapper = await mountPart('apps')
 
@@ -565,7 +563,6 @@ describe('ConnectionsSection, a part at a time', () => {
     })
 
     it('shows them for their part alone, and moves from part to part as told', async () => {
-      vi.stubEnv('VITE_PREVIEW', 'mcp-server')
       inDesktopApp()
       const wrapper = await mountPart('mcp')
       expect(apps(wrapper)).toBe(false)
@@ -580,15 +577,9 @@ describe('ConnectionsSection, a part at a time', () => {
     })
 
     it('has none in a browser, or in a desktop app from before apps could be let in', async () => {
-      vi.stubEnv('VITE_PREVIEW', 'mcp-server')
       expect(apps(await mountPart('apps'))).toBe(false)
 
       globalThis.__INKSPRITE_DESKTOP__ = {}
-      expect(apps(await mountPart('apps'))).toBe(false)
-    })
-
-    it('has none out of preview', async () => {
-      inDesktopApp()
       expect(apps(await mountPart('apps'))).toBe(false)
     })
   })

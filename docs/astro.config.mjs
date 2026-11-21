@@ -70,6 +70,7 @@ export default defineConfig({
 						{ label: 'Web Search', link: '/web-search' },
 						{ label: 'Python', link: '/python' },
 						{ label: 'MCP Servers', link: '/mcp' },
+						{ label: 'Connected Apps', link: '/connected-apps' },
 					],
 				},
 				{ label: 'Sync Between Devices', link: '/sync' },

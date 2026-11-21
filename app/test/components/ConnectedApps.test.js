@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { DOMWrapper, mount, flushPromises } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { ref } from 'vue'
 import PrimeVue from 'primevue/config'
 
@@ -95,7 +95,6 @@ vi.mock('@/composables/useToast', () => ({ useToast: () => toast }))
 
 import ConnectedApps from '@/components/writer/settings/ConnectedApps.vue'
 import { useConnectedApps } from '@/composables/useConnectedApps.js'
-import { SECTION_HEADING } from '@/components/common/sectionHeading.js'
 
 const THIEF = { id: 'story_thief', name: 'Thief' }
 const NOTES = { id: 'story_notes', name: 'Field notes' }
@@ -168,23 +167,6 @@ const readOnlySwitch = wrapper => wrapper.find('[data-app-read-only] input')
 /** A row of what the app is set up with: its label, and what it shows. */
 const setup = (wrapper, row) => wrapper.find(`[data-setup="${row}"]`)
 
-/** The server's popup, which is over the page and not in the section. */
-const popup = () => {
-  const element = document.body.querySelector('[data-apps-server]')
-  return element ? new DOMWrapper(element) : null
-}
-
-/** Click the cog in the heading, which opens the server's popup and shuts it. */
-const clickCog = async wrapper => {
-  await wrapper.find('[data-action="apps-server"]').trigger('click')
-  await flushPromises()
-}
-
-/** Have the server's popup open: a click anywhere else shuts it. */
-const openPopup = async wrapper => {
-  if (!popup()) await clickCog(wrapper)
-}
-
 beforeEach(() => {
   // Reset, not only cleared: a failure queued for a call that never came
   // would be the next test's.
@@ -202,16 +184,6 @@ afterEach(() => {
 })
 
 describe('ConnectedApps', () => {
-  it('draws no box, and says nothing, with no apps', async () => {
-    const wrapper = await mountApps()
-
-    expect(native.platform.listApps).toHaveBeenCalled()
-    expect(wrapper.find('[data-card-list]').exists()).toBe(false)
-    expect(wrapper.find('[data-connected-apps]').text()).toBe('')
-    expect(wrapper.find('[data-action="add-app"]').attributes('aria-label')).toBe('Add an app')
-    expect(wrapper.find('[data-action="apps-server"]').attributes('aria-label')).toBe('MCP server')
-  })
-
   it('lists each app as a card, by its name, with the projects it is let into under it', async () => {
     const first = native.has({ name: 'Claude Code', projects: [NOTES.id, THIEF.id] })
     const second = native.has({ name: 'The other agent' })
@@ -270,27 +242,6 @@ describe('ConnectedApps', () => {
     await mountApps()
 
     expect(init).toHaveBeenCalled()
-  })
-
-  it('puts its buttons beside the heading of the section it is in', async () => {
-    const heading = document.createElement('div')
-    heading.id = 'apps-heading'
-    document.body.appendChild(heading)
-    try {
-      const wrapper = await mountApps({ provide: { [SECTION_HEADING]: '#apps-heading' } })
-
-      // The server's cog, then the plus, as they stand beside any heading.
-      expect(
-        [...heading.querySelectorAll('[data-action]')].map(one => one.getAttribute('data-action'))
-      ).toEqual(['apps-server', 'add-app'])
-      expect(wrapper.find('[data-connected-apps] [data-action="add-app"]').exists()).toBe(false)
-
-      heading.querySelector('[data-action="add-app"]').click()
-      await flushPromises()
-      expect(names(wrapper)).toEqual(['Claude Code'])
-    } finally {
-      heading.remove()
-    }
   })
 
   describe('adding an app', () => {
@@ -665,15 +616,6 @@ describe('ConnectedApps', () => {
       expect(card(wrapper, second.id).exists()).toBe(true)
     })
 
-    it('draws no box once the last app is removed', async () => {
-      const { wrapper, open } = await mountOpen()
-
-      await open().find('[data-action="remove"]').trigger('click')
-      await flushPromises()
-
-      expect(wrapper.find('[data-card-list]').exists()).toBe(false)
-    })
-
     it('says so when it couldn’t be removed, and leaves its card open', async () => {
       vi.spyOn(console, 'error').mockImplementation(() => {})
       native.platform.removeApp.mockRejectedValueOnce(new Error('The file couldn’t be written.'))
@@ -797,318 +739,6 @@ describe('ConnectedApps', () => {
 
       expect(toast.error).toHaveBeenCalledWith("That couldn't be copied.")
       expect(open().find('[data-action="copy-setup"] .pi-check').exists()).toBe(false)
-    })
-  })
-
-  describe('the server, behind the cog', () => {
-    /** The switch that lets apps in. */
-    const enabledSwitch = () => popup().find('[data-apps-enabled] input')
-    const portField = () => popup().find('[data-field="apps-port"]')
-    const status = () => popup().find('[data-apps-status]')
-
-    it('opens from the cog, with its switch, its port and where it runs', async () => {
-      native.has()
-      const wrapper = await mountApps()
-      expect(popup()).toBeNull()
-
-      await openPopup(wrapper)
-
-      expect(popup().text()).toContain('Enable MCP server')
-      expect(enabledSwitch().element.checked).toBe(true)
-      expect(portField().element.value).toBe('4657')
-      expect(portField().attributes('disabled')).toBeUndefined()
-      expect(status().text()).toBe('Running on http://127.0.0.1:4657/mcp')
-      expect(status().classes()).not.toContain('text-red-600')
-    })
-
-    it('shuts on another click on the cog', async () => {
-      const wrapper = await mountApps()
-      await clickCog(wrapper)
-
-      await clickCog(wrapper)
-
-      expect(popup()).toBeNull()
-    })
-
-    it('names its switch and its port by their labels', async () => {
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      const labelFor = text =>
-        popup()
-          .findAll('label')
-          .find(one => one.text() === text)
-          .attributes('for')
-      expect(labelFor('Enable MCP server')).toBe(enabledSwitch().attributes('id'))
-      expect(labelFor('Port')).toBe(portField().attributes('id'))
-    })
-
-    it('says nothing of where it runs with no app yet', async () => {
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      expect(status().exists()).toBe(false)
-
-      await wrapper.find('[data-action="add-app"]').trigger('click')
-      await flushPromises()
-      await openPopup(wrapper)
-      expect(status().text()).toBe('Running on http://127.0.0.1:4657/mcp')
-    })
-
-    it('says in red what keeps the server from its port', async () => {
-      native.has()
-      native.kept.problem = 'Port 4657 is taken.'
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      expect(status().text()).toBe('Port 4657 is taken.')
-      expect(status().classes()).toContain('text-red-600')
-    })
-
-    it('turns the server off and on from its switch', async () => {
-      native.has()
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      await enabledSwitch().trigger('change')
-      await flushPromises()
-      expect(native.platform.setAppsEnabled).toHaveBeenLastCalledWith(false)
-      expect(enabledSwitch().element.checked).toBe(false)
-      // Off, its switch says so: no line of where it runs, and no port to change.
-      expect(status().exists()).toBe(false)
-      expect(portField().attributes('disabled')).toBeDefined()
-      expect(portField().element.value).toBe('4657')
-
-      await enabledSwitch().trigger('change')
-      await flushPromises()
-      expect(native.platform.setAppsEnabled).toHaveBeenLastCalledWith(true)
-      expect(enabledSwitch().element.checked).toBe(true)
-      expect(portField().attributes('disabled')).toBeUndefined()
-      expect(status().text()).toBe('Running on http://127.0.0.1:4657/mcp')
-    })
-
-    it('shows a server turned off before as off', async () => {
-      native.kept.enabled = false
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      expect(enabledSwitch().element.checked).toBe(false)
-      expect(portField().attributes('disabled')).toBeDefined()
-      expect(status().exists()).toBe(false)
-    })
-
-    it('shows the server’s switch as it was when it couldn’t be turned off', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {})
-      native.platform.setAppsEnabled.mockRejectedValueOnce(
-        new Error('The file couldn’t be written.')
-      )
-      native.has()
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      await enabledSwitch().setValue(false)
-      await flushPromises()
-
-      expect(enabledSwitch().element.checked).toBe(true)
-    })
-
-    it('says so when the server couldn’t be turned off', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {})
-      native.platform.setAppsEnabled.mockRejectedValueOnce(
-        new Error('The file couldn’t be written.')
-      )
-      native.has()
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      await enabledSwitch().trigger('change')
-      await flushPromises()
-
-      expect(toast.error).toHaveBeenCalledWith("The MCP server couldn't be turned off.")
-      expect(status().text()).toBe('Running on http://127.0.0.1:4657/mcp')
-      expect(wrapper.find('[data-apps-problem]').exists()).toBe(false)
-    })
-
-    it('says so when it couldn’t be turned on', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {})
-      native.platform.setAppsEnabled.mockRejectedValueOnce(
-        new Error('The file couldn’t be written.')
-      )
-      native.has()
-      native.kept.enabled = false
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      await enabledSwitch().trigger('change')
-      await flushPromises()
-
-      expect(toast.error).toHaveBeenCalledWith("The MCP server couldn't be turned on.")
-      expect(status().exists()).toBe(false)
-      expect(wrapper.find('[data-apps-problem]').text()).toBe('The MCP server is off.')
-    })
-
-    it('moves the server to the port typed as the field is left', async () => {
-      const app = native.has()
-      const wrapper = await mountApps()
-      await clickCard(wrapper, app.id)
-      await openPopup(wrapper)
-
-      await portField().setValue('5000')
-      // Not until it is left.
-      expect(native.platform.setAppsPort).not.toHaveBeenCalled()
-      await portField().trigger('blur')
-      await flushPromises()
-
-      expect(native.platform.setAppsPort).toHaveBeenCalledWith(5000)
-      expect(portField().element.value).toBe('5000')
-      expect(status().text()).toBe('Running on http://127.0.0.1:5000/mcp')
-      // What each app is set up with has the new address.
-      expect(setup(wrapper, 'address').find('code').text()).toBe('http://127.0.0.1:5000/mcp')
-      expect(setup(wrapper, 'claude-code').find('code').text()).toContain(
-        'http://127.0.0.1:5000/mcp'
-      )
-    })
-
-    it('moves it on Enter', async () => {
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      await portField().setValue(' 5000 ')
-      await portField().trigger('keydown', { key: 'Enter' })
-      await flushPromises()
-
-      expect(native.platform.setAppsPort).toHaveBeenCalledWith(5000)
-      expect(portField().element.value).toBe('5000')
-    })
-
-    it('shows the port again for anything typed that isn’t a number, asking nothing', async () => {
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      for (const typed of ['', 'abc', '50 00', '-5000', '5000.5', '5e3']) {
-        await portField().setValue(typed)
-        await portField().trigger('blur')
-        await flushPromises()
-        expect(portField().element.value).toBe('4657')
-      }
-
-      expect(native.platform.setAppsPort).not.toHaveBeenCalled()
-      expect(toast.error).not.toHaveBeenCalled()
-    })
-
-    it('asks nothing for the port it is on', async () => {
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      await portField().trigger('blur')
-      await portField().setValue('04657')
-      await portField().trigger('keydown', { key: 'Enter' })
-      await flushPromises()
-
-      expect(native.platform.setAppsPort).not.toHaveBeenCalled()
-      expect(portField().element.value).toBe('4657')
-    })
-
-    it('says a port can’t be used where it can’t, and shows the one it is on', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {})
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      await portField().setValue('80')
-      await portField().trigger('blur')
-      await flushPromises()
-
-      expect(native.platform.setAppsPort).toHaveBeenCalledWith(80)
-      expect(toast.error).toHaveBeenCalledWith(
-        "That port can't be used. Choose a number from 1024 to 65535."
-      )
-      expect(portField().element.value).toBe('4657')
-      expect(status().exists()).toBe(false)
-    })
-
-    it('leaves the port as it was on Escape, whatever was typed', async () => {
-      native.has()
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-
-      await portField().setValue('5000')
-      await portField().trigger('keydown', { key: 'Escape' })
-      // The popup shuts on Escape, which takes the caret out of the field.
-      await portField().trigger('blur')
-      await flushPromises()
-
-      expect(native.platform.setAppsPort).not.toHaveBeenCalled()
-      expect(native.kept.port).toBe(4657)
-    })
-  })
-
-  describe('what keeps every app out, said in the section', () => {
-    const problem = wrapper => wrapper.find('[data-apps-problem]')
-
-    it('says nothing while the server runs', async () => {
-      native.has()
-      const wrapper = await mountApps()
-
-      expect(problem(wrapper).exists()).toBe(false)
-    })
-
-    it('says the server is off, over the apps', async () => {
-      native.has()
-      native.kept.enabled = false
-      const wrapper = await mountApps()
-
-      expect(problem(wrapper).text()).toBe('The MCP server is off.')
-      expect(problem(wrapper).classes()).not.toContain('text-red-600')
-      // Over the cards, which are still there.
-      expect(problem(wrapper).element.nextElementSibling).toBe(
-        wrapper.find('[data-list="apps"]').element
-      )
-    })
-
-    it('says in red that the port is in use', async () => {
-      native.has()
-      native.kept.problem = 'Port 4657 is taken.'
-      const wrapper = await mountApps()
-
-      expect(problem(wrapper).text()).toBe('Port 4657 is taken.')
-      expect(problem(wrapper).classes()).toContain('text-red-600')
-    })
-
-    it('says neither with no apps to keep out', async () => {
-      native.kept.enabled = false
-      const off = await mountApps()
-      expect(problem(off).exists()).toBe(false)
-      off.unmount()
-
-      native.kept.enabled = true
-      native.kept.problem = 'Port 4657 is taken.'
-      expect(problem(await mountApps()).exists()).toBe(false)
-    })
-
-    it('says the server is off as it is turned off, and no more once it is on', async () => {
-      native.has()
-      const wrapper = await mountApps()
-      await openPopup(wrapper)
-      const enabledSwitch = () => popup().find('[data-apps-enabled] input')
-
-      await enabledSwitch().trigger('change')
-      await flushPromises()
-      expect(problem(wrapper).text()).toBe('The MCP server is off.')
-
-      await enabledSwitch().trigger('change')
-      await flushPromises()
-      expect(problem(wrapper).exists()).toBe(false)
-    })
-
-    it('says so once the first app is added to a server that is off', async () => {
-      native.kept.enabled = false
-      const wrapper = await mountApps()
-      expect(problem(wrapper).exists()).toBe(false)
-
-      await wrapper.find('[data-action="add-app"]').trigger('click')
-      await flushPromises()
-
-      expect(problem(wrapper).text()).toBe('The MCP server is off.')
     })
   })
 })

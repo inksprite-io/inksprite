@@ -330,12 +330,10 @@ describe('Settings', () => {
       }
 
       afterEach(() => {
-        vi.unstubAllEnvs()
         delete globalThis.__INKSPRITE_DESKTOP__
       })
 
-      it('is listed under Connections in the desktop app, after the rest, while it is in preview', async () => {
-        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+      it('is listed under Connections in the desktop app, after the rest', async () => {
         inDesktopApp()
         const wrapper = mountSettings()
         await go(wrapper, 'connections')
@@ -355,7 +353,6 @@ describe('Settings', () => {
       })
 
       it('is there whether or not web search is', async () => {
-        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
         inDesktopApp()
         useApplicationState().setExtension('web', false)
         const wrapper = mountSettings()
@@ -364,8 +361,7 @@ describe('Settings', () => {
         expect(partsOf(wrapper)).toEqual(['AI providers', 'MCP servers', 'Connected apps'])
       })
 
-      it('is not listed in a browser, though it is in preview', async () => {
-        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
+      it('is not listed in a browser', async () => {
         const wrapper = mountSettings()
         await go(wrapper, 'connections')
 
@@ -373,7 +369,6 @@ describe('Settings', () => {
       })
 
       it('is not listed in a desktop app from before apps could be let in', async () => {
-        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
         globalThis.__INKSPRITE_DESKTOP__ = {}
         const wrapper = mountSettings()
         await go(wrapper, 'connections')
@@ -381,22 +376,28 @@ describe('Settings', () => {
         expect(partsOf(wrapper)).toEqual(['AI providers', 'MCP servers', 'Web search'])
       })
 
-      it('is not listed in the desktop app out of preview', async () => {
+      it('is all Connections holds with the AI off, where apps are still let in', async () => {
         inDesktopApp()
+        useApplicationState().setAiEnabled(false)
         const wrapper = mountSettings()
+
+        expect(ids(wrapper)).toContain('connections')
         await go(wrapper, 'connections')
+        expect(partsOf(wrapper)).toEqual(['Connected apps'])
+        expect(wrapper.find('[data-section-pane="connections"]').attributes('data-part')).toBe(
+          'apps'
+        )
+        // None of the AI's other sections comes back with it.
+        expect(ids(wrapper)).not.toContain('models')
+      })
 
-        expect(partsOf(wrapper)).toEqual(['AI providers', 'MCP servers', 'Web search'])
+      it('leaves Connections out with the AI off in a browser, which has no apps to list', () => {
+        useApplicationState().setAiEnabled(false)
 
-        // Nor for another feature's preview.
-        vi.stubEnv('VITE_PREVIEW', 'selective-sharing')
-        const other = mountSettings()
-        await go(other, 'connections')
-        expect(partsOf(other)).toEqual(['AI providers', 'MCP servers', 'Web search'])
+        expect(ids(mountSettings())).not.toContain('connections')
       })
 
       it('opens on it when asked for, as Connections’ other parts are', async () => {
-        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
         inDesktopApp()
         useSettingsPanel().open('connections', 'apps')
         const wrapper = mountSettings()
@@ -408,7 +409,6 @@ describe('Settings', () => {
       })
 
       it('opens Connections on its first part where the apps were last looked at and are offered no more', async () => {
-        vi.stubEnv('VITE_PREVIEW', 'mcp-server')
         inDesktopApp()
         const first = mountSettings()
         await go(first, 'connections', 'apps')

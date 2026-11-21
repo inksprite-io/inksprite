@@ -122,7 +122,7 @@ is `.llm/settings_import_design.md`.
 ## Connected apps
 
 Other apps on the computer, a coding agent first, reach the projects the writer
-ticked for each over MCP, in the `mcp-server` preview (`.llm/mcp_server_design.md`).
+ticked for each over MCP (`.llm/mcp_server_design.md`).
 
 `src/apps.js` keeps the connections in `apps.json` in the app's data folder:
 each one's name, its token, its projects and whether it only reads, with the

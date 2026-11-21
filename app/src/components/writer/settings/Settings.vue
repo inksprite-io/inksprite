@@ -127,7 +127,9 @@ const { account } = useCloudSync()
 /**
  * The sections shown a part at a time, and their parts: an account's people
  * and devices once signed in, web search's services while its extension is
- * on, and the apps let into the writer's projects, in the desktop app.
+ * on, and the apps let into the writer's projects, in the desktop app. With
+ * the AI off, Connections holds those apps alone: they are still let in
+ * then, and this is where the writer sees which, and takes one away.
  * @type {import('vue').ComputedRef<Record<string, {id: string, label: string}[]>>}
  */
 const partsOf = computed(() => ({
@@ -142,9 +144,13 @@ const partsOf = computed(() => ({
     { id: 'backup', label: 'Backup' },
   ],
   connections: [
-    { id: 'providers', label: 'AI providers' },
-    { id: 'mcp', label: 'MCP servers' },
-    ...(webSearch.value ? [{ id: 'web', label: 'Web search' }] : []),
+    ...(aiEnabled.value
+      ? [
+          { id: 'providers', label: 'AI providers' },
+          { id: 'mcp', label: 'MCP servers' },
+          ...(webSearch.value ? [{ id: 'web', label: 'Web search' }] : []),
+        ]
+      : []),
     ...(appsOffered() ? [{ id: 'apps', label: 'Connected apps' }] : []),
   ],
 }))
@@ -168,7 +174,7 @@ onBeforeUnmount(() => {
 const sections = computed(() =>
   SECTIONS.filter(
     section =>
-      (aiEnabled.value || !section.ai) &&
+      (aiEnabled.value || !section.ai || partsOf.value[section.id]?.length > 0) &&
       (projectId.value || !section.project) &&
       (chatId.value || section.chat !== true)
   ).map(section => {

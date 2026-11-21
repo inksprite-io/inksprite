@@ -159,7 +159,7 @@ What differs between the app in a browser and the app in its desktop window (Ele
 
 ### 🔌 [Apps](./apps.md)
 
-Other apps on the same computer working in the writer's projects, a coding agent first, in the desktop app, which serves them over MCP (in preview):
+Other apps on the same computer working in the writer's projects, a coding agent first, in the desktop app, which serves them over MCP:
 
 - MCP's requests answered in a window, as far as tools go: a chat's document tools, with a project named on each, or only those that read
 - Several edits in a call, a revision on every read and write, and what has changed in a document since the app last had it
