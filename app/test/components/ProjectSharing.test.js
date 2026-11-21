@@ -313,6 +313,23 @@ describe('ProjectSharing, sharing only some documents', () => {
     expect(find('[data-share-tree]')).not.toBeNull()
   })
 
+  it('holds back with its folder what was made in it while shared whole, as only some is shared again', async () => {
+    cloud.setSelective.mockImplementation(async (storyId, on) => {
+      sharing.value = { ...sharing.value, selective: on ? [storyId] : [] }
+    })
+    const store = useDocumentsStore()
+    const notes = api.createFolder(api.root.value.id, 'Notes')
+    store.setShared(new Map([[notes.id, false]]))
+    // Made while shared whole.
+    const note = api.createTextDocument(notes.id, 'A note')
+    expect('unshared' in store.getDocument(note.id)).toBe(false)
+    await mountSharing()
+
+    await flip()
+
+    expect(store.getDocument(note.id).unshared).toBe(true)
+  })
+
   it('brings the boxes into view as they appear under the switch', async () => {
     cloud.setSelective.mockImplementation(async (storyId, on) => {
       sharing.value = { ...sharing.value, selective: on ? [storyId] : [] }

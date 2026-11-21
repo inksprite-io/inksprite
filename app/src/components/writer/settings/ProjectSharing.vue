@@ -353,6 +353,9 @@ async function choose(value) {
   // working, and what went wrong is said where the switch is.
   choosing.value = value
   choiceFailure.value = null
+  // What was made in a held-back folder while it was shared whole is held
+  // back with the folder, before anything is sent so.
+  if (value) store.settleShared(props.storyId)
   // The boxes appear under the switch, at the foot of what may be a long
   // section: brought into view, as the writer turned the switch off for them.
   if (value) nextTick(() => boxes.value?.scrollIntoView?.({ block: 'nearest' }))

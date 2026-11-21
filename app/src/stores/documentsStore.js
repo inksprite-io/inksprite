@@ -429,7 +429,58 @@ export const useDocumentsStore = defineStore('documents', () => {
     syncStore.trackChange('documents', documentId, next)
     markEdited(next.storyId)
 
+    // Moved into a folder held back from the people a project is shared
+    // with, a document is held back with everything in it, as one made
+    // there is. A move never shares more than there was.
+    if (
+      parentId !== previous.parentId &&
+      sharing.value.selective.includes(next.storyId) &&
+      documents.value.get(parentId)?.unshared
+    ) {
+      setShared(new Map([...subtreeOf(documentId)].map(id => [id, false])))
+    }
+
     return next
+  }
+
+  /**
+   * A document and everything under it, by id.
+   * @param {string} documentId
+   * @returns {Set<string>}
+   */
+  function subtreeOf(documentId) {
+    const ids = new Set([documentId])
+    for (const id of ids) {
+      for (const child of childrenByParent.value.get(id) ?? []) ids.add(child)
+    }
+    return ids
+  }
+
+  /**
+   * Give each document of a project that has no say of its own in what is
+   * shared its folder's, as it would have had if it had been made while the
+   * project was shared with only some: a document made in a held-back folder
+   * while the project was shared whole is held back, as the folder's
+   * contents are. Done as its owner stops sharing it whole.
+   *
+   * @param {string} storyId
+   */
+  function settleShared(storyId) {
+    /** @type {Map<string, boolean>} */
+    const shared = new Map()
+    /** Whether a document is held back, as said or as its folder is. @param {string} id */
+    const heldBack = id => {
+      const document = documents.value.get(id)
+      if (!document) return false
+      if (shared.has(id)) return !shared.get(id)
+      if (document.unshared !== undefined) return document.unshared
+      return heldBack(document.parentId)
+    }
+    for (const document of documents.value.values()) {
+      if (document.storyId !== storyId || document.unshared !== undefined) continue
+      if (document.parentId && heldBack(document.parentId)) shared.set(document.id, false)
+    }
+    setShared(shared)
   }
 
   /**
@@ -956,6 +1007,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     createDocument,
     updateDocument,
     setShared,
+    settleShared,
     trashDocument,
     restoreDocument,
     deleteDocument,

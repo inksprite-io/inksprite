@@ -586,6 +586,31 @@ describe('DocumentsStore', () => {
       expect(text('in_secret', 'secret').unshared).toBe(true)
     })
 
+    it('holds back a document moved into a held-back folder, with everything in it', () => {
+      folder('open')
+      folder('secret')
+      store.setShared(new Map([['secret', false]]))
+      folder('drafts', 'open')
+      const draft = text('draft', 'drafts')
+      expect(draft.unshared).toBe(false)
+
+      store.updateDocument('drafts', { parentId: 'secret' })
+
+      expect(store.getDocument('drafts').unshared).toBe(true)
+      expect(store.getDocument('draft').unshared).toBe(true)
+    })
+
+    it('shares nothing more by a move into a shared folder', () => {
+      folder('open')
+      folder('secret')
+      store.setShared(new Map([['secret', false]]))
+      text('note', 'secret')
+
+      store.updateDocument('note', { parentId: 'open' })
+
+      expect(store.getDocument('note').unshared).toBe(true)
+    })
+
     it('says either way which documents are shared, as no edit of them', () => {
       folder('notes')
       text('note', 'notes')
@@ -609,5 +634,37 @@ describe('DocumentsStore', () => {
   it('makes a document as it always has elsewhere', () => {
     folder('open')
     expect('unshared' in text('in_open', 'open')).toBe(false)
+  })
+
+  it('moves a document as it always has elsewhere', () => {
+    folder('open')
+    folder('secret')
+    store.setShared(new Map([['secret', false]]))
+    text('note', 'open')
+
+    store.updateDocument('note', { parentId: 'secret' })
+
+    expect('unshared' in store.getDocument('note')).toBe(false)
+  })
+
+  it('holds back with its folder what was made in it while the project was shared whole', () => {
+    folder('open')
+    folder('secret')
+    // Held back the last time only some was shared.
+    store.setShared(new Map([['secret', false]]))
+    // Made while it was shared whole: no say of their own.
+    folder('ideas', 'secret')
+    text('idea', 'ideas')
+    text('chapter', 'open')
+    // One that says it is shared, from when only some was, stays so.
+    text('kept', 'secret')
+    store.updateDocument('kept', { unshared: false })
+
+    store.settleShared('story_1')
+
+    expect(store.getDocument('ideas').unshared).toBe(true)
+    expect(store.getDocument('idea').unshared).toBe(true)
+    expect(store.getDocument('kept').unshared).toBe(false)
+    expect('unshared' in store.getDocument('chapter')).toBe(false)
   })
 })
