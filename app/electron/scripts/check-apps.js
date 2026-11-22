@@ -3,7 +3,7 @@
  * door on the loopback (`src/appServer.js`), across the preload's bridge to a
  * window's page, and back out. The shell's own modules answer (`src/bridge.js`
  * and what it wires: `src/apps.js`, `src/appCalls.js`, `src/appReads.js`,
- * `src/appExports.js`), in windows made as the app makes them
+ * `src/appExports.js`, `src/appImports.js`), in windows made as the app makes them
  * (`src/windows.js`: sandboxed, with `src/preload.cjs`). The page is the
  * check's own, at the app's origin, and reaches the bridge through the page's
  * `src/platform/apps.js`. The check is the app that asks, over a socket.
@@ -14,7 +14,8 @@
  * request is called off in the page when its app gives up, and an app is
  * told why, in words, when no page answers it. Every function the bridge
  * gives the page hands back plain values. A file the page offers is fetched
- * once, byte for byte. A removed connection is refused at once, and the port
+ * once, byte for byte, and a file sent by a link the page made is handed to
+ * the page byte for byte, the once, with the page's answer the upload's. A removed connection is refused at once, and the port
  * closes with the last of them, or with apps switched off. With two windows,
  * the one in front is asked first, and the next when it passes or closes.
  *
@@ -68,7 +69,8 @@ const NOT_THE_PAGE = 'Only the app’s page may ask that.'
 const NO_CONNECTION = 'No such connection.'
 
 /** The functions the bridge gives the page as `apps`: one more is one more to check. */
-const BRIDGE = 'add answer forget keep list offer read reads remove setEnabled setPort update'
+const BRIDGE =
+  'add answer forget keep list offer read reads receive received remove setEnabled setPort update'
 
 /** The page's own modules for the bridge, which the check's page loads as the app's does. */
 const PLATFORM = fileURLToPath(new URL('../../src/platform/', import.meta.url))
@@ -111,6 +113,22 @@ const PAGE = `<!doctype html>
         if (check.mode === 'pass') return { pass: 'elsewhere' }
         if (check.mode === 'throw') throw new Error('The check’s page threw.')
         if (check.mode === 'hang') return new Promise(() => {})
+        // A file the door was sent: taken from it as the app's page takes
+        // one (src/apps/imports.js), and said back by its size and its bytes.
+        if (message.method === 'inksprite/import') {
+          const taken = await apps.takeAppImport(app.id, message.params.id)
+          const again = await apps.takeAppImport(app.id, message.params.id)
+          check.taken = taken && {
+            about: taken.about,
+            isBytes: taken.bytes instanceof Uint8Array,
+            base64: btoa(Array.from(taken.bytes, byte => String.fromCharCode(byte)).join('')),
+            again,
+          }
+          const result = taken
+            ? { success: true, received: taken.bytes.length, about: message.params.about }
+            : { error: 'Nothing to take.' }
+          return { response: { jsonrpc: '2.0', id: message.id, result } }
+        }
         const result = { window: location.pathname.slice(1), app, echo: message.params ?? null }
         return { response: { jsonrpc: '2.0', id: message.id, result } }
       })
@@ -141,6 +159,9 @@ const PAGE = `<!doctype html>
   }
   globalThis.check = check
 </script>`
+
+/** What a page says a link for a file is for: kept by the native side, and handed back. */
+const ABOUT = { storyId: 'story_a', parentId: 'folder_1', name: 'Notes on the vault.md' }
 
 const userData = mkdtempSync(path.join(tmpdir(), 'apps-check-'))
 app.setPath('userData', userData)
@@ -942,16 +963,132 @@ async function checkAll() {
     return { ok: status === 404 && body.length === 0, detail: `${status}, ${body.length} bytes` }
   })
 
+  // A file an app sends.
+
+  /**
+   * Send to the door as an app's shell does: no token, nothing but the link.
+   *
+   * @param {string} url
+   * @param {Buffer} bytes
+   * @param {{method?: string, headers?: Record<string, string>}} [options]
+   * @returns {Promise<Answer>}
+   */
+  const put = (url, bytes, { method = 'PUT', headers = {} } = {}) => {
+    const sent = http.request({ host: '127.0.0.1', port, method, path: url, agent: false, headers })
+    /** @type {Promise<Answer>} */
+    const answer = new Promise((resolve, reject) => {
+      sent.on('error', reject)
+      sent.on('response', response => {
+        /** @type {Buffer[]} */
+        const chunks = []
+        response.on('data', chunk => chunks.push(chunk))
+        response.on('end', () => {
+          const body = Buffer.concat(chunks)
+          const isJson = response.headers['content-type'] === 'application/json'
+          resolve({
+            status: response.statusCode ?? 0,
+            headers: response.headers,
+            body,
+            json: isJson ? JSON.parse(body.toString('utf8')) : null,
+          })
+        })
+      })
+    })
+    sent.end(bytes)
+    return answer
+  }
+
+  const upload = Buffer.concat([
+    Buffer.from(Array.from({ length: 256 }, (_, byte) => byte)),
+    randomBytes(256 * 1024),
+  ])
+  let inbox = ''
+  await check('waits for a file from a connection’s app, by a link the page makes', async () => {
+    const { value, threw } = await call(one, 'awaitAppImport', second.id, ABOUT)
+    inbox = `/import/${value?.id}`
+    const refused = (await call(one, 'awaitAppImport', 'app_none', ABOUT)).threw
+    return {
+      ok:
+        threw === null &&
+        plain(value) &&
+        /^\{"id":"[\w-]{43}"\}$/.test(JSON.stringify(value)) &&
+        refused === NO_CONNECTION,
+      detail: `${threw ?? `${value.id.length} characters`}; for no connection: ${refused}`,
+    }
+  })
+
+  await check(
+    'refuses a file sent by a browser, by another name, or other than by a PUT',
+    async () => {
+      const before = await askedOf(one)
+      const tries = [
+        { headers: { 'Sec-Fetch-Site': 'cross-site' } },
+        { headers: { Origin: 'https://example.com' } },
+        { headers: { Host: `example.com:${port}` } },
+        { method: 'POST' },
+      ]
+      const statuses = []
+      for (const options of tries) statuses.push((await put(inbox, upload, options)).status)
+      const asked = (await askedOf(one)) - before
+      return {
+        ok: statuses.join(' ') === '403 403 403 405' && asked === 0,
+        detail: `${statuses.join(' ')}; the page was asked ${asked}`,
+      }
+    }
+  )
+
+  await check('hands a file sent by its link to the page, byte for byte, the once', async () => {
+    const answer = await put(inbox, upload)
+    const taken = await js(one, 'check.taken')
+    const bytes = Buffer.from(taken?.base64 ?? '', 'base64')
+    return {
+      ok:
+        answer.status === 200 &&
+        isDeepStrictEqual(answer.json, { success: true, received: upload.length, about: ABOUT }) &&
+        taken?.isBytes === true &&
+        bytes.equals(upload) &&
+        isDeepStrictEqual(taken.about, ABOUT) &&
+        taken.again === null,
+      detail: `${answer.status} ${JSON.stringify(answer.json)}; the page took ${bytes.length} bytes of ${upload.length}, sha256 ${sha(bytes)} of ${sha(upload)}, as ${taken?.isBytes ? 'bytes' : 'something else'}; a second take: ${JSON.stringify(taken?.again)}`,
+    }
+  })
+
+  await check('takes one file to a link', async () => {
+    const before = await askedOf(one)
+    const { status } = await put(inbox, Buffer.from('again'))
+    const asked = (await askedOf(one)) - before
+    return { ok: status === 404 && asked === 0, detail: `${status}; the page was asked ${asked}` }
+  })
+
+  await check('refuses an app the door’s own request to take a file', async () => {
+    const before = await askedOf(one)
+    const { value } = await call(one, 'awaitAppImport', second.id, ABOUT)
+    const message = {
+      jsonrpc: '2.0',
+      id: ++requests,
+      method: 'inksprite/import',
+      params: { id: value.id, about: ABOUT },
+    }
+    const { status, json } = await post(second.token, message)
+    const asked = (await askedOf(one)) - before
+    return {
+      ok: status === 200 && json?.error?.code === -32601 && asked === 0,
+      detail: `${status} ${JSON.stringify(json?.error ?? null)}; the page was asked ${asked}`,
+    }
+  })
+
   // Connections removed, apps switched off, and the port.
 
   await check('refuses a removed connection at once, and lets go of what it had', async () => {
     await call(one, 'keepRead', second.id, 'doc_3', read)
     const held = (await offer(one, second.id, 'held.md', Buffer.from('Held.'))).value
+    const waiting = (await call(one, 'awaitAppImport', second.id, ABOUT)).value
     const before = await askedOf(one)
     const removing = await call(one, 'removeApp', second.id)
     const { status } = await post(second.token, request())
     const more = (await askedOf(one)) - before
     const fetched = await ask(port, { method: 'GET', url: `/export/${held.id}` }).answer
+    const sent = await put(`/import/${waiting.id}`, Buffer.from('Sent.'))
     const reads = existsSync(path.join(userData, 'app-reads', second.id))
     const other = await post(first.token, request())
     return {
@@ -961,9 +1098,10 @@ async function checkAll() {
         status === 401 &&
         more === 0 &&
         fetched.status === 404 &&
+        sent.status === 404 &&
         !reads &&
         other.status === 200,
-      detail: `its token: ${status}; the page was asked ${more} more; its file: ${fetched.status}; its reads ${reads ? 'kept' : 'gone'}; another’s token: ${other.status}`,
+      detail: `its token: ${status}; the page was asked ${more} more; its file: ${fetched.status}; a file sent to it: ${sent.status}; its reads ${reads ? 'kept' : 'gone'}; another’s token: ${other.status}`,
     }
   })
 

@@ -301,6 +301,11 @@ describe('handleApps', () => {
     expect(await call('apps:read', made.id, 'doc_1')).toMatchObject({ revision: 'r1' })
     expect(await call('apps:reads', made.id, ['document'])).toEqual([{ document: 'doc_1' }])
     expect(await call('apps:offer', made.id, file1)).toEqual({ id: expect.any(String) })
+    const about = { storyId: 'story_a', parentId: 'folder_1', name: 'Notes.md' }
+    const waiting = await call('apps:receive', made.id, about)
+    expect(waiting).toEqual({ id: expect.any(String) })
+    // Nothing has come by it yet.
+    expect(await call('apps:received', made.id, waiting.id)).toBeNull()
 
     for (const nobody of ['app_nobody', 'x'.repeat(40), '', null, 7, ['app_1']]) {
       const said = 'No such connection.'
@@ -310,6 +315,8 @@ describe('handleApps', () => {
       await expect(call('apps:read', nobody, 'doc_1')).rejects.toThrow(said)
       await expect(call('apps:reads', nobody)).rejects.toThrow(said)
       await expect(call('apps:offer', nobody, file1)).rejects.toThrow(said)
+      await expect(call('apps:receive', nobody, about)).rejects.toThrow(said)
+      await expect(call('apps:received', nobody, waiting.id)).rejects.toThrow(said)
     }
     // Nothing was kept under a name of the page's making.
     expect(await fs.readdir(path.join(dir, 'app-reads'))).toEqual([made.id])
@@ -317,6 +324,7 @@ describe('handleApps', () => {
     // Nor for a connection once it is removed.
     await call('apps:remove', made.id)
     await expect(call('apps:offer', made.id, file1)).rejects.toThrow('No such connection.')
+    await expect(call('apps:receive', made.id, about)).rejects.toThrow('No such connection.')
     await expect(call('apps:keep', made.id, 'doc_1', record('doc_1', 'story_a'))).rejects.toThrow()
     expect(await kept(made.id)).toEqual([])
   })

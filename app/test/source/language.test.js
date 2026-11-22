@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isCodeName, languageOf } from '@/source/language.js'
+import { keepsAsWritten, languageOf } from '@/source/language.js'
 
 describe('languageOf', () => {
   it('knows a language by its extension, and plain text otherwise', () => {
@@ -8,17 +8,19 @@ describe('languageOf', () => {
   })
 })
 
-describe('isCodeName', () => {
-  it('takes a script or a table for code', () => {
-    expect(isCodeName('d20.py')).toBe(true)
-    expect(isCodeName('odds.CSV')).toBe(true)
-    expect(isCodeName('Makefile')).toBe(true)
+describe('keepsAsWritten', () => {
+  it('keeps a script, a table or plain text as written', () => {
+    expect(keepsAsWritten('d20.py')).toBe(true)
+    expect(keepsAsWritten('odds.CSV')).toBe(true)
+    expect(keepsAsWritten('Makefile')).toBe(true)
+    expect(keepsAsWritten('prompt.txt')).toBe(true)
+    expect(keepsAsWritten('NOTES.TXT')).toBe(true)
   })
 
-  it('takes prose, Markdown and a name with no language for none', () => {
-    expect(isCodeName('Chapter 1')).toBe(false)
-    expect(isCodeName('Chapter 1.5')).toBe(false)
-    expect(isCodeName('notes.mdx')).toBe(false)
-    expect(isCodeName('.py')).toBe(false)
+  it('lays out prose, Markdown and a name with no language', () => {
+    expect(keepsAsWritten('Chapter 1')).toBe(false)
+    expect(keepsAsWritten('Chapter 1.5')).toBe(false)
+    expect(keepsAsWritten('notes.mdx')).toBe(false)
+    expect(keepsAsWritten('.py')).toBe(false)
   })
 })

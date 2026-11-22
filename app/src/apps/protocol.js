@@ -8,8 +8,11 @@
  * There are four to answer: `initialize`, `ping`, `tools/list` and
  * `tools/call`. No resources, prompts or sampling, no stream and no session:
  * a connection is told apart by its token alone, which the door has checked.
+ * And one the door asks of its own, which it refuses an app: a file an app
+ * sent, to take (`IMPORT_METHOD`, `./imports.js`).
  */
 
+import { receivedFor } from './imports.js'
 import { callTool, toolsFor } from './tools.js'
 
 /** @typedef {import('@/platform/apps.js').AskingApp} AskingApp */
@@ -20,6 +23,12 @@ import { callTool, toolsFor } from './tools.js'
  * HTTP as it is served here.
  */
 export const PROTOCOL_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26']
+
+/**
+ * What the door asks as a file an app sent comes: take it, and say what it
+ * became. The door's own, as `IMPORT_METHOD` in `electron/src/appServer.js`.
+ */
+export const IMPORT_METHOD = 'inksprite/import'
 
 /** JSON-RPC's codes. */
 const METHOD_NOT_FOUND = -32601
@@ -51,6 +60,11 @@ export function instructionsFor(app) {
         ]
       : []),
     '- export_document gives a document, or a folder, as files to fetch with your shell: for putting a finished design into a repository.',
+    ...(writes
+      ? [
+          '- import_document brings a file from your side into a project, sent by your shell: Markdown as a document, anything else kept as the file it is. Copy a file in this way, not by writing its text out.',
+        ]
+      : []),
     `- A file exported from inksprite names its document in its front matter. Give its \`id\` there as a path, written \`id:<the id>\`, to reach the document whatever it is called now${writes ? ', and change the document, not the file' : ''}.`,
     ...(writes
       ? [
@@ -114,6 +128,10 @@ export async function answerRequest(message, { app, signal }) {
         signal
       )
       return 'pass' in called ? called : result(id, called.result)
+    }
+    case IMPORT_METHOD: {
+      const taken = await receivedFor(app, params ?? {}, signal)
+      return 'pass' in taken ? taken : result(id, taken.answer)
     }
     default:
       return failure(id, METHOD_NOT_FOUND, `Method not found: ${String(method)}`)

@@ -2,8 +2,15 @@
 /* global Buffer */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import http from 'node:http'
-import { MOST_BYTES, addressOf, appDoor, hostName } from '../../electron/src/appServer.js'
+import {
+  IMPORT_METHOD,
+  MOST_BYTES,
+  addressOf,
+  appDoor,
+  hostName,
+} from '../../electron/src/appServer.js'
 import { appExports } from '../../electron/src/appExports.js'
+import { appImports } from '../../electron/src/appImports.js'
 
 const CONNECTION = {
   id: 'app_1',
@@ -43,6 +50,8 @@ let ask
 let door
 /** @type {ReturnType<typeof appExports>} */
 let exports
+/** @type {ReturnType<typeof appImports>} */
+let imports
 
 const connections = {
   all: async () => ({ port, enabled, connections: held }),
@@ -55,7 +64,8 @@ beforeEach(async () => {
   enabled = true
   ask = vi.fn(async (_, message) => ({ jsonrpc: '2.0', id: message.id, result: { ok: true } }))
   exports = appExports()
-  door = appDoor({ connections, ask, exports })
+  imports = appImports()
+  door = appDoor({ connections, ask, exports, imports })
   // A page has said it answers: the door listens for no one before.
   await door.pageAnswers()
 })
@@ -63,6 +73,7 @@ beforeEach(async () => {
 afterEach(() => {
   door.stop()
   exports.clear()
+  imports.clear()
 })
 
 /**
@@ -498,6 +509,164 @@ describe('what was made ready for an app to fetch', () => {
       const answer = await fetchFile(id, { headers: { Host: `${name}:${port}` } })
       expect(answer.status, name).toBe(200)
     }
+  })
+})
+
+describe('a file an app sends', () => {
+  const ABOUT = { storyId: 'story_a', parentId: 'folder_1', name: 'Notes.md' }
+
+  /**
+   * Send to the door as an app's shell does: no token, nothing but the link.
+   *
+   * @returns {Promise<{status: number, headers: http.IncomingHttpHeaders, body: any}>}
+   */
+  const sendFile = (id, bytes = Buffer.from('# Notes\n'), { method = 'PUT', headers = {} } = {}) =>
+    new Promise((resolve, reject) => {
+      const request = http.request(
+        {
+          host: '127.0.0.1',
+          port,
+          path: `/import/${id}`,
+          method,
+          headers: { 'Content-Length': bytes.length, ...headers },
+        },
+        response => {
+          let said = ''
+          response.on('data', chunk => (said += chunk))
+          response.on('end', () =>
+            resolve({
+              status: response.statusCode,
+              headers: response.headers,
+              body: said ? JSON.parse(said) : null,
+            })
+          )
+        }
+      )
+      request.on('error', reject)
+      request.end(bytes)
+    })
+
+  it('is handed to a window to take, by the door’s own request, and the answer is the upload’s', async () => {
+    ask.mockImplementation(async (_, message) => ({
+      jsonrpc: '2.0',
+      id: message.id,
+      result: { success: true, document: { path: 'Research/Notes' } },
+    }))
+    const { id } = imports.open('app_1', ABOUT)
+
+    const answer = await sendFile(id)
+
+    expect(answer.status).toBe(200)
+    expect(answer.body).toEqual({ success: true, document: { path: 'Research/Notes' } })
+    expect(ask).toHaveBeenCalledTimes(1)
+    const [connection, message, , address] = ask.mock.calls[0]
+    expect(connection.id).toBe('app_1')
+    expect(message).toMatchObject({ method: IMPORT_METHOD, params: { id, about: ABOUT } })
+    expect(address).toBe(`http://127.0.0.1:${port}`)
+    // Done with, whether or not the page took it.
+    expect(imports.size).toBe(0)
+  })
+
+  it('keeps the file for the page to take until the page has answered', async () => {
+    /** @type {any} */
+    let taken = null
+    ask.mockImplementation(async (_, message) => {
+      taken = imports.take('app_1', message.params.id)
+      return { jsonrpc: '2.0', id: message.id, result: { success: true } }
+    })
+    const { id } = imports.open('app_1', ABOUT)
+
+    await sendFile(id, Buffer.from([0, 1, 2, 255]))
+
+    expect([...taken.bytes]).toEqual([0, 1, 2, 255])
+    expect(taken.about).toEqual(ABOUT)
+  })
+
+  it('says what went wrong as the page said it, or why no page could take it', async () => {
+    ask.mockImplementation(async (_, message) => ({
+      jsonrpc: '2.0',
+      id: message.id,
+      result: { error: 'There is already something at "Research/Notes".' },
+    }))
+    const refused = await sendFile(imports.open('app_1', ABOUT).id)
+    expect(refused.status).toBe(422)
+    expect(refused.body.error).toMatch(/already something/)
+
+    ask.mockRejectedValue(new Error('inksprite has no window open.'))
+    const unanswered = await sendFile(imports.open('app_1', ABOUT).id)
+    expect(unanswered.status).toBe(503)
+    expect(unanswered.body).toEqual({ error: 'inksprite has no window open.' })
+  })
+
+  it('takes one file to a link, and none by a link never made or run out', async () => {
+    const { id } = imports.open('app_1', ABOUT)
+    expect((await sendFile(id)).status).toBe(200)
+    expect((await sendFile(id)).status).toBe(404)
+
+    for (const other of ['nothing', '', 'a'.repeat(43), '..%2f..%2fapps.json']) {
+      expect((await sendFile(other)).status, other).toBe(404)
+    }
+    expect(ask).toHaveBeenCalledTimes(1)
+  })
+
+  it('takes none for a connection removed since the link was made', async () => {
+    const { id } = imports.open('app_1', ABOUT)
+    held = [{ ...CONNECTION, id: 'app_2', token: 'another' }]
+
+    expect((await sendFile(id)).status).toBe(404)
+    expect(ask).not.toHaveBeenCalled()
+  })
+
+  it('is refused a browser, a name that isn’t this computer’s, and anything but a PUT', async () => {
+    const { id } = imports.open('app_1', ABOUT)
+
+    for (const headers of [
+      { Origin: 'https://example.com' },
+      { Origin: 'null' },
+      { 'Sec-Fetch-Site': 'cross-site' },
+      { 'Sec-Fetch-Site': 'same-origin' },
+      { Host: `evil.example:${port}` },
+    ]) {
+      expect((await sendFile(id, undefined, { headers })).status, JSON.stringify(headers)).toBe(403)
+    }
+    for (const method of ['GET', 'POST', 'DELETE']) {
+      const answer = await sendFile(id, undefined, { method })
+      expect(answer.status, method).toBe(405)
+      expect(answer.headers.allow).toBe('PUT')
+    }
+
+    // Still waiting for its file.
+    expect((await sendFile(id)).status).toBe(200)
+  })
+
+  it('refuses a file larger than can be taken, and takes nothing of it', async () => {
+    const small = appImports()
+    Object.defineProperty(small, 'most', { value: 4 })
+    const brief = appDoor({ connections, ask, exports, imports: small })
+    door.stop()
+    await brief.pageAnswers()
+    const { id } = small.open('app_1', ABOUT)
+
+    const answer = await sendFile(id, Buffer.from('more than four'))
+
+    expect(answer.status).toBe(413)
+    expect(ask).not.toHaveBeenCalled()
+    expect((await sendFile(id, Buffer.from('four'))).status).toBe(200)
+    brief.stop()
+  })
+
+  it('is refused as a request an app makes itself', async () => {
+    const { id } = imports.open('app_1', ABOUT)
+    imports.arrive(id, Buffer.from('# Notes'))
+
+    const answer = await send({
+      body: { jsonrpc: '2.0', id: 7, method: IMPORT_METHOD, params: { id, about: ABOUT } },
+    })
+
+    expect(answer.status).toBe(200)
+    expect(answer.body.error.code).toBe(-32601)
+    expect(ask).not.toHaveBeenCalled()
+    expect(imports.take('app_1', id)).not.toBeNull()
   })
 })
 

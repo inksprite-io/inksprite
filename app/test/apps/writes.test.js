@@ -20,6 +20,7 @@ vi.mock('@/stores/syncStore', () => ({
 
 import {
   READ_AGAIN_NOTE,
+  REWRITTEN_NOTE,
   STORED_MOST,
   STORED_NOTE,
   changedLines,
@@ -130,24 +131,63 @@ describe('withStored', () => {
     expect(answer).toMatchObject({ success: true, stored: '- rope\n- a lamp', note: STORED_NOTE })
   })
 
-  it('does so for what is added to the end, for a new document, and for a whole rewrite', async () => {
+  it('does so for what is added to the end', async () => {
     const append = { path: 'Plan', text: '* gloves' }
     expect(
       (await writing('append_document', append, () => executeAppendDocument(append, context)))
         .stored
     ).toBe('- gloves')
+  })
 
-    const create = { path: 'notes/Crew', content: '* Mara\n* Tov' }
-    expect(
-      (await writing('create_document', create, () => executeCreateDocument(create, context)))
-        .stored
-    ).toBe('- Mara\n- Tov')
+  it('gives a new document or a rewrite as the difference from what was sent', async () => {
+    const create = { path: 'notes/Crew', content: '# Crew\n\n* Mara\n* Tov' }
+    const made = await writing('create_document', create, () =>
+      executeCreateDocument(create, context)
+    )
+    expect(made).toMatchObject({ success: true, note: REWRITTEN_NOTE })
+    expect(made.stored).toBeUndefined()
+    expect(made.rewritten).toBe('@@ -1,4 +1,4 @@\n # Crew\n \n-* Mara\n-* Tov\n+- Mara\n+- Tov')
 
     const update = { path: 'Plan', content: '# Plan\n\n* one\n* two' }
-    expect(
-      (await writing('update_document', update, () => executeUpdateDocument(update, context)))
-        .stored
-    ).toBe('# Plan\n\n- one\n- two')
+    const rewrote = await writing('update_document', update, () =>
+      executeUpdateDocument(update, context)
+    )
+    expect(rewrote.rewritten).toBe('@@ -1,4 +1,4 @@\n # Plan\n \n-* one\n-* two\n+- one\n+- two')
+  })
+
+  it('gives the few lines written another way in a long new document, not the whole', async () => {
+    const prose = Array.from({ length: 60 }, (_, at) => `Paragraph ${at} of the plan, in words.`)
+    const content = [...prose.slice(0, 30), '* the one list', ...prose.slice(30)].join('\n\n')
+    expect(content.length).toBeGreaterThan(STORED_MOST / 2)
+    const args = { path: 'notes/Long plan', content }
+    const answer = await writing('create_document', args, () =>
+      executeCreateDocument(args, context)
+    )
+
+    expect(answer.note).toBe(REWRITTEN_NOTE)
+    expect(answer.rewritten).toContain('-* the one list\n+- the one list')
+    expect(answer.rewritten.length).toBeLessThan(400)
+  })
+
+  it('says nothing of comment markup, which a read leaves out as well', async () => {
+    const store = useDocumentsStore()
+    store.updateDocument('doc_plan', {
+      content: 'The vault opens at {==noon==}{>>c1abcd<<}.',
+      comments: {
+        c1abcd: {
+          status: 'open',
+          posts: [{ author: 'writer', text: 'Which noon?', at: 1 }],
+        },
+      },
+    })
+    const args = { path: 'Plan', content: 'The vault opens at noon.\n\nBring rope.' }
+    const answer = await writing('update_document', args, () =>
+      executeUpdateDocument(args, context)
+    )
+
+    expect(answer.success).toBe(true)
+    expect(answer.rewritten).toBeUndefined()
+    expect(answer.note).toBeUndefined()
   })
 
   it('checks every edit of several', async () => {

@@ -95,8 +95,11 @@ export function extensionFor(mime) {
  */
 export const isData = mime => mime === PARQUET_MIME
 
-/** Extensions that mark prose, which a title drops as a paper's does. */
-const PROSE_EXTENSIONS = new Set(['md', 'markdown', 'txt'])
+/**
+ * Extensions that mark prose, which a title drops as a paper's does. Plain
+ * text keeps its `.txt`: it is kept as the file it is, as a script is.
+ */
+const PROSE_EXTENSIONS = new Set(['md', 'markdown'])
 
 /**
  * The title a file's document takes.

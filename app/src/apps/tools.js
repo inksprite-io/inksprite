@@ -33,6 +33,10 @@
  *   every place a passage appears.
  * - **How the text was stored**, where that isn't how it was sent
  *   (`./writes.js`).
+ * - **Files brought in**: `import_document` answers with a link the app's
+ *   own shell sends a file to, which then comes in as the writer's own
+ *   import brings one in, so its bytes never pass through the app's model
+ *   (`./imports.js`).
  * - **Documents handed over as files**: `export_document` makes a document
  *   or a folder ready and answers with a link the app's own shell fetches,
  *   each text stamped with the document it came from (`./exports.js`), and
@@ -70,6 +74,7 @@ import { pathInProject } from '@/ai/tools/documents.js'
 import { useEditor } from '@/composables/useEditor.js'
 import { findProject, inProject, projectsOf } from './projects.js'
 import { exportFor } from './exports.js'
+import { importFor } from './imports.js'
 import { withStored } from './writes.js'
 import { changesSince, stateAt, unchangedAt, withRevision } from './revisions.js'
 
@@ -267,6 +272,28 @@ const TOOLS = [
         'the folders the project has are usually the right ones'
       ),
     }),
+  },
+  {
+    name: 'import_document',
+    writes: true,
+    adds: true,
+    own: {
+      description:
+        'Bring a file from your side into the project, sent by your shell: to copy a file in exactly as it is, without writing its text out. The answer is a link and the command that sends the file to it, to run in your shell; the command prints what the file became. A Markdown file (.md) or a Word file (.docx) becomes a document to edit; anything else, a .txt, a script, a table, a PDF or a picture, is kept as the file it is, its text read with read_document.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          project: PROJECT,
+          path: {
+            type: 'string',
+            description:
+              'Where it goes and what it is called: a folder that exists, then the file\'s name with its extension (e.g. "Research/Notes.md", "Prompts/system.txt"). A Markdown or Word file\'s document is named without the extension.',
+          },
+        },
+        required: ['path'],
+      },
+    },
+    run: (app, asking, args) => importFor(app, asking, args),
   },
   { name: 'update_document', writes: true, revision: true, text: true, suggest: true },
   {
@@ -489,10 +516,12 @@ export function toResult(value) {
       ],
     }
   }
-  // How a write was stored, as it reads: to quote from, as a read's text is.
-  if (typeof answer.stored === 'string') {
-    const { stored, ...about } = answer
-    return { content: [said(JSON.stringify(about)), said(stored)] }
+  // How a write was stored, as it reads, or how it differs from what was
+  // sent: to quote from, as a read's text is.
+  for (const part of ['stored', 'rewritten']) {
+    if (typeof answer[part] !== 'string') continue
+    const { [part]: text, ...about } = answer
+    return { content: [said(JSON.stringify(about)), said(text)] }
   }
   return { content: [said(JSON.stringify(answer))] }
 }

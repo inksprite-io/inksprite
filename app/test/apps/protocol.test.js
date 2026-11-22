@@ -3,8 +3,15 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 const tools = vi.hoisted(() => ({ toolsFor: vi.fn(), callTool: vi.fn() }))
 vi.mock('@/apps/tools.js', () => tools)
+const imports = vi.hoisted(() => ({ receivedFor: vi.fn() }))
+vi.mock('@/apps/imports.js', () => imports)
 
-import { PROTOCOL_VERSIONS, answerRequest, instructionsFor } from '@/apps/protocol.js'
+import {
+  IMPORT_METHOD,
+  PROTOCOL_VERSIONS,
+  answerRequest,
+  instructionsFor,
+} from '@/apps/protocol.js'
 
 const APP = { id: 'app_1', name: 'Claude Code', projects: ['story_a'], readOnly: true }
 
@@ -58,12 +65,15 @@ describe('answerRequest', () => {
     expect(reads).toContain('id:<the id>')
     expect(reads).toContain("`model` is inksprite's own assistant")
     expect(reads).toContain('export_document gives a document, or a folder, as files')
-    expect(reads).not.toMatch(/edit_document|add_comment|suggest|change the document/)
+    expect(reads).not.toMatch(
+      /edit_document|add_comment|suggest|change the document|import_document/
+    )
 
     const writes = instructionsFor({ ...APP, readOnly: false })
     expect(writes).toContain('to read and write their documents')
     expect(writes).toContain('is in the document at once')
     expect(writes).toContain('export_document')
+    expect(writes).toContain('import_document brings a file from your side into a project')
     expect(writes).toContain('add_comment')
     expect(writes).toContain("carries this connection's name")
     // Whether to suggest is the app's own assistant's to be told, call by call.
@@ -147,6 +157,27 @@ describe('answerRequest', () => {
   it('passes on a call another window is to run', async () => {
     tools.callTool.mockResolvedValue({ pass: 'elsewhere' })
     expect(await answerRequest(request('tools/call', { name: 'read_document' }), asking)).toEqual({
+      pass: 'elsewhere',
+    })
+  })
+
+  it('has a file the door was sent taken, and answers with what it became', async () => {
+    imports.receivedFor.mockResolvedValue({
+      answer: { success: true, document: { path: 'Notes' } },
+    })
+    const params = { id: 'link', about: { storyId: 'story_a', parentId: 'root', name: 'Notes.md' } }
+
+    const { response } = await answerRequest(request(IMPORT_METHOD, params), asking)
+
+    expect(imports.receivedFor).toHaveBeenCalledWith(APP, params, signal)
+    expect(response).toEqual({
+      jsonrpc: '2.0',
+      id: 5,
+      result: { success: true, document: { path: 'Notes' } },
+    })
+
+    imports.receivedFor.mockResolvedValue({ pass: 'elsewhere' })
+    expect(await answerRequest(request(IMPORT_METHOD, params), asking)).toEqual({
       pass: 'elsewhere',
     })
   })

@@ -194,6 +194,18 @@ describe('document tools, on a repository', () => {
       expect(result.content).toBe('940\tconst line940 = 940\n941\tconst line941 = 941')
     })
 
+    it('says it left out a section or a page, which a source file is not read by', async () => {
+      const result = await executeReadDocument(
+        { path: 'server/src/sync/clock.py', section: 'clock', page: 2 },
+        context
+      )
+
+      expect(result.content).toBe('1\tdef clock(op):\n2\t    return op.at')
+      expect(result.ignored).toBe(
+        '`section` and `page` were left out: a source file is read by line, with line and until.'
+      )
+    })
+
     it('says so when a line is past the end', async () => {
       const result = await executeReadDocument(
         { path: 'server/src/sync/clock.py', line: 9 },

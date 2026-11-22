@@ -165,6 +165,12 @@
  * @property {(connection: string, file: {name: string, bytes: Uint8Array}) => Promise<{id: string}>} offer -
  *   Hold a file for a connection's app to fetch, once and within a few
  *   minutes, at `/export/<id>` of the address it reaches this computer by
+ * @property {(connection: string, about: Record<string, unknown>) => Promise<{id: string}>} receive -
+ *   Wait for a file from a connection's app, sent once and within a few
+ *   minutes to `/import/<id>`: `about` is what it is for, handed back with it
+ * @property {(connection: string, id: string) => Promise<{about: Record<string, unknown>, bytes: Uint8Array}|null>} received -
+ *   The file sent by a link, the once: null before one has come, or after
+ *   it was taken
  * @property {(answer: (connection: Omit<AppConnection, 'token'|'created'> & {address: string}, message: object, onStop: (stop: () => void) => void) => Promise<AppAnswer>) => void} answer -
  *   Say what answers an app's request in this window. `address` is where
  *   the app reaches this computer, and `onStop` takes what stops the

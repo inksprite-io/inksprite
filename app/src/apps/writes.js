@@ -6,9 +6,16 @@
  * A chat's model reads what it wrote back in the conversation's own record.
  * An app tends to edit from memory of what it sent, where the document holds
  * what the editor's Markdown made of it: a table's spacing, a list's marker.
- * So a write's answer carries the passage as it now reads (`stored`) when
- * that differs.
+ * So a write's answer says how it reads now when that differs. For an edit
+ * or what is added to the end, that is the passage as it now reads
+ * (`stored`). For a whole body, a new document's or a rewrite's, it is the
+ * difference from what was sent to what was stored (`rewritten`), as a
+ * patch has it: the whole body again would be the app's own text back, and
+ * the few lines the editor wrote another way lost in it.
  */
+
+import { withoutComments } from '@/editor/comments.js'
+import { lineDiff } from '@/utils/lineDiff.js'
 
 /** @typedef {import('./revisions.js').DocumentState} DocumentState */
 
@@ -18,6 +25,13 @@ export const STORED_MOST = 4000
 /** What a write's answer says when the text was stored another way than it was sent. */
 export const STORED_NOTE =
   'The editor writes Markdown its own way, so this is not quite as you sent it: `stored` is how it reads now. Quote from that.'
+
+/** What a whole body's write says when the editor wrote some of it another way. */
+export const REWRITTEN_NOTE =
+  'The editor writes Markdown its own way, so this is not quite as you sent it: `rewritten` is the difference, from what you sent (`-`) to how it reads now (`+`). Quote from how it reads now.'
+
+/** The tools that write a document's whole body. */
+const WHOLE = new Set(['create_document', 'update_document'])
 
 /** The same, where what changed is too long to send back. */
 export const READ_AGAIN_NOTE =
@@ -75,8 +89,9 @@ export function changedLines(before, after) {
 
 /**
  * A write's answer, saying how the text reads now where that is not how it
- * was sent: the lines that changed, or, where they are many, that the
- * document is to be read again. A write that was suggested says so too, of
+ * was sent: the lines that changed, for a whole body the difference from
+ * what was sent, or, where either is long, that the document is to be read
+ * again. A write that was suggested says so too, of
  * the text as the app reads it, its suggestions made. From the document as
  * it was before the write and as it is after, which the call took
  * (`apps/tools.js`).
@@ -95,7 +110,19 @@ export function withStored(name, args, { before, after }, answer) {
 
   const text = after?.text ?? null
   if (text === null) return answer
-  if (sentBy(name, args).every(sent => text.includes(sent))) return answer
+  const sent = sentBy(name, args)
+  if (sent.every(one => text.includes(one))) return answer
+
+  // A whole body: what the editor did to it, line by line. The comments'
+  // markup is left out of both, as a read gives the text without it.
+  if (WHOLE.has(name)) {
+    const rewritten = lineDiff(withoutComments(sent.join('\n')).trim(), text.trim())
+    if (rewritten === '') return answer
+    return rewritten === null || rewritten.length > STORED_MOST
+      ? { ...answer, note: READ_AGAIN_NOTE }
+      : { ...answer, rewritten, note: REWRITTEN_NOTE }
+  }
+
   const stored = changedLines(before?.text ?? '', text)
   if (!stored) return answer
   return stored.length > STORED_MOST

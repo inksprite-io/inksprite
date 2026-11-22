@@ -57,7 +57,7 @@ export const LINK_NOTE =
  * expands; one that held anything else is not put in a command.
  * @param {string} link
  */
-const quoted = link => {
+export const quoted = link => {
   if (!/^[\w:/.[\]-]+$/.test(link)) throw new Error('The link can’t be put in a command.')
   return `"${link}"`
 }

@@ -142,6 +142,7 @@ describe('toolsFor', () => {
       'export_document',
       'create_document',
       'create_folder',
+      'import_document',
       'update_document',
       'edit_document',
       'append_document',
@@ -164,7 +165,13 @@ describe('toolsFor', () => {
     expect(hints.list_comments).toEqual({ readOnlyHint: true })
     // An export changes nothing here: the app writes the files, on its side.
     expect(hints.export_document).toEqual({ readOnlyHint: true })
-    for (const name of ['create_document', 'create_folder', 'append_document', 'add_comment']) {
+    for (const name of [
+      'create_document',
+      'create_folder',
+      'import_document',
+      'append_document',
+      'add_comment',
+    ]) {
       expect(hints[name], name).toEqual({ readOnlyHint: false, destructiveHint: false })
     }
     for (const name of ['edit_document', 'update_document', 'move_document', 'delete_document']) {
@@ -318,6 +325,19 @@ describe('toResult', () => {
     expect(answer.content.map(part => part.text)).toEqual([
       '{"success":true,"document":{"path":"notes/Plan"},"note":"Quote from that."}',
       '- one\n- two',
+    ])
+  })
+
+  it('sends how a whole body differs from what was sent, after what is said of the write', () => {
+    const answer = toResult({
+      success: true,
+      document: { path: 'notes/Plan' },
+      rewritten: '@@ -1 +1 @@\n-* one\n+- one',
+      note: 'Quote from how it reads now.',
+    })
+    expect(answer.content.map(part => part.text)).toEqual([
+      '{"success":true,"document":{"path":"notes/Plan"},"note":"Quote from how it reads now."}',
+      '@@ -1 +1 @@\n-* one\n+- one',
     ])
   })
 

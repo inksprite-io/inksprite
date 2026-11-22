@@ -115,7 +115,7 @@ describe('titleOf', () => {
     expect(titleOf('data.csv', 'text/csv')).toBe('data.csv')
     expect(titleOf('settings.json', 'application/json')).toBe('settings.json')
     expect(titleOf('Chapter one.md', 'text/markdown')).toBe('Chapter one')
-    expect(titleOf('notes.txt', 'text/plain')).toBe('notes')
+    expect(titleOf('notes.txt', 'text/plain')).toBe('notes.txt')
     expect(titleOf('page.html', 'text/html')).toBe('page')
     expect(titleOf('logo.svg', 'image/svg+xml')).toBe('logo')
   })
@@ -273,7 +273,7 @@ describe('inspectFile', () => {
     const utf16 = new Uint8Array([0xff, 0xfe, ...[...'Hi\r\n'].flatMap(c => [c.charCodeAt(0), 0])])
     const found = await inspectFile(file('notes.txt', utf16, 'text/plain'))
 
-    expect(found).toMatchObject({ title: 'notes', text: 'Hi\n' })
+    expect(found).toMatchObject({ title: 'notes.txt', text: 'Hi\n' })
   })
 
   it('keeps the bytes with the type the name says when the browser said nothing', async () => {

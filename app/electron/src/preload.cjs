@@ -240,6 +240,8 @@ function exposeDesktop() {
       keep: (connection, document, record) => call('apps:keep', connection, document, record),
       forget: what => call('apps:forget', what),
       offer: (connection, file) => call('apps:offer', connection, file),
+      receive: (connection, about) => call('apps:receive', connection, about),
+      received: (connection, id) => call('apps:received', connection, id),
       // The native side listens for apps only once a page has said this: a
       // page that doesn't offer connected apps never does (`apps.js`).
       answer: answer => {

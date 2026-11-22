@@ -18,10 +18,14 @@
  * - a request without a connection's token;
  * - anything but a `POST` of JSON to `/mcp`, of a size a call could be.
  *
- * One thing more is served: what a tool made ready for the app to fetch, a
- * document or a folder exported for it, by `GET /export/<id>`. The id is its
- * way in, there being no token in an app's own shell: it works once, for a
- * few minutes (`appExports.js`), and is refused a browser as the rest is.
+ * Two things more are served, each by an id that is its way in, there being
+ * no token in an app's own shell, and refused a browser as the rest is:
+ * what a tool made ready for the app to fetch, a document or a folder
+ * exported for it, by `GET /export/<id>`, once, for a few minutes
+ * (`appExports.js`); and a file the app is bringing in, sent by
+ * `PUT /import/<id>` (`appImports.js`), which a window's page is then asked
+ * to take, by a request of the door's own (`IMPORT_METHOD`) that no app may
+ * send. The page's answer, what the file became, is the upload's.
  */
 
 import http from 'node:http'
@@ -31,6 +35,18 @@ const PATH = '/mcp'
 
 /** Where an app fetches what was made ready for it, by its id. */
 const EXPORTS = '/export/'
+
+/** Where an app sends a file it is bringing in, by its id. */
+const IMPORTS = '/import/'
+
+/**
+ * What the door asks a page to do with a file sent to it: take it, and say
+ * what it became. A request of the door's own, which an app is refused.
+ */
+export const IMPORT_METHOD = 'inksprite/import'
+
+/** What begins the methods only the door asks a page. */
+const OWN_METHODS = 'inksprite/'
 
 /** The most a request's body may be: a document written whole, and room. */
 export const MOST_BYTES = 4 * 1024 * 1024
@@ -55,6 +71,7 @@ const HOSTS = new Set([
 /** JSON-RPC's codes for what the door itself turns down. */
 const PARSE_ERROR = -32700
 const INVALID_REQUEST = -32600
+const METHOD_NOT_FOUND = -32601
 const NOT_ANSWERED = -32000
 
 /**
@@ -160,8 +177,10 @@ function listenOn(answer, host, port) {
  *   rejects, in words for the app's model, when none can
  * @param {Pick<import('./appExports.js').AppExports, 'take'>} options.exports -
  *   What is ready for apps to fetch
+ * @param {Pick<import('./appImports.js').AppImports, 'arrive'|'done'|'most'>} options.imports -
+ *   What apps are to send
  */
-export function appDoor({ connections, ask, exports }) {
+export function appDoor({ connections, ask, exports, imports }) {
   /** @type {http.Server[]} */
   let servers = []
   /** Whether a page of this run has said it answers what apps ask. */
@@ -174,6 +193,8 @@ export function appDoor({ connections, ask, exports }) {
   const called = new Map()
   /** Requests being answered, for an app to call off. @type {Map<string, AbortController>} */
   const underWay = new Map()
+  /** How many files have been handed to a page, for each request's id. */
+  let imported = 0
 
   /**
    * @param {http.ServerResponse} response
@@ -219,6 +240,67 @@ export function appDoor({ connections, ask, exports }) {
   }
 
   /**
+   * Take a file sent by a link, the once, and have a window's page take it
+   * from here and say what it became, which is the answer.
+   *
+   * @param {http.IncomingMessage} request
+   * @param {http.ServerResponse} response
+   * @param {string} id
+   */
+  const upload = async (request, response, id) => {
+    // A browser says where it is sending from, or why: nothing here is for one.
+    if (request.headers['sec-fetch-site'] !== undefined) return send(response, 403)
+    if (request.method !== 'PUT') return send(response, 405, undefined, { Allow: 'PUT' })
+    const body =
+      Number(request.headers['content-length']) > imports.most
+        ? null
+        : await bodyOf(request, imports.most)
+    if (body === null) {
+      response.once('finish', () => request.destroy())
+      return send(response, 413, undefined, { Connection: 'close' })
+    }
+    const arrived = imports.arrive(id, body)
+    if (!arrived) return send(response, 404)
+    try {
+      const { connections: all } = await connections.all()
+      const connection = all.find(one => one.id === arrived.connection)
+      if (!connection) return send(response, 404)
+      called.set(connection.id, Date.now())
+
+      const controller = new AbortController()
+      // An app that hangs up has given up on what it sent.
+      response.on('close', () => {
+        if (!response.writableEnded) controller.abort()
+      })
+      /** @type {any} */
+      let answer
+      try {
+        answer = await ask(
+          connection,
+          {
+            jsonrpc: '2.0',
+            id: `import-${++imported}`,
+            method: IMPORT_METHOD,
+            params: { id, about: arrived.about },
+          },
+          controller.signal,
+          addressOf(request.headers.host)
+        )
+      } catch (error) {
+        const why = error instanceof Error ? error.message : String(error)
+        return send(response, 503, { error: why })
+      }
+      const result = answer?.result
+      if (!result || typeof result !== 'object' || Array.isArray(result)) {
+        return send(response, 500, { error: 'inksprite couldn’t take the file.' })
+      }
+      send(response, 'error' in result ? 422 : 200, result)
+    } finally {
+      imports.done(id)
+    }
+  }
+
+  /**
    * @param {http.IncomingMessage} request
    * @param {http.ServerResponse} response
    */
@@ -226,10 +308,12 @@ export function appDoor({ connections, ask, exports }) {
     try {
       const url = new URL(request.url || '/', 'http://localhost')
       const fetching = url.pathname.startsWith(EXPORTS)
-      if (url.pathname !== PATH && !fetching) return send(response, 404)
+      const sending = url.pathname.startsWith(IMPORTS)
+      if (url.pathname !== PATH && !fetching && !sending) return send(response, 404)
       if (request.headers.origin !== undefined) return send(response, 403)
       if (!HOSTS.has(hostName(request.headers.host) ?? '')) return send(response, 403)
       if (fetching) return download(request, response, url.pathname.slice(EXPORTS.length))
+      if (sending) return await upload(request, response, url.pathname.slice(IMPORTS.length))
 
       const [scheme, token] = (request.headers.authorization || '').split(' ')
       const connection =
@@ -254,6 +338,14 @@ export function appDoor({ connections, ask, exports }) {
       }
       if (!message || typeof message !== 'object' || Array.isArray(message)) {
         return send(response, 400, failure(null, INVALID_REQUEST, 'One request at a time.'))
+      }
+      // What only the door asks a page, an app may not.
+      if (typeof message.method === 'string' && message.method.startsWith(OWN_METHODS)) {
+        return send(
+          response,
+          200,
+          failure(message.id, METHOD_NOT_FOUND, `Method not found: ${message.method}`)
+        )
       }
       called.set(connection.id, Date.now())
 

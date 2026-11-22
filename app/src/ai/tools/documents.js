@@ -73,7 +73,7 @@ import {
   isSourceFile,
   repositoryOf,
 } from '@/source/tree.js'
-import { isCodeName, languageOf } from '@/source/language.js'
+import { keepsAsWritten, languageOf } from '@/source/language.js'
 import { lineCount } from '@/source/text.js'
 import {
   OPEN_MARKUP,
@@ -988,6 +988,50 @@ export const readDocumentDefinition = {
 const LINE_LIMIT = 2000
 
 /**
+ * What a read was given and had no use for, said, so a model that reached
+ * for the wrong way of reading isn't left to think it was used: `line` given
+ * a chapter, `page` a document that came whole. Each group is the
+ * parameters it covers and why they went unused; those not given are left
+ * out of it, and a group with none given says nothing. `from` at 0 is the
+ * top, which is where a read starts anyway.
+ *
+ * @param {Record<string, any>} args
+ * @param {Array<[string[], string]>} groups
+ * @returns {{ignored?: string}}
+ */
+function leftOut(args, groups) {
+  const given = (/** @type {string} */ name) => {
+    const value = args?.[name]
+    if (value === undefined || value === null) return false
+    if (typeof value === 'string' && !value.trim()) return false
+    return !(name === 'from' && Number(value) === 0)
+  }
+  const said = groups.flatMap(([names, why]) => {
+    const unused = names.filter(given).map(name => `\`${name}\``)
+    if (unused.length === 0) return []
+    const listed =
+      unused.length > 1 ? `${unused.slice(0, -1).join(', ')} and ${unused.at(-1)}` : unused[0]
+    return [`${listed} ${unused.length > 1 ? 'were' : 'was'} left out: ${why}.`]
+  })
+  return said.length > 0 ? { ignored: said.join(' ') } : {}
+}
+
+/** What a read by line leaves out, and why. */
+const NOT_BY_LINE = /** @type {[string[], string]} */ ([
+  ['section', 'page'],
+  'a source file is read by line, with line and until',
+])
+
+/** What a read by page leaves out, and why: the page says where to start. */
+const PAGE_FIRST = /** @type {[string[], string]} */ ([['from'], 'the page said where to start'])
+
+/** What a read of anything but a source file leaves out, and why. */
+const ONLY_BY_LINE = /** @type {[string[], string]} */ ([
+  ['line', 'until'],
+  'line and until read a source file by its lines',
+])
+
+/**
  * A source file read by line: numbered, from `line` to `until` or as far as
  * a read goes. No sections — a `#` that starts a line of Python or shell is
  * a comment, not a heading — and no offsets: code is cited by line, and the
@@ -995,7 +1039,7 @@ const LINE_LIMIT = 2000
  *
  * @param {Document} document
  * @param {Record<string, any>} base - What every read answers with
- * @param {{line?: number, until?: number, from?: number}} args
+ * @param {{line?: number, until?: number, from?: number, section?: string, page?: number}} args
  * @returns {Record<string, any>}
  */
 function readSource(document, base, args) {
@@ -1006,7 +1050,15 @@ function readSource(document, base, args) {
     type: 'file',
     language: languageOf(document.title || '').language,
   }
-  if (total === 0) return { ...base, ...kind, content: '', note: 'This file is empty.' }
+  if (total === 0) {
+    return {
+      ...base,
+      ...kind,
+      ...leftOut(args, [NOT_BY_LINE]),
+      content: '',
+      note: 'This file is empty.',
+    }
+  }
 
   // A source file has no offsets: a `from` given to one, as a model used to
   // prose will give, is the line it meant.
@@ -1045,6 +1097,7 @@ function readSource(document, base, args) {
     ...(whole ? {} : { line: first, until: to }),
     ...(to < last ? { next: to + 1, note: 'There is more: read again with line: next.' } : {}),
     ...(!whole && to === total ? { note: 'This is the end of the file.' } : {}),
+    ...leftOut(args, [NOT_BY_LINE]),
     content,
   }
 }
@@ -1246,6 +1299,7 @@ export async function executeReadDocument(args, context) {
           ...base,
           ...kind,
           section: named,
+          ...leftOut(args, [[['from', 'page'], 'the section came whole'], ONLY_BY_LINE]),
           content: text.slice(section.offset, section.until),
         },
         section.offset,
@@ -1281,6 +1335,7 @@ export async function executeReadDocument(args, context) {
         note: last
           ? 'This is the end of the section.'
           : 'The section goes on: read it again with from: next, or read one of its sections by its link.',
+        ...leftOut(args, [[['page'], 'the section was read'], ONLY_BY_LINE]),
         content: slice.text,
       },
       slice.from,
@@ -1291,13 +1346,24 @@ export async function executeReadDocument(args, context) {
   // What it holds, said with its text from the top.
   const holding = holdsNote(api, document, sees)
   if (!long) {
-    return withComments({ ...base, ...kind, ...holding, content: text }, 0, text.length)
+    return withComments(
+      {
+        ...base,
+        ...kind,
+        ...holding,
+        ...leftOut(args, [[['from', 'page'], 'the document came whole'], ONLY_BY_LINE]),
+        content: text,
+      },
+      0,
+      text.length
+    )
   }
 
   // A long document comes one slice at a time, the first with its top
   // sections and their links; describe_document has the whole tree.
   let from = Number(args.from) || 0
-  if (typeof args.page === 'number' && args.page > 0) {
+  const paged = typeof args.page === 'number' && args.page > 0
+  if (paged) {
     const offset = offsetOfPage(text, Math.floor(args.page))
     if (offset === null) {
       return { error: `"${args.path}" has no page ${args.page}.` }
@@ -1324,6 +1390,7 @@ export async function executeReadDocument(args, context) {
             map: 'describe_document lists every section; read one with section: its link.',
           }
         : {}),
+      ...leftOut(args, [...(paged ? [PAGE_FIRST] : []), ONLY_BY_LINE]),
       content: slice.text,
     },
     slice.from,
@@ -2455,7 +2522,7 @@ export const createDocumentDefinition = {
         content: {
           type: 'string',
           description:
-            'The body text, in Markdown. To link to another document, use its path from this one, ending in .md (or a file\'s own extension, such as .pdf), with %20 for each space: from "Drafts/Chapter 1", [the cast](../Notes/Cast%20list.md). A title ending in a language\'s extension, such as .py or .csv, keeps the text exactly as written instead.',
+            'The body text, in Markdown. To link to another document, use its path from this one, ending in .md (or a file\'s own extension, such as .pdf), with %20 for each space: from "Drafts/Chapter 1", [the cast](../Notes/Cast%20list.md). A title ending in .txt or a language\'s extension, such as .py or .csv, keeps the text exactly as written instead.',
         },
       },
       required: ['path', 'content'],
@@ -2474,9 +2541,10 @@ export async function executeCreateDocument(args, context) {
   const target = resolveNewPath(api, context.storyId, args.path, sees)
   if ('error' in target) return target
 
-  // What the model writes never makes a comment: add_comment does. A script
-  // or a table is kept as written, which a plain document holds none in.
-  const plain = isCodeName(target.title)
+  // What the model writes never makes a comment: add_comment does. A script,
+  // a table or plain text is kept as written, which a plain document holds
+  // none in.
+  const plain = keepsAsWritten(target.title)
   const body = plain ? args.content || '' : withoutComments(args.content || '')
   if (context.propose) {
     return propose(context, {
@@ -2626,6 +2694,20 @@ export async function pathInProject(context, id) {
   const document = api.get(id)
   if (!document || document.storyId !== context.storyId || !sees(document)) return ''
   return pathOf(api, document)
+}
+
+/**
+ * Where a new document would go, by the path a tool was given, as
+ * create_document finds it: a folder that is there, outside a repository,
+ * and a name nothing there has. For a tool kept in a module of its own.
+ *
+ * @param {ToolContext} context
+ * @param {string} path
+ * @returns {Promise<{parentId: string, title: string, path: string}|{error: string}>}
+ */
+export async function newDocumentAt(context, path) {
+  const { api, sees } = await open(context.storyId, context.chatId)
+  return resolveNewPath(api, context.storyId, path, sees)
 }
 
 // ============================================================================
@@ -3840,7 +3922,7 @@ export async function applyProposal(storyId, edit) {
       target.parentId,
       target.title,
       edit.new,
-      plainIf(isCodeName(target.title))
+      plainIf(keepsAsWritten(target.title))
     )
     if (typeof edit.summary === 'string')
       store.updateDocument(document.id, { summary: edit.summary })

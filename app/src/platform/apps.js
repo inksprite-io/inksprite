@@ -182,6 +182,27 @@ export function forgetReadsOf({ document, project }) {
 export const offerAppExport = (connection, file) => bridge().offer(connection, file)
 
 /**
+ * Wait for a file from a connection's app, which its own shell sends once,
+ * within a few minutes, to `/import/<id>` of the address it reaches this
+ * computer by. What it is for is handed back with it.
+ *
+ * @param {string} connection
+ * @param {Record<string, unknown>} about
+ * @returns {Promise<{id: string}>}
+ */
+export const awaitAppImport = (connection, about) => bridge().receive(connection, about)
+
+/**
+ * The file a connection's app sent by a link, the once.
+ *
+ * @param {string} connection
+ * @param {string} id
+ * @returns {Promise<{about: Record<string, unknown>, bytes: Uint8Array}|null>} Null
+ *   before one has come, or after it was taken
+ */
+export const takeAppImport = (connection, id) => bridge().received(connection, id)
+
+/**
  * Say what answers an app's request in this window.
  *
  * @param {(app: AskingApp, message: object, signal: AbortSignal) => Promise<AppAnswer>} answer -

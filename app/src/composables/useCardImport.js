@@ -75,8 +75,11 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
  * @property {any} value - The card, the book, the text, or the inspected file
  */
 
-/** Markdown, which is a document and nothing more. */
-const MARKDOWN = /\.(md|markdown|txt)$/i
+/**
+ * Markdown, which is a document and nothing more. Plain text (`.txt`) is
+ * not: it is kept as the file it is, as a script or a table is.
+ */
+const MARKDOWN = /\.(md|markdown)$/i
 
 /** A PNG might be a card. */
 const PNG = /\.png$/i

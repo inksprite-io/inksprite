@@ -287,10 +287,13 @@ describe('useCardImport', () => {
       expect(found.value).toBe('# Chapter 1\n\nIt rained.\n')
     })
 
-    it('takes plain text as readily as markdown', async () => {
-      const found = await cards.inspect(file('notes.txt', 'Some notes.'))
+    it('keeps plain text as the file it is, by its name with .txt', async () => {
+      const found = await cards.inspect(
+        new File(['# Not a heading\n\n* not a list'], 'notes.txt', { type: 'text/plain' })
+      )
 
-      expect(found.shape).toBe('markdown')
+      expect(found).toMatchObject({ shape: 'file', title: 'notes.txt', mime: 'text/plain' })
+      expect(found.value.text).toBe('# Not a heading\n\n* not a list')
     })
 
     it('writes one too long to lay out as plain text, as it came', async () => {

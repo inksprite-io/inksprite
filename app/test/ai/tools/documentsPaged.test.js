@@ -128,6 +128,70 @@ describe('reading a long document', () => {
     expect(result.from).toBe(at)
   })
 
+  describe('what a read had no use for', () => {
+    it('says it left out the lines of a source file, asked of a document', async () => {
+      text('Note', 'Short and sweet.')
+      const result = await executeReadDocument({ path: 'Note', until: 1 }, context)
+
+      expect(result.content).toBe('Short and sweet.')
+      expect(result.ignored).toBe(
+        '`until` was left out: line and until read a source file by its lines.'
+      )
+    })
+
+    it('says a short document came whole, whatever offset or page was asked', async () => {
+      text('Note', 'Short and sweet.')
+      const result = await executeReadDocument(
+        { path: 'Note', from: 300, page: 2, line: 5 },
+        context
+      )
+
+      expect(result.content).toBe('Short and sweet.')
+      expect(result.ignored).toBe(
+        '`from` and `page` were left out: the document came whole. `line` was left out: line and until read a source file by its lines.'
+      )
+    })
+
+    it('says nothing of what it used, or of a read from the top', async () => {
+      text('Thesis', LONG)
+      text('Note', 'Short and sweet.')
+
+      expect(await executeReadDocument({ path: 'Note' }, context)).not.toHaveProperty('ignored')
+      expect(await executeReadDocument({ path: 'Note', from: 0 }, context)).not.toHaveProperty(
+        'ignored'
+      )
+      const at = LONG.indexOf('# Part Two')
+      expect(await executeReadDocument({ path: 'Thesis', from: at }, context)).not.toHaveProperty(
+        'ignored'
+      )
+      expect(
+        await executeReadDocument({ path: 'Thesis', section: 'method' }, context)
+      ).not.toHaveProperty('ignored')
+    })
+
+    it('says a section was read in place of a page, and a page in place of an offset', async () => {
+      text('Thesis', LONG)
+      const section = await executeReadDocument(
+        { path: 'Thesis', section: 'method', page: 3 },
+        context
+      )
+      expect(section.section.link).toBe('method')
+      expect(section.ignored).toMatch(/^`page` was left out: the section/)
+
+      store.createDocument({
+        storyId: STORY,
+        parentId: rootIdFor(STORY),
+        type: 'file',
+        title: 'Rulebook',
+        mime: 'application/pdf',
+        content: PAGED,
+      })
+      const paged = await executeReadDocument({ path: 'Rulebook', page: 3, from: 10 }, context)
+      expect(paged.content.startsWith('[p.3]')).toBe(true)
+      expect(paged.ignored).toBe('`from` was left out: the page said where to start.')
+    })
+  })
+
   it('reads a section by its link or its title, whole when it fits', async () => {
     text('Thesis', LONG)
 

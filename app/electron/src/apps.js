@@ -18,6 +18,7 @@ import path from 'node:path'
 import { appDoor } from './appServer.js'
 import { windowAsker } from './appCalls.js'
 import { appExports } from './appExports.js'
+import { appImports } from './appImports.js'
 import { appReads } from './appReads.js'
 
 /** The file's name, beside `library.json`. */
@@ -306,7 +307,8 @@ export function handleApps({ handle, on, pages, patience }) {
   const connections = appConnections()
   const asker = windowAsker(pages, patience === undefined ? {} : { patience })
   const exports = appExports()
-  const door = appDoor({ connections, ask: asker.ask, exports })
+  const imports = appImports()
+  const door = appDoor({ connections, ask: asker.ask, exports, imports })
   const reads = appReads()
 
   on('apps:answer', (event, request, answer) => asker.answered(event.sender.id, request, answer))
@@ -356,8 +358,10 @@ export function handleApps({ handle, on, pages, patience }) {
   handle('apps:remove', async (_, id) => {
     await connections.remove(id)
     await door.sync()
-    // What it had read goes with it, and what was ready for it to fetch.
+    // What it had read goes with it, what was ready for it to fetch, and
+    // what it was to send.
     exports.forget(id)
+    imports.forget(id)
     await reads.forget(id).catch(() => {})
   })
   // The door moves to a new port as it is named, and shuts as apps are
@@ -397,4 +401,12 @@ export function handleApps({ handle, on, pages, patience }) {
   // What a page has made ready for a connection's app to fetch, by a link
   // that works once (`appExports.js`).
   handle('apps:offer', async (_, connection, file) => exports.offer(await known(connection), file))
+
+  // A file a connection's app is to send by a link that takes one
+  // (`appImports.js`): waited for, and once it has come, taken by the page
+  // the door asks, for that connection alone.
+  handle('apps:receive', async (_, connection, about) =>
+    imports.open(await known(connection), about)
+  )
+  handle('apps:received', async (_, connection, id) => imports.take(await known(connection), id))
 }

@@ -178,15 +178,16 @@ export const isBinaryName = filename => BINARY_EXTENSIONS.has(extensionOf(filena
 export const isWholeFileName = filename => FILE_EXTENSIONS.has(extensionOf(filename))
 
 /**
- * Whether a name says what it names is code or data, rather than prose: a
- * language the table knows, Markdown aside. A document made under such a
- * name is kept as written (`plain`), since settling it as Markdown would
- * change it.
+ * Whether a name says what it names is kept as written, rather than as
+ * Markdown: code or data, a language the table knows, Markdown aside, or
+ * plain text by its `.txt`. A document made under such a name is kept as
+ * written (`plain`), since settling it as Markdown would change it.
  *
  * @param {string} filename
  * @returns {boolean}
  */
-export function isCodeName(filename) {
+export function keepsAsWritten(filename) {
+  if (extensionOf(filename) === 'txt') return true
   const { language, mime } = languageOf(filename)
   return language !== 'Text' && mime !== 'text/markdown'
 }

@@ -977,6 +977,15 @@ describe('document tools', () => {
       expect(store.getDocument(notes.document.id).content).not.toBe(code)
     })
 
+    it('keeps plain text exactly as written, by its .txt', async () => {
+      await seed()
+      const text = '# Not a heading\n* not a list\n\n\n\nthree blank lines above\n'
+      const result = await executeCreateDocument({ path: 'prompt.txt', content: text }, context)
+      const created = store.getDocument(result.document.id)
+      expect(created.plain).toBe(true)
+      expect(created.content).toBe(text)
+    })
+
     it('reads the folder off the front of the path', async () => {
       await seed()
       const result = await executeCreateDocument(
