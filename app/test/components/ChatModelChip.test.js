@@ -172,6 +172,28 @@ describe('ChatModelChip', () => {
 
     expect(panel.visible.value).toBe(true)
     expect(panel.takeSection()).toBe('models')
+    // The list, with no card opened.
+    expect(panel.takePart()).toBeNull()
+    panel.close()
+  })
+
+  it('opens the chat’s model on its settings from the cog beside Model, shutting the popover', async () => {
+    const { useSettingsPanel } = await import('@/composables/useSettingsPanel.js')
+    const panel = useSettingsPanel()
+    panel.close()
+    const wrapper = mountQuick()
+    const cog = wrapper.find('[data-action="open-model-settings"]')
+    expect(cog.element.tagName).toBe('BUTTON')
+    expect(cog.attributes('aria-label')).toBe('Model settings')
+    // In the corner, on the Model label's line.
+    expect(cog.element.parentElement.querySelector('label').textContent).toBe('Model')
+
+    await cog.trigger('click')
+
+    expect(popover.hide).toHaveBeenCalled()
+    expect(panel.visible.value).toBe(true)
+    expect(panel.takeSection()).toBe('models')
+    expect(panel.takePart()).toBe('model')
     panel.close()
   })
 

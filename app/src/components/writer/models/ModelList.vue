@@ -214,10 +214,9 @@ import { localStorage } from '@/utils/localStorage'
  * its settings, one at a time and whether or not it is the chosen one. A
  * click on a group's heading shuts it to the heading alone. Asked
  * (`openChosen`), it opens the chosen one on its settings once it is listed.
- * The box stays
- * while there is nothing in it; the search's refresh asks every connection
- * again. Of a long list only the cards near the screen are drawn
- * (`useNearScreen`).
+ * The box stays while there is nothing in it; the search's refresh asks
+ * every connection again. Of a long list only the cards near the screen are
+ * drawn (`useNearScreen`).
  *
  * @typedef {Object} Props
  * @property {string[]} providerIds - The connections whose models are listed
@@ -493,19 +492,20 @@ const opening = ref(null)
 /**
  * Open the chosen model's card on its settings, in the first group it is
  * listed in that isn't shut, its connection's opened where every one is,
- * and bring it into view.
+ * and bring it into view. The card brought into view is the chosen one
+ * listed first, which is this one: a shut group draws no cards.
  */
 function openChosen() {
   const choice = props.choice
   opening.value =
-    details.value && choice?.providerId && choice.model
+    choice?.providerId && choice.model
       ? { providerId: choice.providerId, model: choice.model }
       : null
   settleOpening()
 }
 
 /** Open the card asked for, if it is listed yet. */
-async function settleOpening() {
+function settleOpening() {
   const asked = opening.value
   if (!asked) return
   const key = `${asked.providerId}\n${asked.model}`
@@ -519,12 +519,7 @@ async function settleOpening() {
     shut.value = shut.value.filter(one => one !== opened)
   }
   openKey.value = `${group.key}\n${key}`
-  await nextTick()
-  const list = /** @type {HTMLElement|undefined} */ (scroller.value?.$el)
-  list
-    ?.querySelector('[data-action="model-settings"][aria-expanded="true"]')
-    ?.closest('[data-card-item]')
-    ?.scrollIntoView({ block: 'nearest' })
+  showChosen()
 }
 
 watch(groups, settleOpening)

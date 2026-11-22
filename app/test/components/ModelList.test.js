@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { reactive } from 'vue'
 import { mount, flushPromises } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
@@ -312,6 +312,108 @@ describe('ModelList', () => {
     })
   })
 
+  describe('asked to open the chosen one', () => {
+    const chosen = { chosen: '<div data-settings-of>{{ params.model.id }}</div>' }
+    const mountChosen = (choice = { providerId: 'p_or', model: 'a/paid' }) =>
+      mountList(['p_or'], { props: { providerIds: ['p_or'], choice }, slots: chosen })
+    const cards = (wrapper, model = 'a/paid') =>
+      wrapper.findAll(`[data-connection="p_or"][data-model="${model}"]`)
+    const isOpen = card => card.find('[data-card-body] [data-settings-of]').exists()
+
+    /** The cards brought into view, each as it was asked. */
+    const scrolled = vi.fn()
+    const original = window.HTMLElement.prototype.scrollIntoView
+    beforeEach(() => {
+      lists.set('p_or', { loading: false, models: MODELS })
+      window.HTMLElement.prototype.scrollIntoView = scrolled
+    })
+    afterEach(() => {
+      window.HTMLElement.prototype.scrollIntoView = original
+    })
+
+    it('opens it on its settings where it is listed first, and brings it into view', async () => {
+      useApplicationState().noteModelUse('p_or', 'a/paid', 100)
+      const wrapper = mountChosen()
+      scrolled.mockClear()
+
+      wrapper.vm.openChosen()
+      await flushPromises()
+
+      const [recent, under] = cards(wrapper)
+      expect(isOpen(recent)).toBe(true)
+      expect(isOpen(under)).toBe(false)
+      expect(scrolled).toHaveBeenCalledWith({ block: 'nearest' })
+      expect(scrolled.mock.contexts.at(-1)).toBe(recent.element)
+      // Opened, not chosen again.
+      expect(wrapper.emitted('update:choice')).toBeUndefined()
+      wrapper.unmount()
+    })
+
+    it('opens it past a shut group, in the next one it is listed in', async () => {
+      useApplicationState().noteModelUse('p_or', 'a/paid', 100)
+      window.localStorage.setItem('ui.models.shut', JSON.stringify(['recent']))
+      const wrapper = mountChosen()
+
+      wrapper.vm.openChosen()
+      await flushPromises()
+
+      expect(wrapper.find('[data-group="recent"]').attributes('aria-expanded')).toBe('false')
+      expect(cards(wrapper)).toHaveLength(1)
+      expect(isOpen(cards(wrapper)[0])).toBe(true)
+      wrapper.unmount()
+    })
+
+    it('opens its connection’s group where every group it is in is shut', async () => {
+      useApplicationState().noteModelUse('p_or', 'a/paid', 100)
+      window.localStorage.setItem('ui.models.shut', JSON.stringify(['recent', 'connection:p_or']))
+      const wrapper = mountChosen()
+      expect(cards(wrapper)).toHaveLength(0)
+
+      wrapper.vm.openChosen()
+      await flushPromises()
+
+      expect(wrapper.find('[data-group="recent"]').attributes('aria-expanded')).toBe('false')
+      expect(wrapper.find('[data-group="connection:p_or"]').attributes('aria-expanded')).toBe(
+        'true'
+      )
+      expect(isOpen(cards(wrapper)[0])).toBe(true)
+      wrapper.unmount()
+    })
+
+    it('opens it once its connection lists it, and not again', async () => {
+      lists.set('p_or', { loading: true, models: [] })
+      const wrapper = mountChosen()
+
+      wrapper.vm.openChosen()
+      await flushPromises()
+      expect(wrapper.find('[data-card-body]').exists()).toBe(false)
+
+      lists.set('p_or', { loading: false, models: MODELS })
+      await flushPromises()
+      expect(isOpen(cards(wrapper)[0])).toBe(true)
+
+      // Shut by the writer, it stays shut as the list changes.
+      await cards(wrapper)[0].find('[data-action="model-settings"]').trigger('click')
+      lists.set('p_or', { loading: false, models: [...MODELS, { id: 'd/new', name: 'New' }] })
+      await flushPromises()
+      expect(wrapper.find('[data-card-body]').exists()).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('opens nothing where no model is chosen, nor the one chosen after', async () => {
+      const wrapper = mountChosen(null)
+
+      wrapper.vm.openChosen()
+      await flushPromises()
+      await wrapper.setProps({ choice: { providerId: 'p_or', model: 'a/paid' } })
+      lists.set('p_or', { loading: false, models: [...MODELS] })
+      await flushPromises()
+
+      expect(wrapper.find('[data-card-body]').exists()).toBe(false)
+      wrapper.unmount()
+    })
+  })
+
   describe('a group’s heading', () => {
     beforeEach(() => {
       lists.set('p_or', { loading: false, models: MODELS })
@@ -518,5 +620,16 @@ describe('ModelPicker', () => {
 
     expect(wrapper.find('[data-field="connection"]').exists()).toBe(false)
     expect(wrapper.findComponent(ModelList).props('providerIds')).toEqual(['p_box', 'p_or'])
+  })
+
+  it('opens the chosen model on its settings when asked', async () => {
+    theirs = [providers.p_box]
+    const wrapper = mountPicker()
+    expect(wrapper.find('[data-model-settings]').exists()).toBe(false)
+
+    wrapper.vm.openChosen()
+    await flushPromises()
+
+    expect(wrapper.find('[data-model="local"] [data-model-settings]').exists()).toBe(true)
   })
 })

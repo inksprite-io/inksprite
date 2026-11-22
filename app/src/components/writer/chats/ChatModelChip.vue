@@ -52,7 +52,7 @@
             size="small"
             class="!w-7 !h-7 !p-0 -my-1 -mr-1"
             aria-label="Model settings"
-            data-action="model-settings"
+            data-action="open-model-settings"
             @click="modelSettings"
           />
         </div>

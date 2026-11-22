@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import ModelsSection from '@/components/writer/settings/ModelsSection.vue'
+import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 
 /** What the chat showing runs on, as its settings have it. */
 const preset = ref(/** @type {any} */ ({ providerId: 'p_or', model: 'sonnet' }))
@@ -15,10 +16,14 @@ vi.mock('@/composables/useChatSettings', () => ({
   },
 }))
 
+/** The picker asked to open its chosen model on its settings. */
+const openChosen = vi.fn()
+
 const ModelPicker = {
   name: 'ModelPicker',
   props: ['providerId', 'model', 'tint'],
   emits: ['update:choice', 'use'],
+  methods: { openChosen },
   template: '<div data-model-picker />',
 }
 
@@ -31,6 +36,9 @@ describe('ModelsSection', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     preset.value = { providerId: 'p_or', model: 'sonnet' }
+    const panel = useSettingsPanel()
+    panel.takeSection()
+    panel.takePart()
   })
 
   describe('with a chat showing', () => {
@@ -70,6 +78,44 @@ describe('ModelsSection', () => {
       const wrapper = mountForChat()
       await picker(wrapper).vm.$emit('update:choice', { providerId: 'p_box', model: null })
       expect(setModel).not.toHaveBeenCalled()
+    })
+
+    it('opens the chat’s model on its settings, asked for them as it opens', async () => {
+      const panel = useSettingsPanel()
+      panel.open('models', 'model')
+      panel.takeSection()
+
+      mountForChat()
+      await flushPromises()
+
+      expect(openChosen).toHaveBeenCalledTimes(1)
+      expect(panel.takePart()).toBeNull()
+      panel.close()
+    })
+
+    it('opens them when asked for while it is showing', async () => {
+      const panel = useSettingsPanel()
+      mountForChat()
+      await flushPromises()
+      expect(openChosen).not.toHaveBeenCalled()
+
+      panel.open('models', 'model')
+      await flushPromises()
+
+      expect(openChosen).toHaveBeenCalledTimes(1)
+      panel.close()
+    })
+
+    it('leaves another section’s part for that section', async () => {
+      const panel = useSettingsPanel()
+      panel.open('project', 'sharing')
+
+      mountForChat()
+      await flushPromises()
+
+      expect(openChosen).not.toHaveBeenCalled()
+      expect(panel.takePart()).toBe('sharing')
+      panel.close()
     })
 
     it('marks none for a chat with no model to run on yet', () => {
