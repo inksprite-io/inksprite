@@ -90,9 +90,15 @@ nsis:
   perMachine: false
 
 # The window goes with the app's .desktop entry by its desktopName
-# (package.json).
+# (package.json). For Intel and AMD, and for ARM, each with an update file of
+# its own (latest-linux.yml, latest-linux-arm64.yml): node-pty brings its
+# binary for both, and nothing else the app runs depends on the processor.
 linux:
-  target: [AppImage, deb]
+  target:
+    - target: AppImage
+      arch: [x64, arm64]
+    - target: deb
+      arch: [x64, arm64]
   files:
     - '!node_modules/node-pty/prebuilds/{darwin,win32}-*'
   category: Office
