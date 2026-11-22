@@ -266,12 +266,17 @@ const entryOf = (documentId, id) =>
   ) ?? null
 
 // The current comment in sight in the list, wherever it was made current:
-// the caret going into its passage, say.
-watch(current, async now => {
-  if (!now) return
-  await nextTick()
-  entryOf(now.documentId, now.id)?.scrollIntoView?.({ block: 'nearest' })
-})
+// the caret going into its passage, say, which may be how the list came to
+// be shown.
+watch(
+  current,
+  async now => {
+    if (!now) return
+    await nextTick()
+    entryOf(now.documentId, now.id)?.scrollIntoView?.({ block: 'nearest' })
+  },
+  { immediate: true, flush: 'post' }
+)
 
 // A reply asked for from the text: the current comment's field takes the
 // focus.

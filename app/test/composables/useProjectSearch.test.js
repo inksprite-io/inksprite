@@ -77,7 +77,7 @@ describe('the search showing', () => {
 
     expect(event.defaultPrevented).toBe(true)
     expect(searchShowing(storyId).value).toBe(true)
-    expect(useSidebarTab().take()).toBe('outline')
+    expect(useSidebarTab().take()).toEqual({ tab: 'outline', open: true })
     expect(takeSearchField()).toBe(true)
     expect(leaveFocus).toHaveBeenCalled()
     frame.unmount()

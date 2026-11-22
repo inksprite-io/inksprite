@@ -536,16 +536,38 @@ const followCaret = (editorView, prevState) => {
   const { doc, selection } = editorView.state
   const moved = doc === prevState.doc && !selection.eq(prevState.selection)
   if (!moved || !editorView.hasFocus()) return
-  // A comment, or else a suggestion the caret is in: its card in the list.
-  const id = selection.empty
-    ? (commentAround(selection.$from)?.id ?? suggestionAround(selection.$from))
-    : null
+  const id = selection.empty ? cardAt(selection.$from) : null
   const current = currentComment.value
-  if (!id || !comments.threadOf(props.documentId, id)) leaveComment(props.documentId)
+  if (!id) leaveComment(props.documentId)
   else if (current?.documentId !== props.documentId || current.id !== id) {
     goToComment(props.documentId, id)
     takeUpComment(props.documentId)
   }
+}
+
+/**
+ * The comment at a place in the text, or else the suggestion: the id of its
+ * card in the list, while it has a thread to show there.
+ *
+ * @param {import('prosemirror-model').ResolvedPos} $pos
+ * @returns {string|null}
+ */
+const cardAt = $pos => {
+  const id = commentAround($pos)?.id ?? suggestionAround($pos)
+  return id && comments.threadOf(props.documentId, id) ? id : null
+}
+
+/**
+ * A click on a comment or a suggestion turns the sidebar to the Comments
+ * tab, where the caret going in shows its card. Only where the sidebar is
+ * showing: opening a closed one would move the text under the click, and
+ * focus mode has none. On a phone its thread is in the bar.
+ *
+ * @param {import('prosemirror-model').ResolvedPos} $pos - Where the click put the caret
+ */
+const clickedOn = $pos => {
+  if (isMobile.value || focusMode.focused.value || !cardAt($pos)) return
+  sidebarTab.show('comments', { open: false })
 }
 
 /**
@@ -1420,6 +1442,11 @@ onMounted(async () => {
         window.addEventListener('mouseup', onMouseUp, { once: true })
         return false
       },
+    },
+    // A click, and not a drag or a shift-click, which select.
+    handleClick: (editorView, pos) => {
+      clickedOn(editorView.state.doc.resolve(pos))
+      return false
     },
     // Mod-Shift-M comments on the selection, or picks the comment the caret
     // is in, to answer it. The editor's to catch, since the mark and the selection live in

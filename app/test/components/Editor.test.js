@@ -589,7 +589,7 @@ describe('Editor', () => {
       expect(wrapper.find('[data-comment-button]').exists()).toBe(false)
       expect(wrapper.find('[data-comment-popover]').exists()).toBe(false)
       expect(commentDraft.value).toEqual({ documentId: 'doc_1', passage: 'Snow' })
-      expect(useSidebarTab().take()).toBe('comments')
+      expect(useSidebarTab().take()).toEqual({ tab: 'comments', open: true })
       // The passage stays tinted while the comment is written beside it.
       expect(wrapper.find('.ProseMirror .field-target').text()).toBe('Snow')
 
@@ -739,7 +739,7 @@ describe('Editor', () => {
       await flushPromises()
       expect(replyRequest.value).toBe(asked + 1)
       expect(currentComment.value).toMatchObject({ documentId: 'doc_2', id: 'cabcd1' })
-      expect(useSidebarTab().take()).toBe('comments')
+      expect(useSidebarTab().take()).toEqual({ tab: 'comments', open: true })
       leaveComment('doc_2')
       wrapper.unmount()
     })

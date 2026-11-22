@@ -245,10 +245,13 @@ const selectTab = tab => setLayout(selectSidebarTab(layout.value, tab))
 
 // A list asked for from deeper in the writer is shown, never toggled away as
 // a second click on the rail would: on a phone its tab, here the sidebar.
+// One asked for only where the sidebar is showing leaves the rest alone.
 const sidebarTab = useSidebarTab()
 watch(sidebarTab.requested, () => {
-  const tab = sidebarTab.take()
-  if (!tab) return
+  const request = sidebarTab.take()
+  if (!request) return
+  const { tab, open } = request
+  if (!open && (isMobile.value || !layout.value.sidebar)) return
   if (isMobile.value) activeMobileTab.value = tab
   else setLayout({ ...layout.value, sidebar: true, sidebarTab: tab })
 })
