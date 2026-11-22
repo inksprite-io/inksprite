@@ -36,11 +36,26 @@
   <Popover :id="popoverId" ref="popover" data-chat-model-popover @show="loadLists">
     <div class="w-64 flex flex-col gap-3 text-sm">
       <div class="flex flex-col gap-1">
-        <label
-          :for="`${id}-model`"
-          class="text-xs font-medium text-surface-700 dark:text-surface-200"
-          >Model</label
-        >
+        <!-- The model's settings are in the corner. -->
+        <div class="flex items-center justify-between gap-2">
+          <label
+            :for="`${id}-model`"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Model</label
+          >
+          <Button
+            v-tooltip.top="'Model settings'"
+            icon="pi pi-cog"
+            severity="secondary"
+            text
+            rounded
+            size="small"
+            class="!w-7 !h-7 !p-0 -my-1 -mr-1"
+            aria-label="Model settings"
+            data-action="model-settings"
+            @click="modelSettings"
+          />
+        </div>
         <!-- The chat's model and the ones chosen lately; the rest are a click
              away, under the effort. -->
         <Select
@@ -130,7 +145,8 @@ import { recommendedFor } from '@/ai/recommended.js'
 /**
  * The chat's model and how hard it thinks, as a chip under its box: the
  * connection, the model and the effort, and a popover that changes the two,
- * with Other models… under them for the whole list, in Settings › Models.
+ * with Other models… under them for the whole list, in Settings › Models, and
+ * a cog in its corner for the model's settings there.
  * Each is the chat's, and the next chat started on its profile starts with it
  * too (useChatSettings).
  *
@@ -371,6 +387,12 @@ const settingsPanel = useSettingsPanel()
 function otherModels() {
   popover.value?.hide()
   settingsPanel.open('models')
+}
+
+/** Open the settings on the chat's model, its card open on its settings. */
+function modelSettings() {
+  popover.value?.hide()
+  settingsPanel.open('models', 'model')
 }
 
 defineExpose({

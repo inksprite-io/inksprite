@@ -1,5 +1,6 @@
 <template>
   <ModelList
+    ref="list"
     class="min-h-0 h-full"
     :provider-ids="connectionIds"
     :choice="{ providerId, model }"
@@ -18,7 +19,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import ModelList from './ModelList.vue'
 import ModelSettings from './ModelSettings.vue'
 import { useConnections } from '@/composables/useConnections.js'
@@ -49,4 +50,12 @@ const connections = useConnections()
 
 /** The writer's connections that chat, whose models are listed. */
 const connectionIds = computed(() => connections.connectionsFor('chat').map(one => one.id))
+
+/** @type {import('vue').Ref<any>} */
+const list = ref(null)
+
+defineExpose({
+  /** Open the chosen model on its settings, once it is listed. */
+  openChosen: () => list.value?.openChosen(),
+})
 </script>

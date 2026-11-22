@@ -16,9 +16,9 @@ import { ref } from 'vue'
 /** @typedef {'system'|'sync'|'project'|'prompts'|'connections'|'models'|'tools'|'skills'|'extensions'} SettingsSection */
 
 /**
- * A part of a section: the project's sharing, or one of the parts Sync and
- * sharing and Connections are shown in.
- * @typedef {'sharing'|'account'|'people'|'devices'|'backup'|'providers'|'mcp'|'web'|'apps'} SettingsPart
+ * A part of a section: the project's sharing, the chat's model's settings,
+ * or one of the parts Sync and sharing and Connections are shown in.
+ * @typedef {'sharing'|'model'|'account'|'people'|'devices'|'backup'|'providers'|'mcp'|'web'|'apps'} SettingsPart
  */
 
 const visible = ref(false)

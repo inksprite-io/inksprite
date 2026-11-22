@@ -4,6 +4,7 @@
        which every chat on it runs with. -->
   <div class="h-[min(31rem,calc(90vh-13rem))]" data-models-section>
     <ModelPicker
+      ref="picker"
       :provider-id="shown.providerId"
       :model="shown.model"
       :tint="Boolean(chatId)"
@@ -14,9 +15,10 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import ModelPicker from '../models/ModelPicker.vue'
 import { useChatSettings } from '@/composables/useChatSettings'
+import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 
 /**
  * Settings › Models: the models of the writer's connections, after
@@ -25,6 +27,7 @@ import { useChatSettings } from '@/composables/useChatSettings'
  * its message box does, whose Other models… opens this. The button at a
  * card's end opens the model's settings, how long a reply may be, its
  * samplers, and on OpenRouter its providers, which reach every chat on it.
+ * The cog on the chip's popover opens the chat's model there.
  *
  * @typedef {Object} Props
  * @property {string} [storyId] - The project open
@@ -55,4 +58,21 @@ const choose = choice => {
   if (!props.chatId) open.value = choice
   else if (choice.providerId && choice.model) setModel(choice.providerId, choice.model)
 }
+
+/** @type {import('vue').Ref<any>} */
+const picker = ref(null)
+
+// Asked for the chat's model's settings (the cog on its chip's popover), it
+// opens on them.
+const { requestedPart, takePart } = useSettingsPanel()
+watch(
+  requestedPart,
+  async part => {
+    if (part !== 'model') return
+    takePart()
+    await nextTick()
+    picker.value?.openChosen()
+  },
+  { immediate: true }
+)
 </script>

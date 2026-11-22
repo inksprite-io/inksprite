@@ -212,7 +212,9 @@ import { localStorage } from '@/utils/localStorage'
  * where its list says, and is laid out alike either way. A click chooses
  * one; the button at its end opens it on what is given for it (`#chosen`),
  * its settings, one at a time and whether or not it is the chosen one. A
- * click on a group's heading shuts it to the heading alone. The box stays
+ * click on a group's heading shuts it to the heading alone. Asked
+ * (`openChosen`), it opens the chosen one on its settings once it is listed.
+ * The box stays
  * while there is nothing in it; the search's refresh asks every connection
  * again. Of a long list only the cards near the screen are drawn
  * (`useNearScreen`).
@@ -480,6 +482,54 @@ async function showChosen() {
     )
     ?.scrollIntoView({ block: 'nearest' })
 }
+
+/**
+ * The chosen model, asked to be opened on its settings before it was listed:
+ * opened once its connection's list has it.
+ * @type {import('vue').Ref<{providerId: string, model: string}|null>}
+ */
+const opening = ref(null)
+
+/**
+ * Open the chosen model's card on its settings, in the first group it is
+ * listed in that isn't shut, its connection's opened where every one is,
+ * and bring it into view.
+ */
+function openChosen() {
+  const choice = props.choice
+  opening.value =
+    details.value && choice?.providerId && choice.model
+      ? { providerId: choice.providerId, model: choice.model }
+      : null
+  settleOpening()
+}
+
+/** Open the card asked for, if it is listed yet. */
+async function settleOpening() {
+  const asked = opening.value
+  if (!asked) return
+  const key = `${asked.providerId}\n${asked.model}`
+  const holding = groups.value.filter(group => group.models.some(model => model.key === key))
+  if (holding.length === 0) return
+  opening.value = null
+  let group = holding.find(one => !isShut(one))
+  if (!group) {
+    group = holding.find(one => one.key === `connection:${asked.providerId}`) ?? holding[0]
+    const opened = group.key
+    shut.value = shut.value.filter(one => one !== opened)
+  }
+  openKey.value = `${group.key}\n${key}`
+  await nextTick()
+  const list = /** @type {HTMLElement|undefined} */ (scroller.value?.$el)
+  list
+    ?.querySelector('[data-action="model-settings"][aria-expanded="true"]')
+    ?.closest('[data-card-item]')
+    ?.scrollIntoView({ block: 'nearest' })
+}
+
+watch(groups, settleOpening)
+
+defineExpose({ openChosen })
 
 watch(
   () => props.providerIds,
