@@ -49,16 +49,19 @@ describe('editor/shortcuts', () => {
     expect(actions(false)).toContain('Close tab')
   })
 
-  it('lists the terminal’s keys only with the Terminal extension on', () => {
-    const terminals = terminal =>
-      menuShortcuts({ ai: true, terminal }).shortcuts.filter(({ action }) =>
-        action.includes('terminal')
-      )
-    expect(terminals(false)).toEqual([])
-    expect(terminals(true).map(({ keys }) => keyLabel(keys, true))).toEqual(['⌃`', '⌃⇧`'])
-    expect(terminals(true).map(({ keys }) => keyLabel(keys, false))).toEqual([
-      'Ctrl+`',
-      'Ctrl+Shift+`',
+  it('lists the terminal’s keys only with the Terminal extension on, a Mac’s on a Mac', () => {
+    const terminals = (terminal, mac) =>
+      menuShortcuts({ ai: true, terminal, mac })
+        .shortcuts.filter(({ action }) => action.includes('terminal'))
+        .map(({ action, keys }) => [action, keyLabel(keys, mac)])
+    expect(terminals(false, true)).toEqual([])
+    expect(terminals(true, true)).toEqual([
+      ['New terminal', '⌘L'],
+      ['Show terminal', '⌃`'],
+    ])
+    expect(terminals(true, false)).toEqual([
+      ['New terminal', 'Ctrl+Shift+L'],
+      ['Show terminal', 'Ctrl+`'],
     ])
   })
 

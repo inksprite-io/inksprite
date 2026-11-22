@@ -340,6 +340,26 @@ describe('useMenuCommands', () => {
       expect(chatTabs.focus).toHaveBeenCalled()
     })
 
+    it('makes one on Command-L, or Control-Shift-L off a Mac, whatever is open', async () => {
+      have({ chats: { ...strip(['x', 'terminal:1'], 'terminal:1'), shown: ['terminal:1'] } })
+      const mac = /Mac|iP(hone|ad|od)/.test(navigator.platform || navigator.userAgent || '')
+      const event = new KeyboardEvent('keydown', {
+        key: mac ? 'l' : 'L',
+        code: 'KeyL',
+        metaKey: mac,
+        ctrlKey: !mac,
+        shiftKey: !mac,
+        bubbles: true,
+        cancelable: true,
+      })
+      document.body.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(true)
+      await settle()
+      expect(chatTabs.openTerminal).toHaveBeenCalledTimes(1)
+      expect(chatTabs.open).not.toHaveBeenCalled()
+      expect(showChat).toHaveBeenCalled()
+    })
+
     it('shows the first terminal in the strip when none has been shown', async () => {
       have({ chats: { ...strip(['x', 'terminal:1', 'terminal:2'], 'x'), shown: ['x'] } })
       press()

@@ -126,6 +126,19 @@ describe('terminalKey', () => {
     expect(terminalKey(press('`', 'Backquote', { altKey: true }))).toBeNull()
     expect(terminalKey(press('t', 'KeyT'))).toBeNull()
   })
+
+  it('makes a terminal on Command-L on a Mac, and Control-Shift-L off one', () => {
+    const commandL = press('l', 'KeyL', { ctrlKey: false, metaKey: true })
+    const controlShiftL = press('L', 'KeyL', { shiftKey: true })
+    expect(terminalKey(commandL, true)).toBe('newTerminal')
+    expect(terminalKey(controlShiftL, false)).toBe('newTerminal')
+    // Each is nothing on the other's system, and Control-L clears a shell's screen.
+    expect(terminalKey(commandL, false)).toBeNull()
+    expect(terminalKey(controlShiftL, true)).toBeNull()
+    expect(terminalKey(press('l', 'KeyL'), false)).toBeNull()
+    expect(terminalKey(press('l', 'KeyL'), true)).toBeNull()
+    expect(terminalKey({ ...commandL, shiftKey: true }, true)).toBeNull()
+  })
 })
 
 describe('appShortcutFrom', () => {

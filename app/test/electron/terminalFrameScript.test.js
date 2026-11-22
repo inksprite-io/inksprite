@@ -444,6 +444,29 @@ describe('a terminal’s frame', () => {
       }
     })
 
+    /**
+     * Press the new terminal's key, and then Control-L, which is the shell's.
+     * @param {boolean} mac
+     * @param {object} held - The new terminal's key's modifiers
+     */
+    const newTerminalKey = async (mac, held) => {
+      const terminal = await load({ mac })
+      const { event, typed } = press(terminal, held.shiftKey ? 'L' : 'l', held)
+      expect(typed).toBe(false)
+      expect(event.preventDefault).toHaveBeenCalled()
+      expect(page.postMessage).toHaveBeenCalledTimes(1)
+
+      page.postMessage.mockClear()
+      expect(press(terminal, 'l', { ctrlKey: true }).typed).toBe(true)
+      expect(page.postMessage).not.toHaveBeenCalled()
+    }
+
+    it('hands the page Command-L on a Mac, keeping it from the menu, and Control-L to the shell', () =>
+      newTerminalKey(true, { metaKey: true }))
+
+    it('hands the page Control-Shift-L off a Mac, and Control-L to the shell', () =>
+      newTerminalKey(false, { ctrlKey: true, shiftKey: true }))
+
     it('leaves copying and pasting to the Edit menu, on a Mac', async () => {
       const terminal = await load({ mac: true })
 

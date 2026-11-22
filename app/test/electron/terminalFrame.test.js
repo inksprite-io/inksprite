@@ -209,10 +209,21 @@ describe('keyAction', () => {
       expect(keyAction({ ...key('`', 'ctrl', 'alt'), code: 'Backquote' }, mac)).toBeNull()
     }
   })
+
+  it('hands the page Command-L on a Mac, and Control-Shift-L off one', () => {
+    expect(keyAction(key('l', 'meta'), true)).toBe('pageAlone')
+    expect(keyAction(key('L', 'ctrl', 'shift'), false)).toBe('pageAlone')
+    // Control-L clears the shell's screen, on every system.
+    expect(keyAction(key('l', 'ctrl'), true)).toBeNull()
+    expect(keyAction(key('l', 'ctrl'), false)).toBeNull()
+    expect(keyAction(key('L', 'ctrl', 'shift'), true)).toBeNull()
+    // Command with Shift is one of the app's others, left to the menu.
+    expect(keyAction(key('L', 'meta', 'shift'), true)).toBe('page')
+  })
 })
 
 describe('isTerminalKey', () => {
-  it('is what the page takes for the terminal’s keys', () => {
+  it('is what the page takes for the terminal’s keys, on a Mac and off one', () => {
     const pressed = []
     for (const [name, code] of [
       ['`', 'Backquote'],
@@ -220,17 +231,32 @@ describe('isTerminalKey', () => {
       ['^', 'Backquote'],
       ['`', 'Equal'],
       ['~', 'Digit4'],
+      ['l', 'KeyL'],
+      ['L', 'KeyL'],
       ['1', 'Digit1'],
       ['t', 'KeyT'],
     ]) {
-      for (const held of [[], ['ctrl'], ['ctrl', 'shift'], ['ctrl', 'meta'], ['ctrl', 'alt']]) {
+      for (const held of [
+        [],
+        ['ctrl'],
+        ['ctrl', 'shift'],
+        ['ctrl', 'meta'],
+        ['ctrl', 'alt'],
+        ['meta'],
+        ['meta', 'shift'],
+      ]) {
         pressed.push({ ...keyHeld(name, held), code })
       }
     }
-    for (const event of pressed) {
-      expect(isTerminalKey(event), JSON.stringify(event)).toBe(terminalKey(event) !== null)
+    for (const mac of [true, false]) {
+      for (const event of pressed) {
+        expect(isTerminalKey(event, mac), JSON.stringify({ mac, event })).toBe(
+          terminalKey(event, mac) !== null
+        )
+      }
+      // Control-` and Control-Shift-` for each of five, and two for L.
+      expect(pressed.filter(event => isTerminalKey(event, mac))).toHaveLength(12)
     }
-    expect(pressed.filter(isTerminalKey)).toHaveLength(10)
   })
 
   /**

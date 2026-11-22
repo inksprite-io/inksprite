@@ -93,22 +93,24 @@ export const SHORTCUTS = [
 
 /**
  * The desktop app's keys for tabs and windows, which are its menu's: listed
- * here because Windows and Linux keep the menu bar out of sight. The
- * terminal's keys are among them, though no menu has them.
+ * here because Windows and Linux keep the menu bar out of sight. A new
+ * terminal is Command-L on a Mac and Control-Shift-L elsewhere, where
+ * Control-L is a shell's.
  *
- * @param {{ai: boolean, terminal?: boolean}} having - Whether the AI is on,
- *   and so the chat there, and whether the Terminal extension is
+ * @param {{ai: boolean, terminal?: boolean, mac?: boolean}} having - Whether
+ *   the AI is on, and so the chat there, whether the Terminal extension is,
+ *   and whether to list a Mac's keys; this one's, if not given
  * @returns {ShortcutGroup}
  */
-export const menuShortcuts = ({ ai, terminal = false }) => ({
+export const menuShortcuts = ({ ai, terminal = false, mac = isMac }) => ({
   title: 'Tabs and windows',
   shortcuts: [
     { action: 'New document', keys: 'Mod-n' },
     ...(ai ? [{ action: 'New chat', keys: 'Mod-t' }] : []),
     ...(terminal
       ? [
+          { action: 'New terminal', keys: mac ? 'Mod-l' : 'Ctrl-Shift-l' },
           { action: 'Show terminal', keys: 'Ctrl-`' },
-          { action: 'New terminal', keys: 'Ctrl-Shift-`' },
         ]
       : []),
     { action: 'Close tab', keys: 'Mod-w' },

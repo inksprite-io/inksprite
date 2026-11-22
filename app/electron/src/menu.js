@@ -95,8 +95,9 @@ let newWindowAction = null
  * leave to it: a new document and a new chat, the tab the writer is in
  * closed, the one closed last opened again, the tabs stepped through and
  * gone to by number. Closing the window moves to the key beside New
- * Window's, since a tab has taken its own. The terminal's are a code
- * editor's, Control-` to show one and with Shift to make one.
+ * Window's, since a tab has taken its own. A new terminal is on Command-L,
+ * as in command line, and Control-Shift-L elsewhere, where Control-L clears
+ * a shell's screen; showing one is on a code editor's Control-`.
  *
  * @param {{newWindow: () => void}} actions
  */
@@ -147,7 +148,9 @@ function buildMenu() {
         shown.chat
           ? asks('New Chat', 'CmdOrCtrl+T', 'newChat')
           : alsoAsks('CmdOrCtrl+T', 'newChat'),
-        ...(shown.terminal ? [showsKey('New Terminal', 'Ctrl+Shift+`', 'newTerminal')] : []),
+        ...(shown.terminal
+          ? [showsKey('New Terminal', mac ? 'Cmd+L' : 'Ctrl+Shift+L', 'newTerminal')]
+          : []),
         newWindowItem,
         { type: 'separator' },
         asks('Projects…', 'CmdOrCtrl+O', 'projects'),

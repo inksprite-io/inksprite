@@ -10,11 +10,13 @@
  * documents or the chat's chats and terminals (`useWriterPanel`). The
  * projects and the settings open over the writer.
  *
- * The terminal's are code editors' keys: Control-` shows a terminal, the
- * one shown last or a new one, and with Shift makes one, wherever the writer
- * is. The menu shows them, but the keys are taken here, from the page and
- * from a terminal's frame, which hands them over (`platform/terminal.js`):
- * a menu's key would never reach the page from inside a terminal off a Mac.
+ * The terminal's keys work wherever the writer is: Command-L makes a
+ * terminal (Control-Shift-L off a Mac), and Control-` shows one, the one
+ * shown last or a new one, as code editors have it, with Shift making one as
+ * they have that too. The menu shows them, but the keys are taken here, from
+ * the page and from a terminal's frame, which hands them over
+ * (`platform/terminal.js`): a menu's key would never reach the page from
+ * inside a terminal off a Mac.
  *
  * The menu is told what it holds of what the settings decide: a new chat
  * while the AI is on, and the terminals while their extension is.

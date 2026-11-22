@@ -254,7 +254,7 @@ describe('setMenu', () => {
       ])
       const newTerminal = itemOf('File', 'New Terminal')
       const showTerminal = itemOf('Window', 'Show Terminal')
-      expect(newTerminal).toMatchObject({ accelerator: 'Ctrl+Shift+`', registerAccelerator: false })
+      expect(newTerminal).toMatchObject({ accelerator: 'Cmd+L', registerAccelerator: false })
       expect(showTerminal).toMatchObject({ accelerator: 'Ctrl+`', registerAccelerator: false })
 
       const window = windowInFront()
@@ -264,6 +264,13 @@ describe('setMenu', () => {
         ['menu:command', 'newTerminal', undefined],
         ['menu:command', 'showTerminal', undefined],
       ])
+    })
+
+    it('makes a terminal on Control-Shift-L elsewhere, where Control-L is a shell’s', () => {
+      onPlatform('linux')
+      setMenu({ newWindow: vi.fn() })
+      showInMenu({ chat: true, terminal: true })
+      expect(itemOf('File', 'New Terminal').accelerator).toBe('Ctrl+Shift+L')
     })
 
     it('builds the menu again only when what it holds has changed', () => {
