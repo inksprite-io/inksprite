@@ -10,14 +10,24 @@
  * documents or the chat's chats and terminals (`useWriterPanel`). The
  * projects and the settings open over the writer.
  *
+ * The terminal's are code editors' keys: Control-` shows a terminal, the
+ * one shown last or a new one, and with Shift makes one, wherever the writer
+ * is. The menu shows them, but the keys are taken here, from the page and
+ * from a terminal's frame, which hands them over (`platform/terminal.js`):
+ * a menu's key would never reach the page from inside a terminal off a Mac.
+ *
+ * The menu is told what it holds of what the settings decide: a new chat
+ * while the AI is on, and the terminals while their extension is.
+ *
  * While a dialog is open, none of it is done: what the key would change is
  * behind the dialog. And one that can't apply, a tab closed with none open,
  * a chat with the AI switched off, a tab's key with neither panel on screen,
  * does nothing.
  */
 
-import { nextTick, onBeforeUnmount, onMounted } from 'vue'
-import { hasMenuCommands, onMenuCommand } from '@/platform/menu.js'
+import { nextTick, onBeforeUnmount, onMounted, watch } from 'vue'
+import { hasMenuCommands, onMenuCommand, showInMenu } from '@/platform/menu.js'
+import { hasTerminal, isTerminalId, terminalKey } from '@/platform/terminal.js'
 import { tabAt, tabBeside } from '@/utils/tabs.js'
 import { useApplicationState } from './useApplicationState.js'
 import { useChatTabs } from './useChatTabs.js'
@@ -26,6 +36,7 @@ import { useFocusMode } from './useFocusMode.js'
 import { useNewDocument } from './useNewDocument.js'
 import { useProjectsDialog } from './useProjectsDialog.js'
 import { useSettingsPanel } from './useSettingsPanel.js'
+import { useToast } from './useToast.js'
 import { watchWriterPanel, writerPanel } from './useWriterPanel.js'
 
 /** @typedef {import('@/platform/menu.js').MenuCommand} MenuCommand */
@@ -44,9 +55,9 @@ const dialogOpen = () => document.querySelector('.p-dialog-mask') !== null
  */
 
 /**
- * Do what the desktop app's menu asks, for as long as the component calling
- * this is mounted: the writer's frame. Nothing in a browser, which has no
- * such menu.
+ * Do what the desktop app's menu asks, and the terminal's keys, for as long
+ * as the component calling this is mounted: the writer's frame. Nothing in a
+ * browser, which has no such menu and no terminals.
  *
  * @param {Object} frame
  * @param {() => string|null|undefined} frame.storyId - The project open
@@ -54,10 +65,11 @@ const dialogOpen = () => document.querySelector('.p-dialog-mask') !== null
  * @param {() => void} frame.showChat - Show the chat, where it is hidden
  */
 export function useMenuCommands({ storyId, showEditor, showChat }) {
-  const { aiEnabled } = useApplicationState()
+  const { aiEnabled, terminal } = useApplicationState()
   const { focused } = useFocusMode()
   const settings = useSettingsPanel()
   const projects = useProjectsDialog()
+  const toast = useToast()
 
   /**
    * The tabs of the panel the writer is in, or null when they are in neither:
@@ -129,6 +141,10 @@ export function useMenuCommands({ storyId, showEditor, showChat }) {
       nextTick(chats.focus)
       return
     }
+    if (command === 'newTerminal' || command === 'showTerminal') {
+      if (terminalsHere()) showTerminal(project, command === 'newTerminal')
+      return
+    }
 
     const panel = panelTabs(project)
     if (!panel) return
@@ -144,12 +160,66 @@ export function useMenuCommands({ storyId, showEditor, showChat }) {
     else if (command === 'showTab') show(tabAt(panel.tabs, detail ?? 0))
   }
 
+  /** Whether there are terminals to show: with their extension on, and out of focus mode. */
+  const terminalsHere = () => hasTerminal() && terminal.value && !focused.value
+
+  /**
+   * Show a terminal in the chat panel, with the keys in it: the one shown
+   * last, or the first in the strip, or a new one where none is open or one
+   * was asked for.
+   *
+   * @param {string} project
+   * @param {boolean} fresh - Whether to make one, whatever is open
+   */
+  const showTerminal = async (project, fresh) => {
+    const chats = useChatTabs(project)
+    const { shown, open } = chats.tabs.value
+    const id = fresh ? null : (shown.find(isTerminalId) ?? open.find(isTerminalId))
+    if (id) chats.open(id)
+    else {
+      try {
+        await chats.openTerminal()
+      } catch (error) {
+        console.error('A terminal could not be made:', error)
+        toast.error('The terminal couldn’t be opened.')
+        return
+      }
+    }
+    showChat()
+    // Once the panel is showing, which the terminal has to be to take the keys.
+    await nextTick()
+    chats.focus()
+  }
+
+  /**
+   * The terminal's keys, from the page or handed over by a terminal's frame.
+   * One that can't apply is left alone.
+   *
+   * @param {KeyboardEvent} event
+   */
+  const onKeyDown = event => {
+    const command = terminalKey(event)
+    if (!command || event.defaultPrevented) return
+    if (!terminalsHere() || dialogOpen() || !storyId()) return
+    event.preventDefault()
+    run(command)
+  }
+
+  // What the menu holds that the settings decide.
+  watch(() => ({ chat: aiEnabled.value, terminal: hasTerminal() && terminal.value }), showInMenu, {
+    immediate: true,
+  })
+
   /** @type {() => void} */
   let stop = () => {}
   onMounted(() => {
+    if (hasTerminal()) window.addEventListener('keydown', onKeyDown)
     if (!hasMenuCommands()) return
     watchWriterPanel()
     stop = onMenuCommand(run)
   })
-  onBeforeUnmount(() => stop())
+  onBeforeUnmount(() => {
+    window.removeEventListener('keydown', onKeyDown)
+    stop()
+  })
 }

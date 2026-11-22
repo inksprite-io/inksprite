@@ -21,6 +21,8 @@ vi.mock('../../electron/src/sandbox.js', () => ({
 
 const apps = vi.hoisted(() => ({ handleApps: vi.fn() }))
 vi.mock('../../electron/src/apps.js', () => apps)
+const menu = vi.hoisted(() => ({ showInMenu: vi.fn() }))
+vi.mock('../../electron/src/menu.js', () => menu)
 
 import { handleBridge, projectFiles } from '../../electron/src/bridge.js'
 
@@ -426,6 +428,17 @@ describe('python', () => {
 
     listeners['python:stop'](page({ url: 'https://elsewhere.example/' }), 'chat-2')
     expect(python.stop).toHaveBeenCalledTimes(1)
+  })
+
+  it('has the menu hold what the page says, and only the page', () => {
+    listeners['menu:items'](page({ url: 'https://elsewhere.example/' }), {
+      chat: false,
+      terminal: true,
+    })
+    expect(menu.showInMenu).not.toHaveBeenCalled()
+
+    listeners['menu:items'](page(), { chat: false, terminal: true })
+    expect(menu.showInMenu).toHaveBeenCalledWith({ chat: false, terminal: true })
   })
 })
 

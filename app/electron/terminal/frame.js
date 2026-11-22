@@ -213,9 +213,10 @@ terminal.attachCustomKeyEventHandler(event => {
   if (!action) return true
   if (event.type !== 'keydown') return false
   if (action === 'browser') return false
-  if (action === 'page') {
+  if (action === 'page' || action === 'pageAlone') {
     const { key, code, metaKey, ctrlKey, shiftKey, altKey } = event
     window.parent.postMessage({ type: 'key', key, code, metaKey, ctrlKey, shiftKey, altKey }, page)
+    if (action === 'pageAlone') event.preventDefault()
     return false
   }
   event.preventDefault()

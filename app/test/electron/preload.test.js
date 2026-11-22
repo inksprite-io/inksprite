@@ -92,6 +92,12 @@ describe('the preload, in the window’s own page', () => {
     expect(ipcRenderer.send).toHaveBeenCalledWith('window:saved')
   })
 
+  it('tells the native side what the menu should hold', () => {
+    const { exposed, ipcRenderer } = runIn({ mainFrame: true, origin: 'app://inksprite' })
+    exposed.__INKSPRITE_DESKTOP__.showInMenu({ chat: true, terminal: false })
+    expect(ipcRenderer.send).toHaveBeenCalledWith('menu:items', { chat: true, terminal: false })
+  })
+
   it('is the page’s bridge in the top frame, wherever that is', () => {
     const { exposed } = runIn({ mainFrame: true, origin: 'terminal://frame' })
     expect(Object.keys(exposed)).toEqual(['__INKSPRITE_DESKTOP__'])

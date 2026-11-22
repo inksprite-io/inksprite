@@ -185,6 +185,8 @@ function exposeDesktop() {
       onMenuCommand = listener
     },
 
+    showInMenu: items => ipcRenderer.send('menu:items', items),
+
     python: {
       run(session, code, options, fetchFile) {
         if (fetchFile) fetchers.set(session, fetchFile)

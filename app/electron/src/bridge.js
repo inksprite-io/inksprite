@@ -4,7 +4,8 @@
  * windows, updates, the settings file a script left, the library its
  * projects are kept in, exports to a folder the writer chooses, PDFs saved
  * as the page prints, Python for the model to run code in, the other apps let
- * into the writer's projects, and terminals. `preload.cjs` is the page's end of it, and
+ * into the writer's projects, terminals, and what the menu holds of what the
+ * page's settings decide. `preload.cjs` is the page's end of it, and
  * `src/platform/` in the page is what calls it.
  *
  * Only the app's own page is answered: each call is checked for where it came
@@ -25,6 +26,7 @@ import { bringForward } from './windows.js'
 import { PythonSessions } from './sandbox.js'
 import { handleApps } from './apps.js'
 import { handleTerminals } from './terminals.js'
+import { showInMenu } from './menu.js'
 
 /** Statuses whose response has no body. */
 const NO_BODY = new Set([101, 103, 204, 205, 304])
@@ -275,6 +277,10 @@ export function handleBridge(origin, { openWindow }, { appPatience } = {}) {
     return python.run(session, code, { timeoutMs, project: entries, filename })
   })
   on('python:stop', (_, session) => python.stop(session))
+
+  // What the menu holds that the page's settings decide: a new chat while the
+  // AI is on, terminals while their extension is (`menu.js`).
+  on('menu:items', (_, items) => showInMenu(items))
 
   /** The windows on the app's own page, the one in front first. */
   const pages = () => {

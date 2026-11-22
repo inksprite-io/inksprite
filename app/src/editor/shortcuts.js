@@ -93,16 +93,24 @@ export const SHORTCUTS = [
 
 /**
  * The desktop app's keys for tabs and windows, which are its menu's: listed
- * here because Windows and Linux keep the menu bar out of sight.
+ * here because Windows and Linux keep the menu bar out of sight. The
+ * terminal's keys are among them, though no menu has them.
  *
- * @param {{ai: boolean}} having - Whether the AI is on, and so the chat there
+ * @param {{ai: boolean, terminal?: boolean}} having - Whether the AI is on,
+ *   and so the chat there, and whether the Terminal extension is
  * @returns {ShortcutGroup}
  */
-export const menuShortcuts = ({ ai }) => ({
+export const menuShortcuts = ({ ai, terminal = false }) => ({
   title: 'Tabs and windows',
   shortcuts: [
     { action: 'New document', keys: 'Mod-n' },
     ...(ai ? [{ action: 'New chat', keys: 'Mod-t' }] : []),
+    ...(terminal
+      ? [
+          { action: 'Show terminal', keys: 'Ctrl-`' },
+          { action: 'New terminal', keys: 'Ctrl-Shift-`' },
+        ]
+      : []),
     { action: 'Close tab', keys: 'Mod-w' },
     { action: 'Reopen closed tab', keys: 'Mod-Shift-t' },
     { action: 'Next tab', keys: 'Ctrl-Tab' },

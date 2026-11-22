@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Menu, app } from 'electron'
-import { setMenu } from '../../electron/src/menu.js'
+import { setMenu, showInMenu } from '../../electron/src/menu.js'
 
 const platform = process.platform
 
@@ -9,6 +9,8 @@ const platform = process.platform
 const onPlatform = name => Object.defineProperty(process, 'platform', { value: name })
 
 beforeEach(() => {
+  // What the menu holds until a page says otherwise.
+  showInMenu({ chat: true, terminal: false })
   vi.clearAllMocks()
 })
 
@@ -213,5 +215,85 @@ describe('setMenu', () => {
     expect(listed(file).slice(-4)).toEqual(['separator', 'Settings…', 'separator', 'quit'])
     expect(menuBar()[0]).toEqual(file)
     expect(app.dock.setMenu).not.toHaveBeenCalled()
+  })
+
+  describe('what the page says it holds', () => {
+    /** An item of a menu's, by its label. */
+    const itemOf = (menu, label) => menuOf(menu).submenu.find(item => item.label === label)
+
+    it('lists no new chat with the AI off, its key kept to do nothing', () => {
+      onPlatform('darwin')
+      setMenu({ newWindow: vi.fn() })
+      showInMenu({ chat: false, terminal: false })
+
+      expect(listed(menuOf('File'))).not.toContain('New Chat')
+      const hidden = menuOf('File').submenu.find(item => item.accelerator === 'CmdOrCtrl+T')
+      expect(hidden.visible).toBe(false)
+
+      showInMenu({ chat: true, terminal: false })
+      expect(listed(menuOf('File')).slice(0, 3)).toEqual(['New Document', 'New Chat', 'New Window'])
+    })
+
+    it('lists the terminals while their extension is on, showing keys the page takes', () => {
+      onPlatform('darwin')
+      setMenu({ newWindow: vi.fn() })
+      expect(listed(menuOf('File'))).not.toContain('New Terminal')
+      expect(listed(menuOf('Window'))).not.toContain('Show Terminal')
+
+      showInMenu({ chat: true, terminal: true })
+      expect(listed(menuOf('File')).slice(0, 4)).toEqual([
+        'New Document',
+        'New Chat',
+        'New Terminal',
+        'New Window',
+      ])
+      expect(listed(menuOf('Window')).slice(3, 6)).toEqual([
+        'Show Next Tab',
+        'Show Previous Tab',
+        'Show Terminal',
+      ])
+      const newTerminal = itemOf('File', 'New Terminal')
+      const showTerminal = itemOf('Window', 'Show Terminal')
+      expect(newTerminal).toMatchObject({ accelerator: 'Ctrl+Shift+`', registerAccelerator: false })
+      expect(showTerminal).toMatchObject({ accelerator: 'Ctrl+`', registerAccelerator: false })
+
+      const window = windowInFront()
+      newTerminal.click({}, window)
+      showTerminal.click({}, window)
+      expect(window.webContents.send.mock.calls).toEqual([
+        ['menu:command', 'newTerminal', undefined],
+        ['menu:command', 'showTerminal', undefined],
+      ])
+    })
+
+    it('builds the menu again only when what it holds has changed', () => {
+      onPlatform('darwin')
+      setMenu({ newWindow: vi.fn() })
+      expect(Menu.setApplicationMenu).toHaveBeenCalledTimes(1)
+
+      showInMenu({ chat: true, terminal: false })
+      expect(Menu.setApplicationMenu).toHaveBeenCalledTimes(1)
+      showInMenu({ chat: true, terminal: true })
+      expect(Menu.setApplicationMenu).toHaveBeenCalledTimes(2)
+      // The Dock's menu is the same whatever the page says.
+      expect(app.dock.setMenu).toHaveBeenCalledTimes(1)
+    })
+
+    it('takes nothing but the two answers', () => {
+      onPlatform('darwin')
+      setMenu({ newWindow: vi.fn() })
+      for (const said of [
+        null,
+        'chat',
+        {},
+        { chat: false },
+        { chat: 'no', terminal: false },
+        { chat: false, terminal: 1 },
+      ]) {
+        showInMenu(said)
+      }
+      expect(Menu.setApplicationMenu).toHaveBeenCalledTimes(1)
+      expect(listed(menuOf('File'))).toContain('New Chat')
+    })
   })
 })

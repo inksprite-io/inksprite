@@ -9,6 +9,7 @@ import {
   listTerminals,
   onTerminalEvent,
   terminalFrameUrl,
+  terminalKey,
   terminalSeen,
 } from '@/platform/terminal.js'
 
@@ -94,6 +95,39 @@ describe('terminalFrameUrl', () => {
   })
 })
 
+describe('terminalKey', () => {
+  /** A key, with Control held unless said otherwise. */
+  const press = (key, code, held = {}) => ({
+    key,
+    code,
+    metaKey: false,
+    ctrlKey: true,
+    shiftKey: false,
+    altKey: false,
+    ...held,
+  })
+
+  it('shows a terminal on Control-`, and makes one with Shift', () => {
+    expect(terminalKey(press('`', 'Backquote'))).toBe('showTerminal')
+    expect(terminalKey(press('~', 'Backquote', { shiftKey: true }))).toBe('newTerminal')
+  })
+
+  it('goes by the key left of 1, or by ` where the keyboard has it elsewhere', () => {
+    expect(terminalKey(press('^', 'Backquote'))).toBe('showTerminal')
+    expect(terminalKey(press('`', 'Equal'))).toBe('showTerminal')
+    expect(terminalKey(press('~', 'Digit4', { shiftKey: true }))).toBe('newTerminal')
+  })
+
+  it('is nothing without Control, or with Command or Option besides', () => {
+    expect(terminalKey(press('`', 'Backquote', { ctrlKey: false }))).toBeNull()
+    // Command-` goes from window to window on a Mac.
+    expect(terminalKey(press('`', 'Backquote', { ctrlKey: false, metaKey: true }))).toBeNull()
+    expect(terminalKey(press('`', 'Backquote', { metaKey: true }))).toBeNull()
+    expect(terminalKey(press('`', 'Backquote', { altKey: true }))).toBeNull()
+    expect(terminalKey(press('t', 'KeyT'))).toBeNull()
+  })
+})
+
 describe('appShortcutFrom', () => {
   it('is the shortcut a frame said was pressed, with Command held', () => {
     expect(
@@ -111,6 +145,21 @@ describe('appShortcutFrom', () => {
   it('is nothing without Command: the rest of what is typed is the shell’s', () => {
     expect(appShortcutFrom({ key: 'f', code: 'KeyF', ctrlKey: true })).toBeNull()
     expect(appShortcutFrom({ key: 'f', code: 'KeyF', metaKey: 'yes' })).toBeNull()
+    expect(appShortcutFrom({ key: '`', code: 'Backquote' })).toBeNull()
+  })
+
+  it('is the terminal’s own key, Control-`, on every system', () => {
+    expect(
+      appShortcutFrom({ type: 'key', key: '~', code: 'Backquote', ctrlKey: true, shiftKey: true })
+    ).toEqual({
+      key: '~',
+      code: 'Backquote',
+      metaKey: false,
+      ctrlKey: true,
+      shiftKey: true,
+      altKey: false,
+    })
+    expect(appShortcutFrom({ key: '`', code: 'Backquote', ctrlKey: 'yes' })).toBeNull()
   })
 
   it('is nothing for what isn’t a key', () => {

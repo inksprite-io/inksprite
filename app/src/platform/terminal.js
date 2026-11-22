@@ -120,24 +120,54 @@ export function terminalFrameUrl(id, { dark, background, foreground, fontSize })
 }
 
 /**
+ * A key pressed, as far as a shortcut goes.
+ *
+ * @typedef {Object} PressedKey
+ * @property {string} key
+ * @property {string} code
+ * @property {boolean} metaKey
+ * @property {boolean} ctrlKey
+ * @property {boolean} shiftKey
+ * @property {boolean} altKey
+ */
+
+/**
+ * Which of the terminal's keys a key is: Control-` to go to a terminal, and
+ * with Shift to make one, as editors of code have them, on a Mac too, where
+ * Command-` goes from window to window. The key left of 1 by where it is, or
+ * by what it types where the keyboard has it elsewhere. A terminal's frame
+ * hands it to the page, reading it the same (`electron/terminal/keys.js`).
+ *
+ * @param {PressedKey} event
+ * @returns {'showTerminal'|'newTerminal'|null}
+ */
+export function terminalKey({ key, code, metaKey, ctrlKey, shiftKey, altKey }) {
+  if (!ctrlKey || metaKey || altKey) return null
+  if (code !== 'Backquote' && key !== '`' && key !== '~') return null
+  return shiftKey ? 'newTerminal' : 'showTerminal'
+}
+
+/**
  * A shortcut as a frame said it was pressed, as what a key event is made
- * from. Only one with Command held is the app's to act on: everything else
- * typed in a terminal is its shell's. Null for anything else.
+ * from. Only one with Command held, or one of the terminal's own keys, is
+ * the app's to act on: everything else typed in a terminal is its shell's.
+ * Null for anything else.
  *
  * @param {any} said
- * @returns {{key: string, code: string, metaKey: true, ctrlKey: boolean, shiftKey: boolean, altKey: boolean}|null}
+ * @returns {PressedKey|null}
  */
 export function appShortcutFrom(said) {
-  if (typeof said !== 'object' || said === null || said.metaKey !== true) return null
+  if (typeof said !== 'object' || said === null) return null
   const { key, code } = said
   if (typeof key !== 'string' || typeof code !== 'string') return null
   if (key.length > 20 || code.length > 20) return null
-  return {
+  const shortcut = {
     key,
     code,
-    metaKey: true,
+    metaKey: said.metaKey === true,
     ctrlKey: said.ctrlKey === true,
     shiftKey: said.shiftKey === true,
     altKey: said.altKey === true,
   }
+  return shortcut.metaKey || terminalKey(shortcut) ? shortcut : null
 }

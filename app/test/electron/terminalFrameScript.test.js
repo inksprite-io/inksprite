@@ -423,6 +423,27 @@ describe('a terminal’s frame', () => {
       expect(page.postMessage).toHaveBeenCalledTimes(1)
     })
 
+    it('hands the page Control-`, and keeps it from the menu, on every system', async () => {
+      for (const mac of [true, false]) {
+        const terminal = await load({ mac })
+        for (const shiftKey of [false, true]) {
+          const { event, typed } = press(terminal, shiftKey ? '~' : '`', {
+            code: 'Backquote',
+            ctrlKey: true,
+            shiftKey,
+          })
+          expect(typed).toBe(false)
+          expect(event.preventDefault).toHaveBeenCalled()
+        }
+        expect(page.postMessage.mock.calls.map(([said]) => [said.key, said.ctrlKey])).toEqual([
+          ['`', true],
+          ['~', true],
+        ])
+        expect(shell.send).not.toHaveBeenCalled()
+        page.postMessage.mockClear()
+      }
+    })
+
     it('leaves copying and pasting to the Edit menu, on a Mac', async () => {
       const terminal = await load({ mac: true })
 

@@ -1,3 +1,4 @@
+/* global KeyboardEvent */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { defineComponent, h, nextTick, ref } from 'vue'
 import { mount } from '@vue/test-utils'
@@ -6,12 +7,14 @@ import { mount } from '@vue/test-utils'
 let heard = null
 const stopListening = vi.fn()
 const inDesktop = { value: true }
+const showInMenu = vi.fn()
 vi.mock('@/platform/menu.js', () => ({
   hasMenuCommands: () => inDesktop.value,
   onMenuCommand: listener => {
     heard = listener
     return stopListening
   },
+  showInMenu: items => showInMenu(items),
 }))
 
 const panel = ref('editor')
@@ -21,9 +24,19 @@ vi.mock('@/composables/useWriterPanel.js', () => ({
 }))
 
 const aiEnabled = ref(true)
+const terminal = ref(true)
 vi.mock('@/composables/useApplicationState.js', () => ({
-  useApplicationState: () => ({ aiEnabled }),
+  useApplicationState: () => ({ aiEnabled, terminal }),
 }))
+
+const hasTerminals = { value: true }
+vi.mock('@/platform/terminal.js', async original => ({
+  ...(await original()),
+  hasTerminal: () => hasTerminals.value,
+}))
+
+const toast = { error: vi.fn() }
+vi.mock('@/composables/useToast.js', () => ({ useToast: () => toast }))
 
 const focused = ref(false)
 vi.mock('@/composables/useFocusMode.js', () => ({
@@ -48,6 +61,7 @@ const chatTabs = {
     chatTabs.activeId.value = id
   }),
   openNew: vi.fn(),
+  openTerminal: vi.fn(async () => {}),
   close: vi.fn(),
   reopen: vi.fn(),
   focus: vi.fn(),
@@ -88,6 +102,8 @@ describe('useMenuCommands', () => {
     vi.clearAllMocks()
     panel.value = 'editor'
     aiEnabled.value = true
+    terminal.value = true
+    hasTerminals.value = true
     focused.value = false
     storyId.value = 'story_1'
     useSettingsPanel().visible.value = false
@@ -280,5 +296,166 @@ describe('useMenuCommands', () => {
     expect(newDocument).not.toHaveBeenCalled()
     expect(useSettingsPanel().visible.value).toBe(false)
     expect(useProjectsDialog().visible.value).toBe(false)
+  })
+
+  describe('the terminal’s keys', () => {
+    /**
+     * Press Control-`, with Shift for a new terminal, where the page has it.
+     * @param {{shift?: boolean, on?: EventTarget}} [how]
+     * @returns {KeyboardEvent}
+     */
+    const press = ({ shift = false, on = document.body } = {}) => {
+      const event = new KeyboardEvent('keydown', {
+        key: shift ? '~' : '`',
+        code: 'Backquote',
+        ctrlKey: true,
+        shiftKey: shift,
+        bubbles: true,
+        cancelable: true,
+      })
+      on.dispatchEvent(event)
+      return event
+    }
+
+    /** Let the terminal be made, and the panel take it. */
+    const settle = async () => {
+      await Promise.resolve()
+      await nextTick()
+    }
+
+    it('shows the terminal shown last, with the keys in it, and the panel it is in', async () => {
+      have({
+        chats: {
+          ...strip(['x', 'terminal:1', 'terminal:2'], 'x'),
+          shown: ['x', 'terminal:2', 'terminal:1'],
+        },
+      })
+      const event = press()
+      expect(event.defaultPrevented).toBe(true)
+      await settle()
+
+      expect(chatTabs.open).toHaveBeenCalledWith('terminal:2')
+      expect(chatTabs.openTerminal).not.toHaveBeenCalled()
+      expect(showChat).toHaveBeenCalled()
+      expect(chatTabs.focus).toHaveBeenCalled()
+    })
+
+    it('shows the first terminal in the strip when none has been shown', async () => {
+      have({ chats: { ...strip(['x', 'terminal:1', 'terminal:2'], 'x'), shown: ['x'] } })
+      press()
+      await settle()
+      expect(chatTabs.open).toHaveBeenCalledWith('terminal:1')
+    })
+
+    it('makes one when none is open, and with Shift whatever is', async () => {
+      have({ chats: strip(['x'], 'x') })
+      press()
+      await settle()
+      expect(chatTabs.openTerminal).toHaveBeenCalledTimes(1)
+      expect(chatTabs.focus).toHaveBeenCalledTimes(1)
+
+      have({ chats: { ...strip(['x', 'terminal:1'], 'terminal:1'), shown: ['terminal:1'] } })
+      press({ shift: true })
+      await settle()
+      expect(chatTabs.openTerminal).toHaveBeenCalledTimes(2)
+      expect(chatTabs.open).not.toHaveBeenCalled()
+    })
+
+    it('says so when the terminal can’t be made', async () => {
+      const failed = vi.spyOn(console, 'error').mockImplementation(() => {})
+      chatTabs.openTerminal.mockRejectedValueOnce(new Error('no shell'))
+      press()
+      await settle()
+      await settle()
+      expect(toast.error).toHaveBeenCalledWith('The terminal couldn’t be opened.')
+      expect(showChat).not.toHaveBeenCalled()
+      failed.mockRestore()
+    })
+
+    it('takes a key handed over by a terminal’s frame, as from anywhere in the page', async () => {
+      const panelRoot = document.createElement('div')
+      document.body.append(panelRoot)
+      press({ on: panelRoot, shift: true })
+      await settle()
+      expect(chatTabs.openTerminal).toHaveBeenCalled()
+    })
+
+    it('leaves the key alone with the Terminal extension off, in focus mode or under a dialog', async () => {
+      terminal.value = false
+      expect(press().defaultPrevented).toBe(false)
+      terminal.value = true
+
+      focused.value = true
+      expect(press().defaultPrevented).toBe(false)
+      focused.value = false
+
+      const mask = document.createElement('div')
+      mask.className = 'p-dialog-mask'
+      document.body.append(mask)
+      expect(press().defaultPrevented).toBe(false)
+      mask.remove()
+
+      storyId.value = ''
+      expect(press().defaultPrevented).toBe(false)
+
+      await settle()
+      expect(chatTabs.openTerminal).not.toHaveBeenCalled()
+      expect(chatTabs.open).not.toHaveBeenCalled()
+    })
+
+    it('listens for nothing where there are no terminals, and stops with the frame', async () => {
+      wrapper.unmount()
+      hasTerminals.value = false
+      wrapper = mount(Frame)
+      expect(press().defaultPrevented).toBe(false)
+
+      wrapper.unmount()
+      hasTerminals.value = true
+      wrapper = mount(Frame)
+      wrapper.unmount()
+      expect(press().defaultPrevented).toBe(false)
+      wrapper = mount(Frame)
+    })
+
+    it('does the same when the menu asks, from its items or a Mac’s keys', async () => {
+      have({ chats: { ...strip(['x', 'terminal:1'], 'x'), shown: ['x', 'terminal:1'] } })
+      heard('showTerminal')
+      await settle()
+      expect(chatTabs.open).toHaveBeenCalledWith('terminal:1')
+      heard('newTerminal')
+      await settle()
+      expect(chatTabs.openTerminal).toHaveBeenCalledTimes(1)
+      expect(chatTabs.focus).toHaveBeenCalledTimes(2)
+
+      vi.clearAllMocks()
+      terminal.value = false
+      heard('newTerminal')
+      terminal.value = true
+      focused.value = true
+      heard('showTerminal')
+      await settle()
+      expect(chatTabs.openTerminal).not.toHaveBeenCalled()
+      expect(chatTabs.open).not.toHaveBeenCalled()
+    })
+  })
+
+  it('tells the menu what it holds: a new chat with the AI on, terminals with their extension', async () => {
+    expect(showInMenu).toHaveBeenLastCalledWith({ chat: true, terminal: true })
+
+    aiEnabled.value = false
+    await nextTick()
+    expect(showInMenu).toHaveBeenLastCalledWith({ chat: false, terminal: true })
+
+    terminal.value = false
+    await nextTick()
+    expect(showInMenu).toHaveBeenLastCalledWith({ chat: false, terminal: false })
+
+    // Where there are no terminals, as in a desktop app older than the page.
+    wrapper.unmount()
+    aiEnabled.value = true
+    terminal.value = true
+    hasTerminals.value = false
+    wrapper = mount(Frame)
+    expect(showInMenu).toHaveBeenLastCalledWith({ chat: true, terminal: false })
   })
 })

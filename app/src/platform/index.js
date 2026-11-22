@@ -83,8 +83,9 @@ export {
   listTerminals,
   onTerminalEvent,
   terminalFrameUrl,
+  terminalKey,
   terminalSeen,
 } from './terminal.js'
 export { canExportToFolder, chooseExportFolder, writeExportFolder } from './exportFolder.js'
 export { canSavePdf, savePdf } from './printing.js'
-export { hasMenuCommands, onMenuCommand } from './menu.js'
+export { hasMenuCommands, onMenuCommand, showInMenu } from './menu.js'

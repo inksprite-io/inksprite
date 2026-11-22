@@ -50,6 +50,39 @@ const alsoAsks = (accelerator, command, detail) => ({
 })
 
 /**
+ * A menu item for one of the terminal's keys, which the page takes itself,
+ * from inside a terminal too (`useMenuCommands` in the page): the key is
+ * shown beside the item and not taken by the menu, where the system allows
+ * that. A Mac's menu takes it all the same, and asks the page what the key
+ * would have; the page, taking it first, keeps it from the menu.
+ *
+ * @param {string} label
+ * @param {string} accelerator
+ * @param {string} command
+ * @returns {Electron.MenuItemConstructorOptions}
+ */
+const showsKey = (label, accelerator, command) => ({
+  ...asks(label, accelerator, command),
+  registerAccelerator: false,
+})
+
+/**
+ * What the menu holds besides what it always does, as the page last said:
+ * a new chat while the AI is on, and terminals while the Terminal extension
+ * is. Until a page has said, what it held before pages said: a new chat.
+ *
+ * @typedef {Object} MenuItems
+ * @property {boolean} chat
+ * @property {boolean} terminal
+ */
+
+/** @type {MenuItems} */
+let shown = { chat: true, terminal: false }
+
+/** @type {(() => void)|null} */
+let newWindowAction = null
+
+/**
  * The menu bar: Electron's own menus, less its Help, which is about
  * Electron, and with the app's own in File, Window and, on a Mac, the app's
  * menu. Its Edit menu is what makes the clipboard's keys work on a Mac, and
@@ -62,12 +95,39 @@ const alsoAsks = (accelerator, command, detail) => ({
  * leave to it: a new document and a new chat, the tab the writer is in
  * closed, the one closed last opened again, the tabs stepped through and
  * gone to by number. Closing the window moves to the key beside New
- * Window's, since a tab has taken its own.
+ * Window's, since a tab has taken its own. The terminal's are a code
+ * editor's, Control-` to show one and with Shift to make one.
  *
  * @param {{newWindow: () => void}} actions
  */
 export function setMenu({ newWindow }) {
+  newWindowAction = newWindow
+  buildMenu()
+  if (process.platform === 'darwin')
+    app.dock?.setMenu(Menu.buildFromTemplate([{ label: 'New Window', click: () => newWindow() }]))
+}
+
+/**
+ * Hold what the page says the menu should, from whichever window: what it
+ * goes by, the AI and the extensions, is the same in every one. Anything
+ * but the two answers is not taken, and the menu is built again only when
+ * one has changed.
+ *
+ * @param {unknown} items
+ */
+export function showInMenu(items) {
+  if (typeof items !== 'object' || items === null) return
+  const { chat, terminal } = /** @type {Record<string, unknown>} */ (items)
+  if (typeof chat !== 'boolean' || typeof terminal !== 'boolean') return
+  if (chat === shown.chat && terminal === shown.terminal) return
+  shown = { chat, terminal }
+  if (newWindowAction) buildMenu()
+}
+
+/** Build the menu bar, holding what `shown` says. */
+function buildMenu() {
   const mac = process.platform === 'darwin'
+  const newWindow = /** @type {() => void} */ (newWindowAction)
   /** @type {Electron.MenuItemConstructorOptions} */
   const newWindowItem = {
     label: 'New Window',
@@ -82,7 +142,12 @@ export function setMenu({ newWindow }) {
       label: 'File',
       submenu: [
         asks('New Document', 'CmdOrCtrl+N', 'newDocument'),
-        asks('New Chat', 'CmdOrCtrl+T', 'newChat'),
+        // With the AI off its key stays the menu's, and does nothing, as
+        // with the AI on it does in focus mode.
+        shown.chat
+          ? asks('New Chat', 'CmdOrCtrl+T', 'newChat')
+          : alsoAsks('CmdOrCtrl+T', 'newChat'),
+        ...(shown.terminal ? [showsKey('New Terminal', 'Ctrl+Shift+`', 'newTerminal')] : []),
         newWindowItem,
         { type: 'separator' },
         asks('Projects…', 'CmdOrCtrl+O', 'projects'),
@@ -103,11 +168,9 @@ export function setMenu({ newWindow }) {
     },
     mac ? { label: 'Edit', submenu: macEditMenu() } : { role: 'editMenu' },
     { role: 'viewMenu' },
-    windowMenu(mac),
+    windowMenu(mac, shown.terminal),
   ]
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
-  if (mac)
-    app.dock?.setMenu(Menu.buildFromTemplate([{ label: 'New Window', click: () => newWindow() }]))
 }
 
 /**
@@ -141,12 +204,14 @@ function macAppMenu(settings) {
  * File's, and with the tabs of the panel the writer is in stepped through.
  * The keys are the ones a browser has: Control-Tab everywhere, the brackets
  * on a Mac and Page Up and Page Down elsewhere besides, and a number for the
- * tab at that place, 9 for the last.
+ * tab at that place, 9 for the last. With terminals, a way to the terminal
+ * shown last.
  *
  * @param {boolean} mac
+ * @param {boolean} terminal - Whether the Terminal extension is on
  * @returns {Electron.MenuItemConstructorOptions}
  */
-function windowMenu(mac) {
+function windowMenu(mac, terminal) {
   const [alsoNext, alsoPrevious] = mac
     ? ['Cmd+Shift+]', 'Cmd+Shift+[']
     : ['Ctrl+PageDown', 'Ctrl+PageUp']
@@ -154,6 +219,7 @@ function windowMenu(mac) {
   const tabs = [
     asks('Show Next Tab', 'Ctrl+Tab', 'nextTab'),
     asks('Show Previous Tab', 'Ctrl+Shift+Tab', 'previousTab'),
+    ...(terminal ? [showsKey('Show Terminal', 'Ctrl+`', 'showTerminal')] : []),
     alsoAsks(alsoNext, 'nextTab'),
     alsoAsks(alsoPrevious, 'previousTab'),
     ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(place => alsoAsks(`CmdOrCtrl+${place}`, 'showTab', place)),

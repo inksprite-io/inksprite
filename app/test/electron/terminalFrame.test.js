@@ -10,7 +10,8 @@ import {
   contrast,
   themeFor,
 } from '../../electron/terminal/appearance.js'
-import { LINE_BREAK, keyAction } from '../../electron/terminal/keys.js'
+import { LINE_BREAK, isTerminalKey, keyAction } from '../../electron/terminal/keys.js'
+import { terminalKey } from '../../src/platform/terminal.js'
 import { cleanPaste, takePastes } from '../../electron/terminal/paste.js'
 import { IN_WINDOW, WAIT_MS, isShown, keysGate } from '../../electron/terminal/sight.js'
 
@@ -194,6 +195,57 @@ describe('keyAction', () => {
     expect(keyAction(key('c', 'meta'), false)).toBeNull()
     expect(keyAction(key('C', 'ctrl', 'shift'), true)).toBeNull()
   })
+
+  it('hands the page Control-`, with Shift or without, on every system', () => {
+    for (const mac of [true, false]) {
+      expect(keyAction({ ...key('`', 'ctrl'), code: 'Backquote' }, mac)).toBe('pageAlone')
+      expect(keyAction({ ...key('~', 'ctrl', 'shift'), code: 'Backquote' }, mac)).toBe('pageAlone')
+      // The key left of 1 on a keyboard where it types something else.
+      expect(keyAction({ ...key('^', 'ctrl'), code: 'Backquote' }, mac)).toBe('pageAlone')
+      // And ` where the keyboard has it elsewhere.
+      expect(keyAction({ ...key('`', 'ctrl'), code: 'Equal' }, mac)).toBe('pageAlone')
+      // Without Control, it is typed.
+      expect(keyAction({ ...key('`'), code: 'Backquote' }, mac)).toBeNull()
+      expect(keyAction({ ...key('`', 'ctrl', 'alt'), code: 'Backquote' }, mac)).toBeNull()
+    }
+  })
+})
+
+describe('isTerminalKey', () => {
+  it('is what the page takes for the terminal’s keys', () => {
+    const pressed = []
+    for (const [name, code] of [
+      ['`', 'Backquote'],
+      ['~', 'Backquote'],
+      ['^', 'Backquote'],
+      ['`', 'Equal'],
+      ['~', 'Digit4'],
+      ['1', 'Digit1'],
+      ['t', 'KeyT'],
+    ]) {
+      for (const held of [[], ['ctrl'], ['ctrl', 'shift'], ['ctrl', 'meta'], ['ctrl', 'alt']]) {
+        pressed.push({ ...keyHeld(name, held), code })
+      }
+    }
+    for (const event of pressed) {
+      expect(isTerminalKey(event), JSON.stringify(event)).toBe(terminalKey(event) !== null)
+    }
+    expect(pressed.filter(isTerminalKey)).toHaveLength(10)
+  })
+
+  /**
+   * @param {string} name
+   * @param {string[]} held
+   */
+  function keyHeld(name, held) {
+    return {
+      key: name,
+      metaKey: held.includes('meta'),
+      ctrlKey: held.includes('ctrl'),
+      shiftKey: held.includes('shift'),
+      altKey: held.includes('alt'),
+    }
+  }
 })
 
 describe('cleanPaste', () => {

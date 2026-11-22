@@ -41,6 +41,7 @@ import Dialog from 'primevue/dialog'
 import { useApplicationState } from '@/composables/useApplicationState.js'
 import { SHORTCUTS, keyLabel, menuShortcuts } from '@/editor/shortcuts.js'
 import { hasMenuCommands } from '@/platform/menu.js'
+import { hasTerminal } from '@/platform/terminal.js'
 
 /**
  * The editor's keys and typed shortcuts, listed, and in the desktop app its
@@ -56,9 +57,14 @@ defineProps({
 
 defineEmits(['update:visible'])
 
-const { aiEnabled } = useApplicationState()
+const { aiEnabled, terminal } = useApplicationState()
 
 const groups = computed(() =>
-  hasMenuCommands() ? [...SHORTCUTS, menuShortcuts({ ai: aiEnabled.value })] : SHORTCUTS
+  hasMenuCommands()
+    ? [
+        ...SHORTCUTS,
+        menuShortcuts({ ai: aiEnabled.value, terminal: hasTerminal() && terminal.value }),
+      ]
+    : SHORTCUTS
 )
 </script>

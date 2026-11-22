@@ -57,6 +57,9 @@
  * @property {(listener: ((command: string, detail?: number) => void)|null) => void} [onMenuCommand] -
  *   What to do when the menu asks something of the page, or null for nothing.
  *   Missing from a desktop app older than the page it loads.
+ * @property {(items: {chat: boolean, terminal: boolean}) => void} [showInMenu] -
+ *   Have the menu hold a new chat, and the terminals, or not. Missing from a
+ *   desktop app older than the page it loads.
  * @property {DesktopLibrary} library - The folder the projects are kept in
  * @property {DesktopPython} [python] - Python for the model to run code in,
  *   a session for each chat. Missing from a desktop app older than the page

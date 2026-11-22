@@ -49,6 +49,19 @@ describe('editor/shortcuts', () => {
     expect(actions(false)).toContain('Close tab')
   })
 
+  it('lists the terminal’s keys only with the Terminal extension on', () => {
+    const terminals = terminal =>
+      menuShortcuts({ ai: true, terminal }).shortcuts.filter(({ action }) =>
+        action.includes('terminal')
+      )
+    expect(terminals(false)).toEqual([])
+    expect(terminals(true).map(({ keys }) => keyLabel(keys, true))).toEqual(['⌃`', '⌃⇧`'])
+    expect(terminals(true).map(({ keys }) => keyLabel(keys, false))).toEqual([
+      'Ctrl+`',
+      'Ctrl+Shift+`',
+    ])
+  })
+
   it('takes Mod-/ for the list, with Shift or without', () => {
     const mod = /Mac/.test(navigator.platform) ? { metaKey: true } : { ctrlKey: true }
     expect(isShortcutsKey({ key: '/', ...mod })).toBe(true)
