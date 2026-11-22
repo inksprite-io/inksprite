@@ -105,6 +105,8 @@ const { default: WriterView } = await import('@/components/writer/WriterView.vue
 const { default: ProjectsDialog } = await import('@/components/writer/projects/ProjectsDialog.vue')
 const { useProjectsDialog } = await import('@/composables/useProjectsDialog.js')
 const { DEFAULT_LAYOUT } = await import('@/components/writer/layout/layout.js')
+const { useSidebarTab } = await import('@/composables/useSidebarTab.js')
+const { default: MobileTopBar } = await import('@/components/writer/layout/MobileTopBar.vue')
 
 describe('WriterView', () => {
   /** The frame, on its project. */
@@ -181,5 +183,41 @@ describe('WriterView', () => {
     frame.showEditor()
 
     expect(updateView).toHaveBeenLastCalledWith('story_1', { layout: DEFAULT_LAYOUT })
+  })
+
+  it('shows a list asked for from deeper in, opening the sidebar for it unless asked not to', async () => {
+    view.layout = { ...DEFAULT_LAYOUT, sidebar: false }
+    await mountFrame()
+    const sidebarTab = useSidebarTab()
+
+    sidebarTab.show('comments', { open: false })
+    await flushPromises()
+    expect(updateView).not.toHaveBeenCalled()
+
+    sidebarTab.show('comments')
+    await flushPromises()
+    expect(updateView).toHaveBeenLastCalledWith('story_1', {
+      layout: { ...DEFAULT_LAYOUT, sidebarTab: 'comments' },
+    })
+
+    // With the sidebar showing, one not to open it for still turns it.
+    sidebarTab.show('outline', { open: false })
+    await flushPromises()
+    expect(updateView).toHaveBeenLastCalledWith('story_1', { layout: DEFAULT_LAYOUT })
+  })
+
+  it('leaves a phone on its tab for a list asked for without opening it', async () => {
+    screen.isMobile.value = true
+    const wrapper = await mountFrame()
+    const tab = () => wrapper.findComponent(MobileTopBar).props('activeMobileTab')
+    const sidebarTab = useSidebarTab()
+
+    sidebarTab.show('comments', { open: false })
+    await flushPromises()
+    expect(tab()).toBe('write')
+
+    sidebarTab.show('comments')
+    await flushPromises()
+    expect(tab()).toBe('comments')
   })
 })

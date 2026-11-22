@@ -1,4 +1,4 @@
-/* global KeyboardEvent */
+/* global KeyboardEvent, MouseEvent */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { ref } from 'vue'
 import { mount, flushPromises } from '@vue/test-utils'
@@ -17,6 +17,7 @@ import {
   useComments,
 } from '@/composables/useComments.js'
 import { useSidebarTab } from '@/composables/useSidebarTab.js'
+import { useFocusMode } from '@/composables/useFocusMode.js'
 import { commentRanges } from '@/editor/comments.js'
 import { parseFilters } from '@/tts/filters.js'
 import { TextSelection } from 'prosemirror-state'
@@ -880,6 +881,54 @@ describe('Editor', () => {
       await flushPromises()
       expect(currentComment.value).toBe(null)
       wrapper.unmount()
+    })
+
+    /**
+     * Click at `pos` in the text, as ProseMirror hands a click on: one that
+     * neither drags nor shift-clicks, which select instead.
+     */
+    const clickAt = (wrapper, pos) => {
+      const view = wrapper.vm.$.setupState.view
+      view.someProp('handleClick', handle => handle(view, pos, new MouseEvent('click')))
+    }
+
+    it('turns an open sidebar to the Comments tab on a click in a comment or a suggestion', async () => {
+      const wrapper = await mountAttached('doc_2')
+      wrapper.find('.ProseMirror').element.focus()
+
+      // Before "cold".
+      clickAt(wrapper, 3)
+      expect(useSidebarTab().take()).toBe(null)
+      // Arrowing in picks the comment and leaves the sidebar where it was.
+      select('doc_2', 12)
+      await flushPromises()
+      expect(useSidebarTab().take()).toBe(null)
+      // In "cold", the caret there already or not.
+      clickAt(wrapper, 12)
+      expect(useSidebarTab().take()).toEqual({ tab: 'comments', open: false })
+      wrapper.unmount()
+
+      const suggested = await mountAttached('doc_s')
+      // In "warm", which it puts in.
+      clickAt(suggested, 9)
+      expect(useSidebarTab().take()).toEqual({ tab: 'comments', open: false })
+      suggested.unmount()
+    })
+
+    it('leaves the sidebar alone on a click in a comment on a phone or in focus mode', async () => {
+      const focusMode = useFocusMode()
+      focusMode.enter()
+      const wrapper = await mountAttached('doc_2')
+      clickAt(wrapper, 12)
+      expect(useSidebarTab().take()).toBe(null)
+      focusMode.leave()
+      wrapper.unmount()
+
+      onPhone()
+      const phone = await mountAttached('doc_2')
+      clickAt(phone, 12)
+      expect(useSidebarTab().take()).toBe(null)
+      phone.unmount()
     })
 
     it('leaves the comment the list went to current until the writer moves on', async () => {

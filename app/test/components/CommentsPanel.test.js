@@ -362,6 +362,23 @@ describe('CommentsPanel', () => {
     delete window.HTMLElement.prototype.scrollIntoView
   })
 
+  it('opens on the current comment, and keeps the current one in sight', async () => {
+    /** @type {Array<string|null>} */
+    const scrolledTo = []
+    window.HTMLElement.prototype.scrollIntoView = function () {
+      scrolledTo.push(this.getAttribute('data-comment-entry'))
+    }
+    comments.current = ref({ documentId: 'doc_1', id: 'cabcd2', seq: 1 })
+    mountPanel()
+    await flushPromises()
+    expect(scrolledTo).toEqual(['cabcd2'])
+
+    comments.current.value = { documentId: 'doc_2', id: 'cabcd3', seq: 2 }
+    await flushPromises()
+    expect(scrolledTo).toEqual(['cabcd2', 'cabcd3'])
+    delete window.HTMLElement.prototype.scrollIntoView
+  })
+
   it('lists a document with no comments yet while one is being written on it', () => {
     comments.draft = ref({ documentId: 'doc_3', passage: 'the old pier' })
     comments.groups = ref([
