@@ -99,6 +99,9 @@ describe('signing a build’s updates', () => {
     await writeFile(join(folder, 'inksprite-0.1.0-dev.30-linux-arm64.deb'), 'an ARM deb')
     await writeFile(join(folder, 'latest-linux.yml'), 'version: 0.1.0-dev.30')
     await writeFile(join(folder, 'latest-linux-arm64.yml'), 'version: 0.1.0-dev.30')
+    await writeFile(join(folder, 'inksprite-0.1.0-dev.30-win-x64.exe'), 'an installer')
+    await writeFile(join(folder, 'inksprite-0.1.0-dev.30-win-arm64.exe'), 'an ARM installer')
+    await writeFile(join(folder, 'latest.yml'), 'version: 0.1.0-dev.30')
   })
 
   afterAll(() => rm(folder, { recursive: true, force: true }))
@@ -145,6 +148,8 @@ describe('signing a build’s updates', () => {
       'inksprite-0.1.0-dev.30-linux-arm64.AppImage',
       'inksprite-0.1.0-dev.30-linux-arm64.deb',
       'inksprite-0.1.0-dev.30-linux-x86_64.AppImage',
+      'inksprite-0.1.0-dev.30-win-arm64.exe',
+      'inksprite-0.1.0-dev.30-win-x64.exe',
     ])
     expect(await signatures()).toEqual(signed.map(name => `${name}.sig`))
     for (const name of signed) {

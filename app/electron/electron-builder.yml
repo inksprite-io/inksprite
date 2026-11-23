@@ -71,11 +71,14 @@ mac:
       arch: [arm64, x64]
 
 # Installs for the user, with no admin prompt, where an unsigned installer
-# for the machine would ask as an unknown publisher.
+# for the machine would ask as an unknown publisher. An installer for Intel
+# and AMD and one for ARM, rather than one holding both at twice the size:
+# both are in latest.yml, and the updater takes the one whose name has its
+# own processor in it (findFile in electron-updater's Provider.js).
 win:
   target:
     - target: nsis
-      arch: [x64]
+      arch: [x64, arm64]
   files:
     - '!node_modules/node-pty/prebuilds/{darwin,linux}-*'
   # All of node-pty beside the archive here, as it was before the others were
@@ -88,6 +91,7 @@ win:
 nsis:
   oneClick: true
   perMachine: false
+  buildUniversalInstaller: false
 
 # The window goes with the app's .desktop entry by its desktopName
 # (package.json). For Intel and AMD, and for ARM, each with an update file of
