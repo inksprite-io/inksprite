@@ -74,6 +74,22 @@ describe('appImports', () => {
     expect(imports.take('app_1', id)).toBeNull()
   })
 
+  it('holds a link for one file on its way at a time, and lets it wait again for one that never came', () => {
+    const imports = appImports()
+    const { id } = imports.open('app_1', ABOUT)
+
+    expect(imports.claim(id)).toBe(true)
+    expect(imports.claim(id)).toBe(false)
+    imports.release(id)
+    expect(imports.claim(id)).toBe(true)
+    expect(imports.arrive(id, BYTES)).not.toBeNull()
+
+    // Come: no more are held for it, by a claim or without one.
+    expect(imports.claim(id)).toBe(false)
+    expect(imports.claim('nothing')).toBe(false)
+    expect(imports.claim(/** @type {any} */ (undefined))).toBe(false)
+  })
+
   it('has nothing under an id it never made', () => {
     const imports = appImports()
     imports.open('app_1', ABOUT)

@@ -61,10 +61,16 @@ vi.mock('@/stores/filesStore', () => ({
 }))
 
 /** The window that holds a project, stood in for: this one, unless a test says another. */
-const windows = vi.hoisted(() => ({ elsewhere: false }))
+const windows = vi.hoisted(() => ({ elsewhere: false, trashed: new Set() }))
 vi.mock('@/apps/projects.js', () => ({
   inProject: vi.fn(async (_storyId, work) =>
     windows.elsewhere ? { pass: 'elsewhere' } : { value: await work() }
+  ),
+  // A connection's projects, less those in the trash, whose ticks stay.
+  projectsOf: vi.fn(async app =>
+    app.projects
+      .filter(id => !windows.trashed.has(id))
+      .map(id => ({ id, name: 'Thief', summary: '' }))
   ),
 }))
 
@@ -194,7 +200,7 @@ describe('receivedFor', () => {
     expect(read.content).toBe('# Notes\n\n- one\n- two')
   })
 
-  it('keeps plain text as the file it is, byte for byte, and its text readable', async () => {
+  it('takes plain text as a document kept as written, to be edited as it is', async () => {
     const text = '# Not a heading\n* not a list\n\n\n\nkept as it is\n'
     const { url } = await importFor(APP, asking, { path: 'Research/system.txt' })
 
@@ -202,11 +208,10 @@ describe('receivedFor', () => {
 
     expect(answer).toMatchObject({
       success: true,
-      document: { path: 'Research/system.txt', type: 'file', mime: 'text/plain' },
+      document: { path: 'Research/system.txt', type: 'text' },
     })
     const document = store.getChildren('folder_research').find(one => one.title === 'system.txt')
-    expect(document.type).toBe('file')
-    expect(await files.held.get(document.id).text()).toBe(text)
+    expect(document).toMatchObject({ type: 'text', plain: true, content: text })
     expect((await executeReadDocument({ path: 'Research/system.txt' }, asking)).content).toBe(text)
   })
 
@@ -265,7 +270,7 @@ describe('receivedFor', () => {
     expect(answer.error).toMatch(/folder the file was to go in is gone/)
   })
 
-  it('brings nothing in for a connection that has since been made to read only, or lost the project', async () => {
+  it('brings nothing in for a connection that has since been made to read only, or lost the project, or whose project is trashed', async () => {
     const first = await importFor(APP, asking, { path: 'Research/Notes.md' })
     const reader = await send(first.url, encoder.encode('# Notes'), { ...APP, readOnly: true })
     expect(reader.answer.error).toMatch(/only reads/)
@@ -273,6 +278,13 @@ describe('receivedFor', () => {
     const second = await importFor(APP, asking, { path: 'Research/Notes.md' })
     const unticked = await send(second.url, encoder.encode('# Notes'), { ...APP, projects: [] })
     expect(unticked.answer.error).toMatch(/no longer open to this connection/)
+
+    // Trashed since: its tick stays, and takes nothing in.
+    const third = await importFor(APP, asking, { path: 'Research/Notes.md' })
+    windows.trashed.add(STORY)
+    const trashed = await send(third.url, encoder.encode('# Notes'))
+    windows.trashed.clear()
+    expect(trashed.answer.error).toMatch(/no longer open to this connection/)
 
     expect(store.getChildren('folder_research').some(one => one.title === 'Notes')).toBe(false)
   })

@@ -16,9 +16,9 @@
  * the name the file takes, for a connection that writes in that project
  * still. It is then brought in as the writer's own import brings a file in
  * (`composables/useCardImport.js`), by what is in it, and never read as a
- * character card: Markdown and a Word file become documents, and anything
- * else, plain text among it, is kept as the file it is, with its text
- * readable.
+ * character card: Markdown and a Word file become documents, plain text a
+ * document kept as written, and anything else is kept as the file it is,
+ * with its text readable.
  */
 
 import { newDocumentAt, pathInProject } from '@/ai/tools/documents.js'
@@ -28,7 +28,7 @@ import { awaitAppImport, takeAppImport } from '@/platform/apps.js'
 import { languageOf } from '@/source/language.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { quoted } from './exports.js'
-import { inProject } from './projects.js'
+import { inProject, projectsOf } from './projects.js'
 import { stateAt, withRevision } from './revisions.js'
 
 /** @typedef {import('@/platform/apps.js').AskingApp} AskingApp */
@@ -175,7 +175,8 @@ export async function receivedFor(app, params, signal) {
     // The connection as it is now: one that only reads, or no longer has
     // the project, brings nothing in.
     if (app.readOnly) return { error: 'This connection only reads: nothing was brought in.' }
-    if (!app.projects.includes(about.storyId)) {
+    // A project trashed keeps its tick, which takes nothing in.
+    if (!(await projectsOf(app)).some(project => project.id === about.storyId)) {
       return { error: 'That project is no longer open to this connection: nothing was brought in.' }
     }
     if (signal.aborted) return { error: 'The upload was given up on: nothing was brought in.' }

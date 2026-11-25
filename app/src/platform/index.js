@@ -44,10 +44,13 @@
  * - **printing** - In the desktop app, a document saved as a PDF where the
  *   writer says, rather than through the print dialog
  * - **menu** - In the desktop app, what its menu asks of the page: the keys a
- *   browser keeps for its own tabs, for the app's documents and chats
+ *   browser keeps for its own tabs, for the app's documents and chats; and
+ *   what the page tells it to hold, a new chat and the terminals, as the
+ *   settings decide
  * - **terminal** - In the desktop app, terminals: one made in a project,
- *   listed and ended, and what passes between the page and the frame of
- *   another origin that alone types into its shell
+ *   listed and ended, what passes between the page and the frame of another
+ *   origin that alone types into its shell, and the app's keys for them,
+ *   which the frame hands the page
  *
  * Design: `.llm/desktop_design.md`.
  *

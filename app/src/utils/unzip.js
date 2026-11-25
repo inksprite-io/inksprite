@@ -46,3 +46,23 @@ export function unzipWithin(bytes, most, filter = () => true) {
     },
   })
 }
+
+/**
+ * What a zip says it opens into, in bytes, read from its directory alone,
+ * inflating nothing: for a reader that opens it another way to refuse one
+ * too large first.
+ *
+ * @param {Uint8Array} bytes
+ * @returns {number}
+ * @throws {Error} When it isn't a zip
+ */
+export function unzippedSize(bytes) {
+  let total = 0
+  unzipSync(bytes, {
+    filter: entry => {
+      total += Math.max(entry.originalSize, entry.size)
+      return false
+    },
+  })
+  return total
+}

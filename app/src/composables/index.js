@@ -79,7 +79,8 @@
  *   making, renaming, moving and deleting documents
  * - **useFindKey** - Command-F (Control-F off a Mac) opens the find of the panel the writer is in
  * - **useMenuCommands** - What the desktop app's menu asks of the writer, done: a new document or chat, the
- *   tab the writer is in closed, reopened or stepped from, the projects and the settings
+ *   tab the writer is in closed, reopened or stepped from, the projects and the settings; the terminal's
+ *   keys, from the page and from inside a terminal; and the menu told what it holds
  * - **useWriterPanel** - Which panel of tabs the writer is in, the editor or the chat, for a key that acts on a tab
  * - **useLastOpened** - Keeps which project the writer was last in, which the app opens on
  * - **useProjectActions** - What can be done to a project, as menu items, the open one or another

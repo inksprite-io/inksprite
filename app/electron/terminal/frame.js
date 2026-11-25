@@ -214,6 +214,12 @@ terminal.attachCustomKeyEventHandler(event => {
   if (event.type !== 'keydown') return false
   if (action === 'browser') return false
   if (action === 'page' || action === 'pageAlone') {
+    // One of the terminal's own keys held down is pressed once: each would
+    // make a terminal.
+    if (action === 'pageAlone' && event.repeat) {
+      event.preventDefault()
+      return false
+    }
     const { key, code, metaKey, ctrlKey, shiftKey, altKey } = event
     window.parent.postMessage({ type: 'key', key, code, metaKey, ctrlKey, shiftKey, altKey }, page)
     if (action === 'pageAlone') event.preventDefault()

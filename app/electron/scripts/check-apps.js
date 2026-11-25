@@ -15,7 +15,9 @@
  * told why, in words, when no page answers it. Every function the bridge
  * gives the page hands back plain values. A file the page offers is fetched
  * once, byte for byte, and a file sent by a link the page made is handed to
- * the page byte for byte, the once, with the page's answer the upload's. A removed connection is refused at once, and the port
+ * the page byte for byte, the once, with the page's answer the upload's, one
+ * of nearly the most an app may send among them; nothing is read of what is
+ * sent to a link that isn't waiting. A removed connection is refused at once, and the port
  * closes with the last of them, or with apps switched off. With two windows,
  * the one in front is asked first, and the next when it passes or closes.
  *
@@ -118,10 +120,20 @@ const PAGE = `<!doctype html>
         if (message.method === 'inksprite/import') {
           const taken = await apps.takeAppImport(app.id, message.params.id)
           const again = await apps.takeAppImport(app.id, message.params.id)
+          // A large file by its hash alone: its bytes written out would be
+          // too long a string to hand back.
+          const small = taken && taken.bytes.length <= 1024 * 1024
           check.taken = taken && {
             about: taken.about,
             isBytes: taken.bytes instanceof Uint8Array,
-            base64: btoa(Array.from(taken.bytes, byte => String.fromCharCode(byte)).join('')),
+            length: taken.bytes.length,
+            base64: small
+              ? btoa(Array.from(taken.bytes, byte => String.fromCharCode(byte)).join(''))
+              : null,
+            sha: Array.from(
+              new Uint8Array(await crypto.subtle.digest('SHA-256', taken.bytes)),
+              byte => byte.toString(16).padStart(2, '0')
+            ).join(''),
             again,
           }
           const result = taken
@@ -1053,11 +1065,51 @@ async function checkAll() {
     }
   })
 
-  await check('takes one file to a link', async () => {
+  await check('takes one file to a link, and says so to a second', async () => {
     const before = await askedOf(one)
-    const { status } = await put(inbox, Buffer.from('again'))
+    const { status, json } = await put(inbox, Buffer.from('again'))
     const asked = (await askedOf(one)) - before
-    return { ok: status === 404 && asked === 0, detail: `${status}; the page was asked ${asked}` }
+    return {
+      ok: status === 404 && /^Nothing is waiting/.test(json?.error ?? '') && asked === 0,
+      detail: `${status} ${JSON.stringify(json)}; the page was asked ${asked}`,
+    }
+  })
+
+  await check('reads nothing sent to a link that isn’t waiting', async () => {
+    // A hundred megabytes said, a kilobyte sent: the answer comes before the rest.
+    const sent = http.request({
+      host: '127.0.0.1',
+      port,
+      method: 'PUT',
+      path: '/import/nothing',
+      agent: false,
+      headers: { 'Content-Length': 100 * 1024 * 1024 },
+    })
+    sent.on('error', () => {})
+    /** @type {Promise<number>} */
+    const answered = new Promise(resolve =>
+      sent.on('response', response => resolve(response.statusCode ?? 0))
+    )
+    sent.write(Buffer.alloc(1024))
+    const status = await Promise.race([answered, sleep(5000).then(() => 0)])
+    sent.destroy()
+    return { ok: status === 404, detail: status ? `${status}` : 'no answer in five seconds' }
+  })
+
+  await check('hands a file of nearly the most an app may send to the page whole', async () => {
+    const { value } = await call(one, 'awaitAppImport', second.id, ABOUT)
+    const large = randomBytes(255 * 1024 * 1024)
+    const started = Date.now()
+    const answer = await put(`/import/${value.id}`, large)
+    const took = Date.now() - started
+    const taken = await js(one, '({length: check.taken?.length, sha: check.taken?.sha})')
+    // The check waits on a page a second, where the app waits five minutes:
+    // a file this large may take longer than the check's second to hand over.
+    const answered = answer.status === 200 || (answer.status === 503 && took > SHELL_PATIENCE_MS)
+    return {
+      ok: answered && taken?.length === large.length && taken?.sha?.slice(0, 16) === sha(large),
+      detail: `${answer.status} in ${took} ms; the page took ${taken?.length} bytes of ${large.length}, sha256 ${taken?.sha?.slice(0, 16)} of ${sha(large)}`,
+    }
   })
 
   await check('refuses an app the door’s own request to take a file', async () => {

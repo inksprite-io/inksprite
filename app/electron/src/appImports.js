@@ -40,7 +40,7 @@ const digest = text => createHash('sha256').update(text).digest()
  * @param {number} [options.life] - How long a link works, in milliseconds
  */
 export function appImports({ life = LIFE } = {}) {
-  /** @type {Map<string, {connection: string, about: About, bytes: Buffer|null, timer: NodeJS.Timeout}>} */
+  /** @type {Map<string, {connection: string, about: About, bytes: Buffer|null, sending: boolean, timer: NodeJS.Timeout}>} */
   const held = new Map()
 
   /** @param {string} id */
@@ -96,8 +96,43 @@ export function appImports({ life = LIFE } = {}) {
       for (const [id] of mine.slice(0, Math.max(0, mine.length - HELD_MOST + 1))) drop(id)
 
       const id = randomBytes(32).toString('base64url')
-      held.set(id, { connection, about: JSON.parse(written), bytes: null, timer: expire(id) })
+      held.set(id, {
+        connection,
+        about: JSON.parse(written),
+        bytes: null,
+        sending: false,
+        timer: expire(id),
+      })
       return { id }
+    },
+
+    /**
+     * Hold a link for a file on its way, before any of it is read: false for
+     * a link used, run out or never made, or with a file already on its way
+     * by it. So nothing is kept of what is sent to a link that isn't
+     * waiting, and only one file comes by one at a time.
+     *
+     * @param {string} id
+     * @returns {boolean}
+     */
+    claim(id) {
+      const found = find(id)
+      const one = found === null ? null : held.get(found)
+      if (!one || one.bytes !== null || one.sending) return false
+      one.sending = true
+      return true
+    },
+
+    /**
+     * Let a link that was held for a file wait again: the file never came
+     * whole.
+     *
+     * @param {string} id
+     */
+    release(id) {
+      const found = find(id)
+      const one = found === null ? null : held.get(found)
+      if (one) one.sending = false
     },
 
     /**
@@ -115,6 +150,7 @@ export function appImports({ life = LIFE } = {}) {
       if (found === null || !one || one.bytes !== null) return null
       clearTimeout(one.timer)
       one.bytes = bytes
+      one.sending = false
       one.timer = expire(found)
       return { connection: one.connection, about: one.about }
     },

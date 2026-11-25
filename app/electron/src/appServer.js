@@ -48,6 +48,19 @@ export const IMPORT_METHOD = 'inksprite/import'
 /** What begins the methods only the door asks a page. */
 const OWN_METHODS = 'inksprite/'
 
+/**
+ * What an upload is told where no link is waiting for it, in words for the
+ * app's model, which reads what its command printed.
+ */
+const NOTHING_WAITING = 'Nothing is waiting by that link. import_document gives another.'
+
+/**
+ * What an upload too large to take is told.
+ * @param {number} most - Bytes
+ */
+const tooLarge = most =>
+  `The file is larger than ${Math.floor(most / (1024 * 1024))} MB, the most an app can bring in.`
+
 /** The most a request's body may be: a document written whole, and room. */
 export const MOST_BYTES = 4 * 1024 * 1024
 
@@ -177,7 +190,7 @@ function listenOn(answer, host, port) {
  *   rejects, in words for the app's model, when none can
  * @param {Pick<import('./appExports.js').AppExports, 'take'>} options.exports -
  *   What is ready for apps to fetch
- * @param {Pick<import('./appImports.js').AppImports, 'arrive'|'done'|'most'>} options.imports -
+ * @param {Pick<import('./appImports.js').AppImports, 'claim'|'release'|'arrive'|'done'|'most'>} options.imports -
  *   What apps are to send
  */
 export function appDoor({ connections, ask, exports, imports }) {
@@ -251,20 +264,31 @@ export function appDoor({ connections, ask, exports, imports }) {
     // A browser says where it is sending from, or why: nothing here is for one.
     if (request.headers['sec-fetch-site'] !== undefined) return send(response, 403)
     if (request.method !== 'PUT') return send(response, 405, undefined, { Allow: 'PUT' })
-    const body =
-      Number(request.headers['content-length']) > imports.most
-        ? null
-        : await bodyOf(request, imports.most)
-    if (body === null) {
+    /** Refuse what is being sent, reading no more of it. */
+    const refuse = (/** @type {number} */ status, /** @type {string} */ error) => {
       response.once('finish', () => request.destroy())
-      return send(response, 413, undefined, { Connection: 'close' })
+      send(response, status, { error }, { Connection: 'close' })
     }
+    // Nothing sent is kept until a link is found waiting for it: without one,
+    // a request is nobody's to hold in memory.
+    if (!imports.claim(id)) return refuse(404, NOTHING_WAITING)
+    /** @type {Buffer|null} */
+    let body = null
+    try {
+      body =
+        Number(request.headers['content-length']) > imports.most
+          ? null
+          : await bodyOf(request, imports.most)
+    } finally {
+      if (body === null) imports.release(id)
+    }
+    if (body === null) return refuse(413, tooLarge(imports.most))
     const arrived = imports.arrive(id, body)
-    if (!arrived) return send(response, 404)
+    if (!arrived) return refuse(404, NOTHING_WAITING)
     try {
       const { connections: all } = await connections.all()
       const connection = all.find(one => one.id === arrived.connection)
-      if (!connection) return send(response, 404)
+      if (!connection) return send(response, 404, { error: NOTHING_WAITING })
       called.set(connection.id, Date.now())
 
       const controller = new AbortController()

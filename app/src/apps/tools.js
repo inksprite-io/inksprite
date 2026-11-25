@@ -279,7 +279,7 @@ const TOOLS = [
     adds: true,
     own: {
       description:
-        'Bring a file from your side into the project, sent by your shell: to copy a file in exactly as it is, without writing its text out. The answer is a link and the command that sends the file to it, to run in your shell; the command prints what the file became. A Markdown file (.md) or a Word file (.docx) becomes a document to edit; anything else, a .txt, a script, a table, a PDF or a picture, is kept as the file it is, its text read with read_document.',
+        'Bring a file from your side into the project, sent by your shell: to copy a file in exactly as it is, without writing its text out. The answer is a link and the command that sends the file to it, to run in your shell; the command prints what the file became. A Markdown file (.md) or a Word file (.docx) becomes a document to edit, and plain text (.txt) a document kept exactly as written; anything else, a script, a table, a PDF or a picture, is kept as the file it is, its text read with read_document.',
       inputSchema: {
         type: 'object',
         properties: {

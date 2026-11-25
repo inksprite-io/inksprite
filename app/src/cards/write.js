@@ -465,7 +465,8 @@ async function writePortrait(store, storyId, folderId, portrait) {
  * after the file rather than after a heading inside it — a heading is the
  * writer's text and eating it to make a name is a decision the importer has no
  * business taking. One too long for the editor to lay out comes in plain, as
- * the text it is: see editor/size.
+ * the text it is: see editor/size. So does plain text (`asWritten`), whose
+ * characters Markdown would read as markup.
  *
  * The pictures taken out of it (`files/pictures.js`) become its own, their
  * bytes kept before its row is, so it never shows one as missing. A Google
@@ -482,13 +483,15 @@ async function writePortrait(store, storyId, folderId, portrait) {
  * @param {import('@/files/batch.js').BaseRead} [options.base] - Where the Doc
  *   was read, when it was read through the converter
  * @param {import('@/files/pictures.js').TakenPicture[]} [options.pictures]
+ * @param {boolean} [options.asWritten] - Plain text, kept as written rather
+ *   than read as Markdown
  * @returns {Promise<Written>}
  */
 export async function writeMarkdown(
   storyId,
   title,
   content,
-  { parentId, drive, base, pictures } = {}
+  { parentId, drive, base, pictures, asWritten = false } = {}
 ) {
   const api = useDocuments(storyId)
   await api.init()
@@ -502,9 +505,9 @@ export async function writeMarkdown(
   const text = placed?.markdown ?? content
 
   const parent = parentId || rootIdFor(storyId)
-  const doc = parseMarkdown(text)
-  const plain = !laysOut(doc)
-  const markdown = plain ? text : serializeMarkdown(doc)
+  const doc = asWritten ? null : parseMarkdown(text)
+  const plain = !doc || !laysOut(doc)
+  const markdown = !doc || plain ? text : serializeMarkdown(doc)
   const made = store.createDocument({
     id,
     storyId,

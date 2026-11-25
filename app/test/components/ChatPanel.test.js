@@ -424,6 +424,29 @@ describe('ChatPanel', () => {
       })
     })
 
+    it('gives the terminal the button made the keys, unless the writer put them elsewhere meanwhile', async () => {
+      const wrapper = await mountPanel()
+      framesFocused.length = 0
+
+      await openTerminal(wrapper)
+      expect(framesFocused).toEqual(['terminal:1'])
+
+      // A click elsewhere while the next is being made.
+      framesFocused.length = 0
+      const box = document.createElement('textarea')
+      document.body.append(box)
+      native.create.mockImplementationOnce(async () => {
+        box.focus()
+        return 'terminal:2'
+      })
+      await openTerminal(wrapper)
+
+      expect(tab(wrapper, 'terminal:2').attributes('aria-selected')).toBe('true')
+      expect(framesFocused).toEqual([])
+      expect(document.activeElement).toBe(box)
+      box.remove()
+    })
+
     it('calls a terminal’s tab Terminal until the program in it names it, and marks it as one', async () => {
       const wrapper = await mountPanel()
       await openTerminal(wrapper)

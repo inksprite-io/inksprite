@@ -444,6 +444,18 @@ describe('a terminal’s frame', () => {
       }
     })
 
+    it('hands the page a terminal’s key held down once, keeping its repeats from the shell and the menu', async () => {
+      const terminal = await load({ mac: false })
+      const held = { code: 'Backquote', ctrlKey: true, shiftKey: true }
+      press(terminal, '~', held)
+      const { event, typed } = press(terminal, '~', { ...held, repeat: true })
+
+      expect(typed).toBe(false)
+      expect(event.preventDefault).toHaveBeenCalled()
+      expect(page.postMessage).toHaveBeenCalledTimes(1)
+      expect(shell.send).not.toHaveBeenCalled()
+    })
+
     /**
      * Press the new terminal's key, and then Control-L, which is the shell's.
      * @param {boolean} mac

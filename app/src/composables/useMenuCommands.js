@@ -13,10 +13,13 @@
  * The terminal's keys work wherever the writer is: Command-L makes a
  * terminal (Control-Shift-L off a Mac), and Control-` shows one, the one
  * shown last or a new one, as code editors have it, with Shift making one as
- * they have that too. The menu shows them, but the keys are taken here, from
- * the page and from a terminal's frame, which hands them over
- * (`platform/terminal.js`): a menu's key would never reach the page from
- * inside a terminal off a Mac.
+ * they have that too. Control-` in a terminal goes back to where the writer
+ * was before it, as an editor of code has it: what had the keys last outside
+ * a terminal, and the chat that was showing then. The menu shows them, but
+ * the keys are taken here, from the page and from a terminal's frame, which
+ * hands them over (`platform/terminal.js`): a menu's key would never reach
+ * the page from inside a terminal off a Mac. One held down makes one
+ * terminal, not one for each time it repeats.
  *
  * The menu is told what it holds of what the settings decide: a new chat
  * while the AI is on, and the terminals while their extension is.
@@ -27,6 +30,7 @@
  * does nothing.
  */
 
+/* global Element, HTMLElement */
 import { nextTick, onBeforeUnmount, onMounted, watch } from 'vue'
 import { hasMenuCommands, onMenuCommand, showInMenu } from '@/platform/menu.js'
 import { hasTerminal, isTerminalId, terminalKey } from '@/platform/terminal.js'
@@ -34,6 +38,7 @@ import { tabAt, tabBeside } from '@/utils/tabs.js'
 import { useApplicationState } from './useApplicationState.js'
 import { useChatTabs } from './useChatTabs.js'
 import { useDocuments } from './useDocuments.js'
+import { useEditor } from './useEditor.js'
 import { useFocusMode } from './useFocusMode.js'
 import { useNewDocument } from './useNewDocument.js'
 import { useProjectsDialog } from './useProjectsDialog.js'
@@ -45,6 +50,29 @@ import { watchWriterPanel, writerPanel } from './useWriterPanel.js'
 
 /** Whether a dialog is open over the writer. */
 const dialogOpen = () => document.querySelector('.p-dialog-mask') !== null
+
+/**
+ * Whether something is a terminal, or in one: its frame hands its keys to
+ * the page as if pressed on the frame's element (`TerminalFrame`).
+ *
+ * @param {EventTarget|null} target
+ * @returns {boolean}
+ */
+const inTerminal = target =>
+  target instanceof Element && target.closest('[data-terminal-frame]') !== null
+
+/**
+ * The panel something is in, or picks things for, as the writer's panel is
+ * told (`useWriterPanel`): the outline is the editor's.
+ *
+ * @param {Element} target
+ * @returns {'editor'|'chat'|null}
+ */
+const panelOf = target => {
+  const within = target.closest('[data-panel], [data-panel-for]')
+  const name = within?.getAttribute('data-panel') ?? within?.getAttribute('data-panel-for')
+  return name === 'editor' || name === 'chat' ? name : null
+}
 
 /**
  * A panel's tabs, as the keys act on them, whichever panel it is.
@@ -166,6 +194,53 @@ export function useMenuCommands({ storyId, showEditor, showChat }) {
   const terminalsHere = () => hasTerminal() && terminal.value && !focused.value
 
   /**
+   * Where the writer last was outside a terminal: what had the keys, the
+   * panel it was in, the outline counting as the editor's, and the chat tab
+   * showing then where that was the chat. Noted as the keys go anywhere but a
+   * terminal, by a click or a key alike.
+   * @type {{element: HTMLElement, panel: 'editor'|'chat'|null, chatTab: string|null}|null}
+   */
+  let outside = null
+
+  /** @param {FocusEvent} event */
+  const noteOutside = event => {
+    const target = event.target
+    if (!(target instanceof HTMLElement) || inTerminal(target)) return
+    const project = storyId()
+    const panel = panelOf(target)
+    outside = {
+      element: target,
+      panel,
+      chatTab: project && panel === 'chat' ? useChatTabs(project).activeId.value : null,
+    }
+  }
+
+  /**
+   * Go back from a terminal to where the writer was before it: the chat that
+   * was showing then, brought forward, and what had the keys given them
+   * again. Where that has gone, as a title's field goes once it is named, the
+   * panel it was in has them: the document showing, or the chat's message
+   * box. Where nothing was noted, the chat shown before the terminal.
+   *
+   * @param {string} project
+   */
+  const leaveTerminal = async project => {
+    const chats = useChatTabs(project)
+    const was = outside
+    const chatTab = was ? was.chatTab : chats.activeChatId.value
+    if (chatTab && chatTab !== chats.activeId.value) chats.open(chatTab)
+    const inEditor = was?.panel === 'editor'
+    if (inEditor) showEditor()
+    else showChat()
+    await nextTick()
+    if (was?.element.isConnected) was.element.focus()
+    else if (inEditor) {
+      const shown = useDocuments(project).tabs.value.active
+      if (shown) useEditor().focus(shown)
+    } else if (chatTab) chats.focus()
+  }
+
+  /**
    * Show a terminal in the chat panel, with the keys in it: the one shown
    * last, or the first in the strip, or a new one where none is open or one
    * was asked for.
@@ -177,6 +252,9 @@ export function useMenuCommands({ storyId, showEditor, showChat }) {
     const chats = useChatTabs(project)
     const { shown, open } = chats.tabs.value
     const id = fresh ? null : (shown.find(isTerminalId) ?? open.find(isTerminalId))
+    // What has the keys as it is asked: a terminal still being made gets
+    // them only if the writer hasn't put them elsewhere meanwhile.
+    const had = document.activeElement
     if (id) chats.open(id)
     else {
       try {
@@ -186,6 +264,7 @@ export function useMenuCommands({ storyId, showEditor, showChat }) {
         toast.error('The terminal couldn’t be opened.')
         return
       }
+      if (document.activeElement !== had) return
     }
     showChat()
     // Once the panel is showing, which the terminal has to be to take the keys.
@@ -202,9 +281,12 @@ export function useMenuCommands({ storyId, showEditor, showChat }) {
   const onKeyDown = event => {
     const command = terminalKey(event)
     if (!command || event.defaultPrevented) return
-    if (!terminalsHere() || dialogOpen() || !storyId()) return
+    const project = storyId()
+    if (!terminalsHere() || dialogOpen() || !project) return
     event.preventDefault()
-    run(command)
+    if (event.repeat) return
+    if (command === 'showTerminal' && inTerminal(event.target)) leaveTerminal(project)
+    else run(command)
   }
 
   // What the menu holds that the settings decide.
@@ -215,13 +297,17 @@ export function useMenuCommands({ storyId, showEditor, showChat }) {
   /** @type {() => void} */
   let stop = () => {}
   onMounted(() => {
-    if (hasTerminal()) window.addEventListener('keydown', onKeyDown)
+    if (hasTerminal()) {
+      window.addEventListener('keydown', onKeyDown)
+      document.addEventListener('focusin', noteOutside, true)
+    }
     if (!hasMenuCommands()) return
     watchWriterPanel()
     stop = onMenuCommand(run)
   })
   onBeforeUnmount(() => {
     window.removeEventListener('keydown', onKeyDown)
+    document.removeEventListener('focusin', noteOutside, true)
     stop()
   })
 }

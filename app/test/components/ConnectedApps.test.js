@@ -1,7 +1,9 @@
+/* global KeyboardEvent */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { DOMWrapper, mount, flushPromises } from '@vue/test-utils'
 import { ref } from 'vue'
 import PrimeVue from 'primevue/config'
+import { isEscapeFor } from '@/composables/useTopmostEscape.js'
 
 /**
  * The native side, stood in for: the connections it keeps, its port, and
@@ -93,6 +95,12 @@ vi.mock('@/composables/useProjects.js', () => ({ useProjects: () => ({ rows, ini
 const toast = vi.hoisted(() => ({ error: vi.fn() }))
 vi.mock('@/composables/useToast', () => ({ useToast: () => toast }))
 
+/** What the last confirm asked, which a test answers. */
+let asked = /** @type {any} */ (null)
+vi.mock('primevue/useconfirm', () => ({
+  useConfirm: () => ({ require: options => (asked = options) }),
+}))
+
 import ConnectedApps from '@/components/writer/settings/ConnectedApps.vue'
 import { useConnectedApps } from '@/composables/useConnectedApps.js'
 import { SECTION_HEADING } from '@/components/common/sectionHeading.js'
@@ -173,6 +181,7 @@ beforeEach(() => {
   // would be the next test's.
   vi.resetAllMocks()
   native.reset()
+  asked = null
   rows.value = [THIEF, NOTES]
   // One state for the app, so the last test's is still there.
   useConnectedApps().state.value = null
@@ -601,13 +610,24 @@ describe('ConnectedApps', () => {
       expect(label.attributes('for')).toBe(readOnlySwitch(open()).attributes('id'))
     })
 
-    it('removes the app, and its card with it', async () => {
+    it('asks first, its token being gone for good once it is removed', async () => {
+      const { open } = await mountOpen()
+
+      await open().find('[data-action="remove"]').trigger('click')
+
+      expect(asked.message).toBe('Remove Claude Code?')
+      expect(asked.acceptProps.label).toBe('Remove')
+      expect(native.platform.removeApp).not.toHaveBeenCalled()
+    })
+
+    it('removes the app, once asked, and its card with it', async () => {
       const first = native.has()
       const second = native.has({ name: 'The other agent' })
       const wrapper = await mountApps()
       await clickCard(wrapper, first.id)
 
       await card(wrapper, first.id).find('[data-action="remove"]').trigger('click')
+      await asked.accept()
       await flushPromises()
 
       expect(native.platform.removeApp).toHaveBeenCalledWith(first.id)
@@ -623,6 +643,7 @@ describe('ConnectedApps', () => {
       const { open } = await mountOpen()
 
       await open().find('[data-action="remove"]').trigger('click')
+      await asked.accept()
       await flushPromises()
 
       expect(toast.error).toHaveBeenCalledWith("The app couldn't be removed.")
@@ -947,6 +968,24 @@ describe('ConnectedApps', () => {
         await flushPromises()
         expect(native.platform.setAppsPort).toHaveBeenLastCalledWith(5001)
         expect(portField().element.value).toBe('5001')
+      })
+
+      it('says on the cog that its popup is open, so that an Escape there shuts the popup and not the settings', async () => {
+        // The popup says it has opened as its transition starts.
+        const wrapper = await mountApps({ stubs: { transition: false } })
+        const cog = () => wrapper.find('[data-action="apps-port"]')
+        expect(cog().attributes('aria-expanded')).toBe('false')
+
+        await openPort(wrapper)
+        expect(cog().attributes('aria-expanded')).toBe('true')
+
+        // The settings ask whether an Escape is theirs, as it comes up to the page.
+        let theSettings = null
+        const ask = event => (theSettings = isEscapeFor(event, document.body))
+        document.addEventListener('keydown', ask)
+        cog().element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+        document.removeEventListener('keydown', ask)
+        expect(theSettings).toBe(false)
       })
 
       it('leaves the port as it was on Escape, whatever was typed', async () => {

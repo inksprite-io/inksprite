@@ -8,9 +8,14 @@ const desktop = { value: false }
 vi.mock('@/platform/menu.js', () => ({ hasMenuCommands: () => desktop.value }))
 
 const aiEnabled = ref(true)
+const terminal = ref(false)
 vi.mock('@/composables/useApplicationState.js', () => ({
-  useApplicationState: () => ({ aiEnabled }),
+  useApplicationState: () => ({ aiEnabled, terminal }),
 }))
+
+/** Whether this desktop app has terminals at all. */
+const hasTerminals = { value: true }
+vi.mock('@/platform/terminal.js', () => ({ hasTerminal: () => hasTerminals.value }))
 
 const Dialog = {
   name: 'Dialog',
@@ -36,6 +41,8 @@ describe('ShortcutsDialog', () => {
   beforeEach(() => {
     desktop.value = false
     aiEnabled.value = true
+    terminal.value = false
+    hasTerminals.value = true
   })
 
   it('lists the editor’s keys, and in a browser no more: the tabs’ keys are the browser’s there', () => {
@@ -67,5 +74,22 @@ describe('ShortcutsDialog', () => {
     const actions = listed(mountDialog(), 'Tabs and windows').map(([action]) => action)
     expect(actions).not.toContain('New chat')
     expect(actions).toContain('New document')
+  })
+
+  it('lists the terminal’s keys with the Terminal extension on, and not without it', () => {
+    desktop.value = true
+    const actions = () => listed(mountDialog(), 'Tabs and windows').map(([action]) => action)
+    expect(actions()).not.toContain('New terminal')
+    expect(actions()).not.toContain('Show terminal')
+
+    terminal.value = true
+    const keys = Object.fromEntries(listed(mountDialog(), 'Tabs and windows'))
+    // Control-Shift-L off a Mac, where Control-L is the shell's.
+    expect(keys['New terminal']).toBe('Ctrl+Shift+L')
+    expect(keys['Show terminal']).toBe('Ctrl+`')
+
+    // With the extension on, a desktop app that has no terminals lists none.
+    hasTerminals.value = false
+    expect(actions()).not.toContain('New terminal')
   })
 })

@@ -10,11 +10,20 @@
  * as it is read, its bytes kept and a marker left where it was, as a Google
  * Doc's are (`files/pictures.js`), to be made the document's own.
  *
- * mammoth is loaded with the first Word file, not with the app.
+ * mammoth is loaded with the first Word file, not with the app, and handed
+ * only one that opens into no more than `DOCX_MOST`.
  */
 
+import { MIB, unzippedSize } from '@/utils/unzip.js'
 import { markdownOfHtml } from './html.js'
 import { markerFor } from './pictures.js'
+
+/**
+ * The most a Word file may open into. mammoth inflates it whole, and a few
+ * kilobytes of zip can say they hold gigabytes; a real one, pictures and
+ * all, is far smaller.
+ */
+export const DOCX_MOST = 512 * MIB
 
 /** A Word file's media type. */
 export const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -44,6 +53,13 @@ const BACK_LINK = /\s*<a href="#(?:foot|end)note-ref-[^"]*">↑<\/a>/g
  * @throws {Error} When it cannot be read as a Word file
  */
 export async function docxToMarkdown(data) {
+  let size = 0
+  try {
+    size = unzippedSize(new Uint8Array(data))
+  } catch {
+    throw new Error('Couldn’t read the Word file')
+  }
+  if (size > DOCX_MOST) throw new Error('The Word file is too large to open')
   const { default: mammoth } = await import('mammoth')
   /** @type {import('./pictures.js').TakenPicture[]} */
   const pictures = []

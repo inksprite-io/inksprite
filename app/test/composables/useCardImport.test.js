@@ -287,13 +287,21 @@ describe('useCardImport', () => {
       expect(found.value).toBe('# Chapter 1\n\nIt rained.\n')
     })
 
-    it('keeps plain text as the file it is, by its name with .txt', async () => {
+    it('takes plain text as a document kept as written, by its name with .txt', async () => {
       const found = await cards.inspect(
-        new File(['# Not a heading\n\n* not a list'], 'notes.txt', { type: 'text/plain' })
+        new File(['# Not a heading\r\n\r\n* not a list'], 'notes.txt', { type: 'text/plain' })
       )
 
-      expect(found).toMatchObject({ shape: 'file', title: 'notes.txt', mime: 'text/plain' })
-      expect(found.value.text).toBe('# Not a heading\n\n* not a list')
+      expect(found).toMatchObject({ shape: 'markdown', title: 'notes.txt', plain: true })
+      expect(found.value).toBe('# Not a heading\n\n* not a list')
+    })
+
+    it('keeps a file called .txt that isn’t text as the file it is', async () => {
+      const found = await cards.inspect(
+        new File([new Uint8Array([0, 1, 2, 0, 255, 0])], 'dump.txt', { type: 'text/plain' })
+      )
+
+      expect(found.shape).toBe('file')
     })
 
     it('writes one too long to lay out as plain text, as it came', async () => {
@@ -307,6 +315,18 @@ describe('useCardImport', () => {
       const document = store.getDocument(written.folderId)
       expect(document.plain).toBe(true)
       expect(document.content).toBe(table)
+    })
+
+    it('writes plain text as it came, in a plain document', async () => {
+      const store = useDocumentsStore()
+      const text = '# Not a heading\n* not a list\n\n\n\nkept as it is\n'
+      const found = await cards.inspect(file('system.txt', text))
+
+      const written = await cards.write(found)
+
+      const document = store.getDocument(written.folderId)
+      expect(document).toMatchObject({ type: 'text', title: 'system.txt', plain: true })
+      expect(document.content).toBe(text)
     })
 
     it('lays out one that is long in words alone', async () => {

@@ -598,15 +598,74 @@ describe('a file an app sends', () => {
     expect(unanswered.body).toEqual({ error: 'inksprite has no window open.' })
   })
 
+  /**
+   * Start sending to the door, a part of what the request says it holds.
+   *
+   * @param {string} id
+   * @param {number} length - What the request says it holds
+   * @param {Buffer} part - What is sent of it, for now
+   */
+  const startSending = (id, length, part) => {
+    /** @type {(answer: {status: number, body: any}) => void} */
+    let answered = () => {}
+    const answer = new Promise(resolve => (answered = resolve))
+    const request = http.request(
+      {
+        host: '127.0.0.1',
+        port,
+        path: `/import/${id}`,
+        method: 'PUT',
+        headers: { 'Content-Length': length },
+      },
+      response => {
+        let said = ''
+        response.on('data', chunk => (said += chunk))
+        response.on('end', () =>
+          answered({ status: response.statusCode ?? 0, body: said ? JSON.parse(said) : null })
+        )
+      }
+    )
+    // The door hangs up on what it refuses.
+    request.on('error', () => {})
+    request.write(part)
+    return { request, answer }
+  }
+
   it('takes one file to a link, and none by a link never made or run out', async () => {
     const { id } = imports.open('app_1', ABOUT)
     expect((await sendFile(id)).status).toBe(200)
-    expect((await sendFile(id)).status).toBe(404)
+    const again = await sendFile(id)
+    expect(again.status).toBe(404)
+    // Said, for the app's model to read in what its command printed.
+    expect(again.body.error).toMatch(/Nothing is waiting by that link/)
 
     for (const other of ['nothing', '', 'a'.repeat(43), '..%2f..%2fapps.json']) {
       expect((await sendFile(other)).status, other).toBe(404)
     }
     expect(ask).toHaveBeenCalledTimes(1)
+  })
+
+  it('reads nothing sent to a link that isn’t waiting', async () => {
+    // Ten megabytes said, a kilobyte sent: the answer comes before the rest.
+    const { request, answer } = startSending('nothing', 10 * 1024 * 1024, Buffer.alloc(1024))
+
+    const refused = await answer
+
+    expect(refused.status).toBe(404)
+    expect(refused.body.error).toMatch(/Nothing is waiting by that link/)
+    request.destroy()
+  })
+
+  it('takes one file at a time by a link, and lets it wait again for one that never came whole', async () => {
+    const { id } = imports.open('app_1', ABOUT)
+    const first = startSending(id, 100, Buffer.alloc(10))
+
+    // While the first is on its way, a second is refused before it is read.
+    await vi.waitFor(async () => expect((await sendFile(id)).status).toBe(404))
+    first.request.destroy()
+
+    // The first gave up: the link waits for a file again.
+    await vi.waitFor(async () => expect((await sendFile(id)).status).toBe(200))
   })
 
   it('takes none for a connection removed since the link was made', async () => {
@@ -650,6 +709,7 @@ describe('a file an app sends', () => {
     const answer = await sendFile(id, Buffer.from('more than four'))
 
     expect(answer.status).toBe(413)
+    expect(answer.body.error).toMatch(/larger than/)
     expect(ask).not.toHaveBeenCalled()
     expect((await sendFile(id, Buffer.from('four'))).status).toBe(200)
     brief.stop()

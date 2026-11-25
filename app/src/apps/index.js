@@ -17,11 +17,16 @@
  * - **projects** - The projects ticked for an app, by name, and a call run in
  *   one in the window that has it, or that takes it for the call
  * - **writes** - A write's answer saying how the text was stored, where that
- *   isn't how it was sent
+ *   isn't how it was sent: the passage as it reads, or for a whole body the
+ *   difference from what was sent
  * - **revisions** - A revision on every read and write of a document, what
  *   the connection last had of it, and what has changed since
  * - **exports** - A document or a folder made ready as files, each text
  *   stamped with its document, for the app's own shell to fetch by a link
+ * - **imports** - A file the app's own shell sends by a link that takes one,
+ *   brought into a project as the writer's own import brings one in; the
+ *   door asks the page to take it by a request of its own, which an app may
+ *   not send
  */
 
 import { answerApps, canConnectApps } from '@/platform/apps.js'

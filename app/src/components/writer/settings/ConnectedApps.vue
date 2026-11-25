@@ -32,6 +32,7 @@
           icon="pi pi-cog"
           label="Port"
           aria-haspopup="true"
+          :aria-expanded="portOpen"
           data-action="apps-port"
           @click="portPanel?.toggle($event)"
         />
@@ -59,7 +60,7 @@
     </CardList>
 
     <!-- The port, behind the cog on the server's card. -->
-    <Popover ref="portPanel" data-apps-port @show="alignPortPanel">
+    <Popover ref="portPanel" data-apps-port @show="onPortShown" @hide="portOpen = false">
       <div class="flex items-center justify-between gap-3 text-sm">
         <label
           :for="`${id}-port`"
@@ -99,6 +100,7 @@
           <InputText
             v-model="nameDrafts[one.id]"
             size="small"
+            class="dark:!bg-surface-900"
             data-field="app-rename"
             @blur="saveName(one)"
             @keydown.enter="saveName(one)"
@@ -212,6 +214,7 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Popover from 'primevue/popover'
 import ToggleSwitch from 'primevue/toggleswitch'
+import { useConfirm } from 'primevue/useconfirm'
 import CardList from '@/components/common/CardList.vue'
 import CardItem from '@/components/common/CardItem.vue'
 import HeaderButton from '../layout/HeaderButton.vue'
@@ -247,6 +250,7 @@ import { projectsNamed } from '@/utils/projectList.js'
 const id = useId()
 const heading = useSectionHeading()
 const toast = useToast()
+const confirm = useConfirm()
 const projects = useProjects()
 const {
   state,
@@ -385,15 +389,27 @@ const switchReadOnly = async (one, readOnly) => {
   }
 }
 
-/** @param {AppConnection} one */
-const remove = async one => {
-  try {
-    await removeApp(one.id)
-    if (open.value === one.id) open.value = null
-  } catch (error) {
-    console.error('Failed to remove a connected app:', error)
-    toast.error("The app couldn't be removed.")
-  }
+/**
+ * Remove it, once asked: its token can't be brought back, so the app would
+ * be set up again.
+ * @param {AppConnection} one
+ */
+const remove = one => {
+  confirm.require({
+    header: 'Remove app',
+    message: `Remove ${one.name}?`,
+    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+    acceptProps: { label: 'Remove', severity: 'danger' },
+    accept: async () => {
+      try {
+        await removeApp(one.id)
+        if (open.value === one.id) open.value = null
+      } catch (error) {
+        console.error('Failed to remove a connected app:', error)
+        toast.error("The app couldn't be removed.")
+      }
+    },
+  })
 }
 
 /**
@@ -489,6 +505,18 @@ const alignPortPanel = () => {
   panel.style.left = `${panel.offsetLeft - over}px`
   // Its arrow stays under the cog: PrimeVue places it by this.
   panel.style.setProperty('--p-popover-arrow-left', `${over}px`)
+}
+
+/**
+ * Whether the port's popup is open, which the cog says, so that an Escape
+ * pressed on it shuts the popup and leaves the settings open
+ * (`useTopmostEscape`).
+ */
+const portOpen = ref(false)
+
+const onPortShown = () => {
+  portOpen.value = true
+  alignPortPanel()
 }
 
 /** Whether apps are let in at all: they are, until the writer says not. */

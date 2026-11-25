@@ -17,7 +17,8 @@
  * - **html** - A web page's words for the model, and its article as markdown
  *   for the viewer
  * - **docx** - A Word file as markdown, which an import makes a document of,
- *   as it does a Google Doc
+ *   as it does a Google Doc, once it is known to open into no more than a
+ *   Word file could
  * - **pictures** - Pictures that come inside what is imported, written into
  *   markdown as data URIs or held in a Word file: taken out with a marker
  *   where each was, then made the new document's own

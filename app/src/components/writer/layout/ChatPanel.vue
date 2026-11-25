@@ -192,9 +192,11 @@ const showTab = async id => {
 /**
  * Make a terminal, in a tab beside the one showing, with the keys in it
  * before its frame has loaded, as the key that makes one gives them: what is
- * typed meanwhile would go to the button, and Enter make another.
+ * typed meanwhile would go to the button, and Enter make another. Unless the
+ * writer has put the keys elsewhere while it was being made.
  */
 const openTerminal = async () => {
+  const had = document.activeElement
   try {
     await chatTabs.openTerminal()
   } catch (error) {
@@ -202,7 +204,7 @@ const openTerminal = async () => {
     toast.error('The terminal couldn’t be opened.')
     return
   }
-  chatTabs.focus()
+  if (document.activeElement === had) chatTabs.focus()
 }
 
 // The keys asked for in the tab showing, which a key brought forward

@@ -57,6 +57,7 @@ vi.mock('@/composables/useDocuments.js', () => ({ useDocuments: () => documents 
 const chatTabs = {
   tabs: ref(strip([], null)),
   activeId: ref(null),
+  activeChatId: ref(null),
   open: vi.fn(id => {
     chatTabs.activeId.value = id
   }),
@@ -67,6 +68,9 @@ const chatTabs = {
   focus: vi.fn(),
 }
 vi.mock('@/composables/useChatTabs.js', () => ({ useChatTabs: () => chatTabs }))
+
+const editor = { focus: vi.fn() }
+vi.mock('@/composables/useEditor.js', () => ({ useEditor: () => editor }))
 
 const newDocument = vi.fn()
 vi.mock('@/composables/useNewDocument.js', () => ({ useNewDocument: () => newDocument }))
@@ -96,6 +100,7 @@ describe('useMenuCommands', () => {
     documents.tabs.value = docs
     chatTabs.tabs.value = chats
     chatTabs.activeId.value = chats.active
+    chatTabs.activeChatId.value = null
   }
 
   beforeEach(() => {
@@ -301,15 +306,16 @@ describe('useMenuCommands', () => {
   describe('the terminal’s keys', () => {
     /**
      * Press Control-`, with Shift for a new terminal, where the page has it.
-     * @param {{shift?: boolean, on?: EventTarget}} [how]
+     * @param {{shift?: boolean, on?: EventTarget, repeat?: boolean}} [how]
      * @returns {KeyboardEvent}
      */
-    const press = ({ shift = false, on = document.body } = {}) => {
+    const press = ({ shift = false, on = document.body, repeat = false } = {}) => {
       const event = new KeyboardEvent('keydown', {
         key: shift ? '~' : '`',
         code: 'Backquote',
         ctrlKey: true,
         shiftKey: shift,
+        repeat,
         bubbles: true,
         cancelable: true,
       })
@@ -398,6 +404,122 @@ describe('useMenuCommands', () => {
       press({ on: panelRoot, shift: true })
       await settle()
       expect(chatTabs.openTerminal).toHaveBeenCalled()
+    })
+
+    it('makes one terminal for a key held down, not one each time it repeats', async () => {
+      have({ chats: strip(['x'], 'x') })
+      press({ shift: true })
+      const repeated = press({ shift: true, repeat: true })
+      press({ shift: true, repeat: true })
+      await settle()
+
+      expect(repeated.defaultPrevented).toBe(true)
+      expect(chatTabs.openTerminal).toHaveBeenCalledTimes(1)
+    })
+
+    it('leaves the keys where the writer put them while a terminal was being made', async () => {
+      const box = document.createElement('textarea')
+      document.body.append(box)
+      chatTabs.openTerminal.mockImplementationOnce(async () => box.focus())
+      press({ shift: true })
+      await settle()
+
+      expect(chatTabs.openTerminal).toHaveBeenCalled()
+      expect(chatTabs.focus).not.toHaveBeenCalled()
+      expect(document.activeElement).toBe(box)
+    })
+
+    describe('in a terminal', () => {
+      /** A terminal's frame, as its keys reach the page: pressed on its element. */
+      const frame = () => {
+        const element = document.createElement('div')
+        element.setAttribute('data-terminal-frame', '')
+        document.body.append(element)
+        return element
+      }
+
+      /**
+       * A panel, holding something that takes the keys.
+       * @param {'editor'|'chat'} name
+       */
+      const inPanel = name => {
+        const element = document.createElement('div')
+        element.setAttribute('data-panel', name)
+        const field = document.createElement('textarea')
+        element.append(field)
+        document.body.append(element)
+        return field
+      }
+
+      it('goes back on Control-` to what had the keys before it, and the chat showing then', async () => {
+        have({ chats: { ...strip(['x', 'terminal:1'], 'x'), shown: ['x'] } })
+        const box = inPanel('chat')
+        box.focus()
+        // The terminal comes forward and the keys go into it.
+        chatTabs.activeId.value = 'terminal:1'
+        const terminal = frame()
+
+        press({ on: terminal })
+        await settle()
+
+        expect(chatTabs.open).toHaveBeenCalledWith('x')
+        expect(chatTabs.openTerminal).not.toHaveBeenCalled()
+        expect(showChat).toHaveBeenCalled()
+        expect(document.activeElement).toBe(box)
+      })
+
+      it('goes back to the editor, leaving the terminal showing beside it', async () => {
+        have({ chats: { ...strip(['x', 'terminal:1'], 'terminal:1'), shown: ['terminal:1'] } })
+        const text = inPanel('editor')
+        text.focus()
+        const terminal = frame()
+
+        press({ on: terminal })
+        await settle()
+
+        expect(chatTabs.open).not.toHaveBeenCalled()
+        expect(showEditor).toHaveBeenCalled()
+        expect(document.activeElement).toBe(text)
+      })
+
+      it('goes back to the document showing where what had the keys has gone, as a title’s field goes', async () => {
+        have({
+          docs: strip(['doc_1'], 'doc_1'),
+          chats: { ...strip(['terminal:1'], 'terminal:1'), shown: ['terminal:1'] },
+        })
+        const outline = document.createElement('div')
+        outline.setAttribute('data-panel-for', 'editor')
+        const title = document.createElement('input')
+        outline.append(title)
+        document.body.append(outline)
+        title.focus()
+        title.remove()
+
+        press({ on: frame() })
+        await settle()
+
+        expect(showEditor).toHaveBeenCalled()
+        expect(editor.focus).toHaveBeenCalledWith('doc_1')
+        expect(chatTabs.focus).not.toHaveBeenCalled()
+      })
+
+      it('goes back to the chat shown before it where the writer has been nowhere else', async () => {
+        have({ chats: { ...strip(['x', 'terminal:1'], 'terminal:1'), shown: ['terminal:1', 'x'] } })
+        chatTabs.activeChatId.value = 'x'
+
+        press({ on: frame() })
+        await settle()
+
+        expect(chatTabs.open).toHaveBeenCalledWith('x')
+        expect(chatTabs.focus).toHaveBeenCalled()
+      })
+
+      it('makes another on Control-Shift-`, as anywhere', async () => {
+        have({ chats: { ...strip(['x', 'terminal:1'], 'terminal:1'), shown: ['terminal:1'] } })
+        press({ on: frame(), shift: true })
+        await settle()
+        expect(chatTabs.openTerminal).toHaveBeenCalledTimes(1)
+      })
     })
 
     it('leaves the key alone with the Terminal extension off, in focus mode or under a dialog', async () => {

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest'
 import { strToU8, zipSync } from 'fflate'
-import { MIB, TooLargeError, unzipWithin } from '@/utils/unzip.js'
+import { MIB, TooLargeError, unzippedSize, unzipWithin } from '@/utils/unzip.js'
 
 describe('a zip opened with a ceiling', () => {
   const zip = zipSync({
@@ -54,5 +54,26 @@ describe('a zip opened with a ceiling', () => {
       if (view.getUint32(at, true) === 0x02014b50) view.setUint32(at + 24, 0, true)
     }
     expect(() => unzipWithin(stored, 1024)).toThrow(TooLargeError)
+  })
+})
+
+describe('what a zip says it opens into', () => {
+  it('is the sizes its directory gives, read without inflating anything', () => {
+    const zip = zipSync({
+      'a.txt': strToU8('One. '.repeat(100)),
+      'big.bin': new Uint8Array(3 * MIB),
+    })
+    expect(unzippedSize(zip)).toBe(3 * MIB + 500)
+
+    // A size made a lie, far past what the bytes could hold, is read as said.
+    const view = new DataView(zip.buffer)
+    for (let at = zip.length - 46; at >= 0; at--) {
+      if (view.getUint32(at, true) === 0x02014b50) view.setUint32(at + 24, 0xffff0000, true)
+    }
+    expect(unzippedSize(zip)).toBeGreaterThan(2 * 1024 * MIB)
+  })
+
+  it('is refused for what isn’t a zip', () => {
+    expect(() => unzippedSize(strToU8('not a zip'))).toThrow()
   })
 })

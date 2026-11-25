@@ -34,6 +34,7 @@ import { docxToMarkdown, isDocx } from '@/files/docx.js'
 import { takePictures } from '@/files/pictures.js'
 import { MAX_TEXT_BYTES, inspectFile, refuseTooLarge, titleOf } from '@/files/inspect.js'
 import { writeFile } from '@/files/write.js'
+import { textOfFile } from '@/source/text.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useDocuments } from '@/composables/useDocuments'
 import { useFilesStore } from '@/stores/filesStore'
@@ -65,6 +66,7 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
  * @property {string} [mime] - A file: what it is
  * @property {number} [pages] - A file: how many pages, for a format that has them
  * @property {boolean} [text] - A file: whether any text could be read out of it
+ * @property {boolean} [plain] - Markdown that is plain text: kept as written
  * @property {import('@/files/pictures.js').TakenPicture[]} [pictures] - Markdown or
  *   a Word file: the pictures taken out of it, a marker in the text where each
  *   was, to be the document's own
@@ -75,11 +77,15 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
  * @property {any} value - The card, the book, the text, or the inspected file
  */
 
-/**
- * Markdown, which is a document and nothing more. Plain text (`.txt`) is
- * not: it is kept as the file it is, as a script or a table is.
- */
+/** Markdown, which is a document and nothing more. */
 const MARKDOWN = /\.(md|markdown)$/i
+
+/**
+ * Plain text, which is a document kept as written: read as Markdown, a
+ * prompt's or a list's characters would be taken for markup and written out
+ * another way. Its title keeps its `.txt`, as a script's keeps its extension.
+ */
+const PLAIN_TEXT = /\.txt$/i
 
 /** A PNG might be a card. */
 const PNG = /\.png$/i
@@ -148,6 +154,21 @@ export function useCardImport(storyId) {
       }
     }
 
+    // Read as text in whatever it was saved in; one that isn't text at all,
+    // whatever it is called, is a file to keep, below.
+    const plainText = readable && PLAIN_TEXT.test(file.name) ? await textOfFile(file) : null
+    if (plainText !== null) {
+      return {
+        shape: 'markdown',
+        title: titleOf(file.name, 'text/plain'),
+        ...NOTHING,
+        documents: 1,
+        asks: false,
+        plain: true,
+        value: plainText,
+      }
+    }
+
     if (isDocx(file)) {
       const { markdown, pictures } = await docxToMarkdown(await file.arrayBuffer())
       return {
@@ -161,15 +182,18 @@ export function useCardImport(storyId) {
       }
     }
 
+    // A card or a book is looked for only where it would be taken as one.
     const isPng = PNG.test(file.name) || file.type === 'image/png'
-    const value = isPng
-      ? cardInPng(await file.arrayBuffer())
-      : readable && (JSON_FILE.test(file.name) || file.type === 'application/json')
-        ? parseJson(await file.text())
-        : null
+    const value = !cards
+      ? null
+      : isPng
+        ? cardInPng(await file.arrayBuffer())
+        : readable && (JSON_FILE.test(file.name) || file.type === 'application/json')
+          ? parseJson(await file.text())
+          : null
     const shape = value === null ? null : shapeOf(value)
 
-    if (shape === 'lorebook' && cards) {
+    if (shape === 'lorebook') {
       const book = readLorebook(value)
       if (book.entries.length === 0) {
         throw new NotACardError(`"${file.name}" is a lorebook with nothing in it.`)
@@ -187,7 +211,7 @@ export function useCardImport(storyId) {
       }
     }
 
-    if (shape === 'card' && cards) return foundCard(readCard(value), isPng ? file : null)
+    if (shape === 'card') return foundCard(readCard(value), isPng ? file : null)
 
     // Anything else is a file to keep: the PNG with no card in it, the JSON
     // that is neither a card nor a book, everything that is not one of those
@@ -291,6 +315,7 @@ export function useCardImport(storyId) {
         drive,
         base,
         pictures: found.pictures,
+        asWritten: found.plain,
       })
     }
     if (found.shape === 'file') return writeFile(storyId, found.value, { parentId })

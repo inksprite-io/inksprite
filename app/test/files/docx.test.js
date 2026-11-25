@@ -110,6 +110,17 @@ describe('docxToMarkdown', () => {
     expect(markdown).not.toContain('↑')
   })
 
+  it('refuses a file that says it opens into more than a Word file could, opening none of it', async () => {
+    const docx = minimalDocx(paragraph(run('Short.')))
+    // Its directory made to say each part is three gigabytes.
+    const view = new DataView(docx.buffer, docx.byteOffset, docx.byteLength)
+    for (let at = docx.byteLength - 46; at >= 0; at--) {
+      if (view.getUint32(at, true) === 0x02014b50) view.setUint32(at + 24, 0xc0000000, true)
+    }
+
+    await expect(docxToMarkdown(bufferOf(docx))).rejects.toThrow('too large to open')
+  })
+
   it('says plainly when a file is not one it can read', async () => {
     await expect(docxToMarkdown(new TextEncoder().encode('not a zip').buffer)).rejects.toThrow(
       'Couldn’t read the Word file'
