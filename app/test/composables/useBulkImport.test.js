@@ -189,6 +189,15 @@ describe('describeImport', () => {
       severity: 'warn',
       detail: '1 PDF has no extractable text. Skipped x.pdf (bad).',
     })
+    // A reason written as a sentence keeps one full stop, after the brackets.
+    expect(
+      describeImport({
+        documents: 1,
+        folders: 0,
+        cards: 0,
+        skipped: [{ name: 'a.docx', reason: 'This Word file couldn’t be read.' }],
+      }).detail
+    ).toBe('Skipped a.docx (This Word file couldn’t be read).')
     expect(describeImport({ documents: 3, folders: 0, cards: 0, scans: 2, skipped: [] })).toEqual({
       severity: 'info',
       detail: '2 PDFs have no extractable text.',

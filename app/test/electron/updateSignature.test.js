@@ -27,7 +27,12 @@ const written = (key = inUse.private, of = { ...update, sha512 }) =>
   JSON.stringify(signUpdate(of, key))
 
 describe('an update’s signature', () => {
-  const expected = { version: update.version, sha512, keys: [inUse.public, spare.public] }
+  const expected = {
+    version: update.version,
+    file: update.file,
+    sha512,
+    keys: [inUse.public, spare.public],
+  }
 
   it('is taken from either key the app was built with, of either kind', () => {
     expect(signatureProblem(written(inUse.private), expected)).toBeNull()
@@ -42,6 +47,14 @@ describe('an update’s signature', () => {
   it('is refused for another version, so an old update can’t pass for a new one', () => {
     const old = written(inUse.private, { ...update, version: '0.1.0-dev.20', sha512 })
     expect(signatureProblem(old, expected)).toBe('it is for 0.1.0-dev.20, not 0.1.0-dev.30')
+  })
+
+  it('is refused for another of our files, as an x64 build served for an ARM one', () => {
+    // The x64 AppImage, its signature and all, downloaded under the ARM one's name.
+    const arm = 'inksprite-0.1.0-dev.30-linux-arm64.AppImage'
+    expect(signatureProblem(written(), { ...expected, file: arm })).toBe(
+      `it is for ${update.file}, not ${arm}`
+    )
   })
 
   it('is refused for a file that isn’t the one it was made for', () => {
@@ -60,7 +73,12 @@ describe('an update’s signature', () => {
     for (const change of changes) {
       const changed = { ...JSON.parse(written()), ...change }
       // Asked about as what it now says it is, so only the signature is in the way.
-      const claimed = { ...expected, version: changed.version, sha512: changed.sha512 }
+      const claimed = {
+        ...expected,
+        version: changed.version,
+        file: changed.file,
+        sha512: changed.sha512,
+      }
       expect(signatureProblem(JSON.stringify(changed), claimed), JSON.stringify(change)).toMatch(
         /no key/
       )
@@ -156,7 +174,12 @@ describe('signing a build’s updates', () => {
       const said = await readFile(join(folder, `${name}.sig`), 'utf8')
       expect(JSON.parse(said)).toMatchObject({ version, file: name })
       expect(
-        signatureProblem(said, { version, sha512: await hashOf(join(folder, name)), keys })
+        signatureProblem(said, {
+          version,
+          file: name,
+          sha512: await hashOf(join(folder, name)),
+          keys,
+        })
       ).toBeNull()
     }
   })

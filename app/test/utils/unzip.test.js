@@ -55,6 +55,40 @@ describe('a zip opened with a ceiling', () => {
     }
     expect(() => unzipWithin(stored, 1024)).toThrow(TooLargeError)
   })
+
+  it('takes no entry named __proto__, which would make its bytes the prototype', () => {
+    const zip = zipSync({ __proto_x: strToU8('x'), 'a.txt': strToU8('A.') })
+    // The name written in place of its stand-in, the same length.
+    const named = zip.slice()
+    const text = new TextDecoder('latin1').decode(named)
+    for (let at = text.indexOf('__proto_x'); at >= 0; at = text.indexOf('__proto_x', at + 1)) {
+      named.set(strToU8('__proto__'), at)
+    }
+    const opened = unzipWithin(named, MIB)
+    expect(Object.keys(opened)).toEqual(['a.txt'])
+    expect(Object.getPrototypeOf(opened)).toBe(Object.prototype)
+  })
+
+  it('opens none of a zip whose directory claims more than its bytes could hold', () => {
+    // Entries whose compressed parts are said to be far longer than the file.
+    const overlapping = zip.slice()
+    const view = new DataView(overlapping.buffer)
+    for (let at = overlapping.length - 46; at >= 0; at--) {
+      if (view.getUint32(at, true) === 0x02014b50) view.setUint32(at + 20, 10 * MIB, true)
+    }
+    expect(() => unzipWithin(overlapping, 64 * MIB)).toThrow('isn’t a zip that can be opened')
+
+    // An end record that claims more entries than the file has room for.
+    const crowded = zip.slice()
+    const end = new DataView(crowded.buffer)
+    for (let at = crowded.length - 22; at >= 0; at--) {
+      if (end.getUint32(at, true) !== 0x06054b50) continue
+      end.setUint16(at + 8, 0xffff, true)
+      end.setUint16(at + 10, 0xffff, true)
+      break
+    }
+    expect(() => unzipWithin(crowded, 64 * MIB)).toThrow()
+  })
 })
 
 describe('what a zip says it opens into', () => {

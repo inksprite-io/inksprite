@@ -1011,7 +1011,7 @@ function leftOut(args, groups) {
     if (unused.length === 0) return []
     const listed =
       unused.length > 1 ? `${unused.slice(0, -1).join(', ')} and ${unused.at(-1)}` : unused[0]
-    return [`${listed} ${unused.length > 1 ? 'were' : 'was'} left out: ${why}.`]
+    return [`${listed} ${unused.length > 1 ? 'were' : 'was'} ignored: ${why}.`]
   })
   return said.length > 0 ? { ignored: said.join(' ') } : {}
 }
@@ -1019,16 +1019,16 @@ function leftOut(args, groups) {
 /** What a read by line leaves out, and why. */
 const NOT_BY_LINE = /** @type {[string[], string]} */ ([
   ['section', 'page'],
-  'a source file is read by line, with line and until',
+  'a source file is read with `line` and `until`',
 ])
 
 /** What a read by page leaves out, and why: the page says where to start. */
-const PAGE_FIRST = /** @type {[string[], string]} */ ([['from'], 'the page said where to start'])
+const PAGE_FIRST = /** @type {[string[], string]} */ ([['from'], '`page` set where to start'])
 
 /** What a read of anything but a source file leaves out, and why. */
 const ONLY_BY_LINE = /** @type {[string[], string]} */ ([
   ['line', 'until'],
-  'line and until read a source file by its lines',
+  'they are only for reading a source file',
 ])
 
 /**
@@ -1299,7 +1299,7 @@ export async function executeReadDocument(args, context) {
           ...base,
           ...kind,
           section: named,
-          ...leftOut(args, [[['from', 'page'], 'the section came whole'], ONLY_BY_LINE]),
+          ...leftOut(args, [[['from', 'page'], 'the whole section was returned'], ONLY_BY_LINE]),
           content: text.slice(section.offset, section.until),
         },
         section.offset,
@@ -1335,7 +1335,7 @@ export async function executeReadDocument(args, context) {
         note: last
           ? 'This is the end of the section.'
           : 'The section goes on: read it again with from: next, or read one of its sections by its link.',
-        ...leftOut(args, [[['page'], 'the section was read'], ONLY_BY_LINE]),
+        ...leftOut(args, [[['page'], '`section` was read instead'], ONLY_BY_LINE]),
         content: slice.text,
       },
       slice.from,
@@ -1351,7 +1351,7 @@ export async function executeReadDocument(args, context) {
         ...base,
         ...kind,
         ...holding,
-        ...leftOut(args, [[['from', 'page'], 'the document came whole'], ONLY_BY_LINE]),
+        ...leftOut(args, [[['from', 'page'], 'the whole document was returned'], ONLY_BY_LINE]),
         content: text,
       },
       0,

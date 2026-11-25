@@ -40,7 +40,13 @@ export const FILE = 'FILE'
 export const IMPORT_NOTE = `Run the command with ${FILE} replaced by the path of the file on your side, quoted as your shell needs. The link takes one file, within five minutes. The command prints what the file became in the project, or why it couldn't be brought in.`
 
 /** What a file sent by a link is told when the link has nothing waiting for it. */
-const NOTHING_SENT = 'Nothing is waiting by that link. import_document gives another.'
+const NOTHING_SENT = 'That link has expired or was already used. import_document gives a new one.'
+
+/**
+ * A reason as a sentence, ended as one.
+ * @param {string} said
+ */
+const sentence = said => (/[.!?]$/.test(said.trim()) ? said.trim() : `${said.trim()}.`)
 
 /** Markdown, which comes in as a document under its name without the extension. */
 const MARKDOWN = /\.(md|markdown)$/i
@@ -174,12 +180,14 @@ export async function receivedFor(app, params, signal) {
 
     // The connection as it is now: one that only reads, or no longer has
     // the project, brings nothing in.
-    if (app.readOnly) return { error: 'This connection only reads: nothing was brought in.' }
+    if (app.readOnly) return { error: 'This connection is read only, so nothing was brought in.' }
     // A project trashed keeps its tick, which takes nothing in.
     if (!(await projectsOf(app)).some(project => project.id === about.storyId)) {
-      return { error: 'That project is no longer open to this connection: nothing was brought in.' }
+      return {
+        error: 'That project is no longer open to this connection, so nothing was brought in.',
+      }
     }
-    if (signal.aborted) return { error: 'The upload was given up on: nothing was brought in.' }
+    if (signal.aborted) return { error: 'The upload was cancelled, so nothing was brought in.' }
 
     /** @type {{storyId: string, chatId: string, postsAs: string, signal: AbortSignal}} */
     const asking = { storyId: about.storyId, chatId: `app:${app.id}`, postsAs: app.name, signal }
@@ -188,7 +196,7 @@ export async function receivedFor(app, params, signal) {
     if (folder === '' && about.parentId !== rootIdFor(about.storyId)) {
       return {
         error:
-          'The folder the file was to go in is gone. import_document gives another link, for where it should go now.',
+          'The folder the file was to go in no longer exists. Call import_document again for where it should go now.',
       }
     }
 
@@ -201,7 +209,7 @@ export async function receivedFor(app, params, signal) {
       found = await importer.inspect(file, { cards: false })
     } catch (error) {
       return {
-        error: `"${about.name}" couldn't be read: ${error instanceof Error ? error.message : String(error)}`,
+        error: `"${about.name}" couldn't be brought in. ${sentence(error instanceof Error ? error.message : String(error))}`,
       }
     }
     const place = await placeFor(asking, folder, found.title)

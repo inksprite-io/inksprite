@@ -123,7 +123,7 @@ describe('docxToMarkdown', () => {
 
   it('says plainly when a file is not one it can read', async () => {
     await expect(docxToMarkdown(new TextEncoder().encode('not a zip').buffer)).rejects.toThrow(
-      'Couldn’t read the Word file'
+      'This Word file couldn’t be read.'
     )
   })
 })

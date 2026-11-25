@@ -51,7 +51,7 @@ export async function signUpdates(folder, { key, keys, version }) {
   for (const file of files) {
     const sha512 = await hashOf(join(folder, file))
     const written = `${JSON.stringify(signUpdate({ version, file, sha512 }, key), null, 2)}\n`
-    const problem = signatureProblem(written, { version, sha512, keys })
+    const problem = signatureProblem(written, { version, file, sha512, keys })
     if (problem) {
       throw new Error(
         `The app would not take ${file}: ${problem}. UPDATE_SIGNING_KEY has to be the private half of a key in src/updateKeys.js.`

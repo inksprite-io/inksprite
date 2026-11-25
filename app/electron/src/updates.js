@@ -111,6 +111,7 @@ async function whyNotOurs(version, files) {
     if (!response.ok) return `it has no signature (${response.status})`
     const problem = signatureProblem(await response.text(), {
       version,
+      file: basename(file),
       sha512: await hashOf(file),
       keys: UPDATE_KEYS,
     })

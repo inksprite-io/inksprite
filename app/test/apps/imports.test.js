@@ -267,13 +267,13 @@ describe('receivedFor', () => {
 
     const { answer } = await send(url, encoder.encode('# Notes'))
 
-    expect(answer.error).toMatch(/folder the file was to go in is gone/)
+    expect(answer.error).toMatch(/folder the file was to go in no longer exists/)
   })
 
   it('brings nothing in for a connection that has since been made to read only, or lost the project, or whose project is trashed', async () => {
     const first = await importFor(APP, asking, { path: 'Research/Notes.md' })
     const reader = await send(first.url, encoder.encode('# Notes'), { ...APP, readOnly: true })
-    expect(reader.answer.error).toMatch(/only reads/)
+    expect(reader.answer.error).toMatch(/read only/)
 
     const second = await importFor(APP, asking, { path: 'Research/Notes.md' })
     const unticked = await send(second.url, encoder.encode('# Notes'), { ...APP, projects: [] })
@@ -300,14 +300,14 @@ describe('receivedFor', () => {
       { id, about },
       new AbortController().signal
     )
-    expect(other.answer.error).toMatch(/Nothing is waiting/)
+    expect(other.answer.error).toMatch(/That link has expired/)
 
     expect(
       (await receivedFor(APP, { id, about }, new AbortController().signal)).answer.success
     ).toBe(true)
     expect(
       (await receivedFor(APP, { id, about }, new AbortController().signal)).answer.error
-    ).toMatch(/Nothing is waiting/)
+    ).toMatch(/That link has expired/)
   })
 
   it('passes to another window when the project is there, leaving the file to be taken', async () => {
@@ -321,7 +321,7 @@ describe('receivedFor', () => {
   it('refuses what it was given that says nothing of where the file goes', async () => {
     for (const params of [{}, { id: 'id-1' }, { id: 'id-1', about: { storyId: STORY } }]) {
       const { answer } = await receivedFor(APP, params, new AbortController().signal)
-      expect(answer.error, JSON.stringify(params)).toMatch(/Nothing is waiting/)
+      expect(answer.error, JSON.stringify(params)).toMatch(/That link has expired/)
     }
   })
 })

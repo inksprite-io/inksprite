@@ -81,17 +81,19 @@ export function signUpdate({ version, file, sha512 }, privateKey) {
 
 /**
  * What is wrong with an update's signature, if anything: it has to be for
- * the version being installed and for the file that was downloaded, and one
- * of the keys has to answer for it.
+ * the version being installed and for the file that was downloaded, by its
+ * name as well as its bytes, so that one build of ours can't be served in
+ * place of another, and one of the keys has to answer for it.
  *
  * @param {string} written - The `.sig`, as it was read
  * @param {object} expected
  * @param {string} expected.version - The version being installed
+ * @param {string} expected.file - The downloaded file's name
  * @param {string} expected.sha512 - The downloaded file's hash, in base 64
  * @param {string[]} expected.keys - The public keys the app was built with, in PEM
  * @returns {string|null} Null when the update is ours
  */
-export function signatureProblem(written, { version, sha512, keys }) {
+export function signatureProblem(written, { version, file, sha512, keys }) {
   let said
   try {
     said = JSON.parse(written)
@@ -103,6 +105,7 @@ export function signatureProblem(written, { version, sha512, keys }) {
     return 'it is not a signature'
   }
   if (said.version !== version) return `it is for ${said.version}, not ${version}`
+  if (said.file !== file) return `it is for ${said.file}, not ${file}`
   if (said.sha512 !== sha512) return 'it is for another file'
   const signature = Buffer.from(said.signature, 'base64')
   const ours = keys.some(pem => {

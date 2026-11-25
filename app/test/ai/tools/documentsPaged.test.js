@@ -134,9 +134,7 @@ describe('reading a long document', () => {
       const result = await executeReadDocument({ path: 'Note', until: 1 }, context)
 
       expect(result.content).toBe('Short and sweet.')
-      expect(result.ignored).toBe(
-        '`until` was left out: line and until read a source file by its lines.'
-      )
+      expect(result.ignored).toBe('`until` was ignored: they are only for reading a source file.')
     })
 
     it('says a short document came whole, whatever offset or page was asked', async () => {
@@ -148,7 +146,7 @@ describe('reading a long document', () => {
 
       expect(result.content).toBe('Short and sweet.')
       expect(result.ignored).toBe(
-        '`from` and `page` were left out: the document came whole. `line` was left out: line and until read a source file by its lines.'
+        '`from` and `page` were ignored: the whole document was returned. `line` was ignored: they are only for reading a source file.'
       )
     })
 
@@ -176,7 +174,7 @@ describe('reading a long document', () => {
         context
       )
       expect(section.section.link).toBe('method')
-      expect(section.ignored).toMatch(/^`page` was left out: the section/)
+      expect(section.ignored).toMatch(/^`page` was ignored: the whole section was returned/)
 
       store.createDocument({
         storyId: STORY,
@@ -188,7 +186,7 @@ describe('reading a long document', () => {
       })
       const paged = await executeReadDocument({ path: 'Rulebook', page: 3, from: 10 }, context)
       expect(paged.content.startsWith('[p.3]')).toBe(true)
-      expect(paged.ignored).toBe('`from` was left out: the page said where to start.')
+      expect(paged.ignored).toBe('`from` was ignored: `page` set where to start.')
     })
   })
 

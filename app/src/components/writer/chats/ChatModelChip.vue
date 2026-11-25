@@ -36,7 +36,9 @@
   <Popover :id="popoverId" ref="popover" data-chat-model-popover @show="loadLists">
     <div class="w-64 flex flex-col gap-3 text-sm">
       <div class="flex flex-col gap-1">
-        <!-- The model's settings are in the corner. -->
+        <!-- The model's settings are in the corner, behind the sliders a
+             model's card in Settings › Models has, while the model is on one
+             of the writer's connections, where the settings are. -->
         <div class="flex items-center justify-between gap-2">
           <label
             :for="`${id}-model`"
@@ -44,8 +46,8 @@
             >Model</label
           >
           <Button
+            v-if="onTheirs"
             v-tooltip.top="'Model settings'"
-            icon="pi pi-cog"
             severity="secondary"
             text
             rounded
@@ -54,7 +56,11 @@
             aria-label="Model settings"
             data-action="open-model-settings"
             @click="modelSettings"
-          />
+          >
+            <template #icon>
+              <SlidersIcon :size="14" class="shrink-0" />
+            </template>
+          </Button>
         </div>
         <!-- The chat's model and the ones chosen lately; the rest are a click
              away, under the effort. -->
@@ -130,6 +136,7 @@ import Button from 'primevue/button'
 import Popover from 'primevue/popover'
 import Select from 'primevue/select'
 import ChatChip from './ChatChip.vue'
+import SlidersIcon from '@/components/icons/SlidersIcon.vue'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useChatSettings } from '@/composables/useChatSettings'
@@ -189,6 +196,13 @@ const modelName = computed(() => {
   const { providerId, model } = preset.value
   return modelLists.listOf(providerId)?.models.find(one => one.id === model)?.name ?? model
 })
+
+/** Whether the chat's model is on one of the writer's connections, where its settings are. */
+const onTheirs = computed(
+  () =>
+    !!preset.value &&
+    connections.connectionsFor('chat').some(provider => provider.id === preset.value?.providerId)
+)
 
 /** The chat's connection, by the name the writer knows it by. */
 const connectionName = computed(

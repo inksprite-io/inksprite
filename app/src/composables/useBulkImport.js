@@ -148,7 +148,8 @@ export function describeImport(result) {
   if (result.skipped.length > 0) {
     const names = result.skipped
       .slice(0, 3)
-      .map(skip => `${skip.name} (${skip.reason})`)
+      // A reason in brackets, in the middle of a sentence, ends with it.
+      .map(skip => `${skip.name} (${skip.reason.replace(/\.$/, '')})`)
       .join(', ')
     const more = result.skipped.length > 3 ? ` and ${result.skipped.length - 3} more` : ''
     notes.push(`Skipped ${names}${more}.`)

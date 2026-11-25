@@ -78,11 +78,26 @@ describe('appImports', () => {
     const imports = appImports()
     const { id } = imports.open('app_1', ABOUT)
 
-    expect(imports.claim(id)).toBe(true)
+    expect(imports.holds(id)).toBe(false)
+    const stop = vi.fn()
+    expect(imports.claim(id, stop)).toBe(true)
+    expect(imports.holds(id)).toBe(true)
     expect(imports.claim(id)).toBe(false)
     imports.release(id)
-    expect(imports.claim(id)).toBe(true)
+    expect(imports.holds(id)).toBe(false)
+    expect(imports.claim(id, stop)).toBe(true)
     expect(imports.arrive(id, BYTES)).not.toBeNull()
+
+    // Come whole: nothing is to be stopped when it is let go.
+    imports.done(id)
+    expect(stop).not.toHaveBeenCalled()
+
+    // One let go while its file is on its way stops it.
+    const other = imports.open('app_1', ABOUT).id
+    const stopOther = vi.fn()
+    imports.claim(other, stopOther)
+    imports.forget('app_1')
+    expect(stopOther).toHaveBeenCalledTimes(1)
 
     // Come: no more are held for it, by a claim or without one.
     expect(imports.claim(id)).toBe(false)
@@ -140,7 +155,7 @@ describe('appImports', () => {
     expect(() => imports.open('', ABOUT)).toThrow('No such connection.')
     for (const about of [null, 'Notes.md', ['a'], { name: 'x'.repeat(5000) }]) {
       expect(() => imports.open('app_1', about), JSON.stringify(about)).toThrow(
-        'An import says what it is for.'
+        'An import must say what it is for.'
       )
     }
   })

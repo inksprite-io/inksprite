@@ -62,7 +62,7 @@ export function instructionsFor(app) {
     '- export_document gives a document, or a folder, as files to fetch with your shell: for putting a finished design into a repository.',
     ...(writes
       ? [
-          '- import_document brings a file from your side into a project, sent by your shell: Markdown, Word and plain text as documents, anything else kept as the file it is. Copy a file in this way, not by writing its text out.',
+          "- import_document copies a file from your side into a project, sent by your shell: Markdown, Word and plain text become documents, and anything else is kept as the file it is. Use it rather than writing a file's text out.",
         ]
       : []),
     `- A file exported from inksprite names its document in its front matter. Give its \`id\` there as a path, written \`id:<the id>\`, to reach the document whatever it is called now${writes ? ', and change the document, not the file' : ''}.`,

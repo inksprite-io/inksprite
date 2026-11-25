@@ -11,7 +11,9 @@
  * Doc's are (`files/pictures.js`), to be made the document's own.
  *
  * mammoth is loaded with the first Word file, not with the app, and handed
- * only one that opens into no more than `DOCX_MOST`.
+ * only one that says it opens into no more than `DOCX_MOST`. One that says
+ * less than it holds is inflated whole all the same: the writer chooses
+ * what to import, and was judged to be risk enough (25 Nov 2026).
  */
 
 import { MIB, unzippedSize } from '@/utils/unzip.js'
@@ -57,9 +59,9 @@ export async function docxToMarkdown(data) {
   try {
     size = unzippedSize(new Uint8Array(data))
   } catch {
-    throw new Error('Couldn’t read the Word file')
+    throw new Error('This Word file couldn’t be read.')
   }
-  if (size > DOCX_MOST) throw new Error('The Word file is too large to open')
+  if (size > DOCX_MOST) throw new Error('This Word file is too large to open.')
   const { default: mammoth } = await import('mammoth')
   /** @type {import('./pictures.js').TakenPicture[]} */
   const pictures = []
@@ -80,7 +82,7 @@ export async function docxToMarkdown(data) {
     const input = /** @type {{arrayBuffer: ArrayBuffer}} */ ({ arrayBuffer: data, buffer: data })
     converted = await mammoth.convertToHtml(input, { convertImage: counted })
   } catch {
-    throw new Error('Couldn’t read the Word file')
+    throw new Error('This Word file couldn’t be read.')
   }
   const markdown = markdownOfHtml(converted.value.replace(BACK_LINK, ''), { pictures: true })
   // A picture the reading left out, in a place markdown has none, is no picture.

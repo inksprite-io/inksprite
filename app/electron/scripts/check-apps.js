@@ -1070,7 +1070,7 @@ async function checkAll() {
     const { status, json } = await put(inbox, Buffer.from('again'))
     const asked = (await askedOf(one)) - before
     return {
-      ok: status === 404 && /^Nothing is waiting/.test(json?.error ?? '') && asked === 0,
+      ok: status === 404 && /^That link has expired/.test(json?.error ?? '') && asked === 0,
       detail: `${status} ${JSON.stringify(json)}; the page was asked ${asked}`,
     }
   })

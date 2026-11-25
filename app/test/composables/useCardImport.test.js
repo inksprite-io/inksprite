@@ -425,7 +425,7 @@ describe('useCardImport', () => {
 
     it('says plainly when it cannot be read', async () => {
       await expect(cards.inspect(new File(['not a zip'], 'Log.docx'))).rejects.toThrow(
-        'Couldn’t read the Word file'
+        'This Word file couldn’t be read.'
       )
     })
   })

@@ -202,7 +202,7 @@ describe('document tools, on a repository', () => {
 
       expect(result.content).toBe('1\tdef clock(op):\n2\t    return op.at')
       expect(result.ignored).toBe(
-        '`section` and `page` were left out: a source file is read by line, with line and until.'
+        '`section` and `page` were ignored: a source file is read with `line` and `until`.'
       )
     })
 

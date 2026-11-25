@@ -10,7 +10,7 @@ import {
   hostName,
 } from '../../electron/src/appServer.js'
 import { appExports } from '../../electron/src/appExports.js'
-import { appImports } from '../../electron/src/appImports.js'
+import { HELD_MOST, appImports } from '../../electron/src/appImports.js'
 
 const CONNECTION = {
   id: 'app_1',
@@ -637,7 +637,7 @@ describe('a file an app sends', () => {
     const again = await sendFile(id)
     expect(again.status).toBe(404)
     // Said, for the app's model to read in what its command printed.
-    expect(again.body.error).toMatch(/Nothing is waiting by that link/)
+    expect(again.body.error).toMatch(/That link has expired or was already used/)
 
     for (const other of ['nothing', '', 'a'.repeat(43), '..%2f..%2fapps.json']) {
       expect((await sendFile(other)).status, other).toBe(404)
@@ -652,7 +652,7 @@ describe('a file an app sends', () => {
     const refused = await answer
 
     expect(refused.status).toBe(404)
-    expect(refused.body.error).toMatch(/Nothing is waiting by that link/)
+    expect(refused.body.error).toMatch(/That link has expired or was already used/)
     request.destroy()
   })
 
@@ -666,6 +666,21 @@ describe('a file an app sends', () => {
 
     // The first gave up: the link waits for a file again.
     await vi.waitFor(async () => expect((await sendFile(id)).status).toBe(200))
+  })
+
+  it('stops reading a file whose link is let go while it comes, without waiting for more of it', async () => {
+    const { id } = imports.open('app_1', ABOUT)
+    const sending = startSending(id, 1000, Buffer.alloc(10))
+    await vi.waitFor(() => expect(imports.holds(id)).toBe(true))
+
+    // Newer links for the same app, the oldest let go to make room, while
+    // the app sending by it has gone quiet.
+    for (let i = 0; i < HELD_MOST; i++) imports.open('app_1', ABOUT)
+
+    const refused = await sending.answer
+    expect(refused.status).toBe(404)
+    expect(refused.body.error).toMatch(/That link has expired/)
+    expect(ask).not.toHaveBeenCalled()
   })
 
   it('takes none for a connection removed since the link was made', async () => {

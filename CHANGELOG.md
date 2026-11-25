@@ -17,25 +17,24 @@ The desktop app:
 - Command-L (Control-Shift-L on Windows and Linux) opens a new terminal from
   anywhere in inksprite, a terminal included. Control-` goes to the terminal
   you were in last, or opens one, and in a terminal goes back to where you
-  were. Both are in the menu while **Terminal** is on, and **New Chat** is
-  only there while the AI is.
+  were. **New Terminal** and **Show Terminal** are in the menu while
+  **Terminal** is on, and **New Chat** only while the AI is.
 - A connected app can bring a file from its own folder into a project, such
-  as a set of prompts or a PDF. It comes in as the same file does when you
-  import it.
+  as a set of prompts or a PDF. It comes in as it would if you imported it
+  yourself.
 - Removing a connected app asks first.
-- The Linux app comes for ARM computers too, as an AppImage and a `.deb`,
-  and Windows has an installer for ARM PCs.
+- The desktop app comes for ARM computers on Windows and Linux too.
 
 Also:
 
-- A `.txt` file you import becomes a document kept exactly as written, which
-  opens in the plain text editor, as does one the model makes. It used to
-  become an ordinary document, with anything that looked like Markdown taken
-  as formatting. **Edit in plain text editor** on its menu turns it into one.
-- Clicking in a comment or a suggestion in the text turns the sidebar to the
-  Comments tab.
-- In a chat's model menu, the gear beside **Model** opens the settings of the
-  chat's model.
+- A `.txt` file you import, or one the model makes, is now kept exactly as
+  written and opens in the plain text editor. It used to become an ordinary
+  document, with anything that looked like Markdown taken as formatting.
+  **Edit in plain text editor** on a document's menu switches it either way.
+- With the sidebar open, clicking in a comment or a suggestion in the text
+  turns it to the **Comments** tab.
+- In the menu of a chat's model chip, the button beside **Model** (**Model
+  settings**) opens that model's settings.
 
 ## v0.1.0-dev.30
 

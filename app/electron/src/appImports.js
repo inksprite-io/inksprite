@@ -40,18 +40,25 @@ const digest = text => createHash('sha256').update(text).digest()
  * @param {number} [options.life] - How long a link works, in milliseconds
  */
 export function appImports({ life = LIFE } = {}) {
-  /** @type {Map<string, {connection: string, about: About, bytes: Buffer|null, sending: boolean, timer: NodeJS.Timeout}>} */
+  /**
+   * The links held, each with what it is for, the file once it has come, and
+   * while one is on its way, what stops its reading.
+   * @type {Map<string, {connection: string, about: About, bytes: Buffer|null, sending: boolean, stop: (() => void)|null, timer: NodeJS.Timeout}>}
+   */
   const held = new Map()
 
   /** @param {string} id */
   const drop = id => {
-    clearTimeout(held.get(id)?.timer)
+    const one = held.get(id)
     held.delete(id)
+    if (!one) return
+    clearTimeout(one.timer)
+    one.stop?.()
   }
 
   /** @param {string} id */
   const expire = id => {
-    const timer = setTimeout(() => held.delete(id), life)
+    const timer = setTimeout(() => drop(id), life)
     // Nothing waits on a link's running out, the app's quitting least of all.
     timer.unref()
     return timer
@@ -89,7 +96,7 @@ export function appImports({ life = LIFE } = {}) {
       if (typeof connection !== 'string' || !connection) throw new Error('No such connection.')
       const written = about && typeof about === 'object' ? JSON.stringify(about) : null
       if (!written || written.length > ABOUT_MOST || Array.isArray(about)) {
-        throw new Error('An import says what it is for.')
+        throw new Error('An import must say what it is for.')
       }
 
       const mine = [...held].filter(([, one]) => one.connection === connection)
@@ -101,6 +108,7 @@ export function appImports({ life = LIFE } = {}) {
         about: JSON.parse(written),
         bytes: null,
         sending: false,
+        stop: null,
         timer: expire(id),
       })
       return { id }
@@ -110,17 +118,31 @@ export function appImports({ life = LIFE } = {}) {
      * Hold a link for a file on its way, before any of it is read: false for
      * a link used, run out or never made, or with a file already on its way
      * by it. So nothing is kept of what is sent to a link that isn't
-     * waiting, and only one file comes by one at a time.
+     * waiting, and only one file comes by one at a time. `stop` is called if
+     * the link is let go before the file has come.
      *
      * @param {string} id
+     * @param {() => void} [stop] - Stops reading what is on its way
      * @returns {boolean}
      */
-    claim(id) {
+    claim(id, stop) {
       const found = find(id)
       const one = found === null ? null : held.get(found)
       if (!one || one.bytes !== null || one.sending) return false
       one.sending = true
+      one.stop = stop ?? null
       return true
+    },
+
+    /**
+     * Whether a link is still there, held for a file on its way by it.
+     *
+     * @param {string} id
+     * @returns {boolean}
+     */
+    holds(id) {
+      const found = find(id)
+      return found !== null && held.get(found)?.sending === true
     },
 
     /**
@@ -132,7 +154,10 @@ export function appImports({ life = LIFE } = {}) {
     release(id) {
       const found = find(id)
       const one = found === null ? null : held.get(found)
-      if (one) one.sending = false
+      if (one) {
+        one.sending = false
+        one.stop = null
+      }
     },
 
     /**
@@ -151,6 +176,7 @@ export function appImports({ life = LIFE } = {}) {
       clearTimeout(one.timer)
       one.bytes = bytes
       one.sending = false
+      one.stop = null
       one.timer = expire(found)
       return { connection: one.connection, about: one.about }
     },

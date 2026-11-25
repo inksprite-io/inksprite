@@ -177,7 +177,7 @@ describe('ChatModelChip', () => {
     panel.close()
   })
 
-  it('opens the chat’s model on its settings from the cog beside Model, shutting the popover', async () => {
+  it('opens the chat’s model on its settings from the button beside Model, shutting the popover', async () => {
     const { useSettingsPanel } = await import('@/composables/useSettingsPanel.js')
     const panel = useSettingsPanel()
     panel.close()
@@ -195,6 +195,11 @@ describe('ChatModelChip', () => {
     expect(panel.takeSection()).toBe('models')
     expect(panel.takePart()).toBe('model')
     panel.close()
+  })
+
+  it('has no settings to open for a model on none of the writer’s connections', () => {
+    theirs.value = [providers.local]
+    expect(mountQuick().find('[data-action="open-model-settings"]').exists()).toBe(false)
   })
 
   it('has Other models… as a button under the effort, not a row among the models', () => {

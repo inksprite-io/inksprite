@@ -52,7 +52,8 @@ const OWN_METHODS = 'inksprite/'
  * What an upload is told where no link is waiting for it, in words for the
  * app's model, which reads what its command printed.
  */
-const NOTHING_WAITING = 'Nothing is waiting by that link. import_document gives another.'
+const NOTHING_WAITING =
+  'That link has expired or was already used. import_document gives a new one.'
 
 /**
  * What an upload too large to take is told.
@@ -133,29 +134,38 @@ const disposition = name =>
   `attachment; filename*=UTF-8''${encodeURIComponent(name).replace(/['()*]/g, c => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)}`
 
 /**
- * A request's body, as far as `most` bytes, or null for one that is longer.
+ * A request's body, as far as `most` bytes, or null for one that is longer,
+ * or that stops being wanted as it comes.
  *
  * @param {http.IncomingMessage} request
  * @param {number} most
+ * @param {AbortSignal} [signal] - Aborted when it is no longer wanted: what
+ *   was read is let go at once
  * @returns {Promise<Buffer|null>}
  */
-function bodyOf(request, most) {
+function bodyOf(request, most, signal) {
   return new Promise((resolve, reject) => {
     /** @type {Buffer[]} */
-    const chunks = []
+    let chunks = []
     let size = 0
+    // No more of it is read; whoever answers hangs up.
+    const stop = () => {
+      request.removeAllListeners('data')
+      request.pause()
+      chunks = []
+      resolve(null)
+    }
+    if (signal?.aborted) return stop()
+    signal?.addEventListener('abort', stop, { once: true })
     request.on('data', chunk => {
       size += chunk.length
-      if (size > most) {
-        // No more of it is read; whoever answers hangs up.
-        request.removeAllListeners('data')
-        request.pause()
-        resolve(null)
-        return
-      }
+      if (size > most) return stop()
       chunks.push(chunk)
     })
-    request.on('end', () => resolve(Buffer.concat(chunks)))
+    request.on('end', () => {
+      signal?.removeEventListener('abort', stop)
+      resolve(Buffer.concat(chunks))
+    })
     request.on('error', reject)
   })
 }
@@ -190,7 +200,7 @@ function listenOn(answer, host, port) {
  *   rejects, in words for the app's model, when none can
  * @param {Pick<import('./appExports.js').AppExports, 'take'>} options.exports -
  *   What is ready for apps to fetch
- * @param {Pick<import('./appImports.js').AppImports, 'claim'|'release'|'arrive'|'done'|'most'>} options.imports -
+ * @param {Pick<import('./appImports.js').AppImports, 'claim'|'holds'|'release'|'arrive'|'done'|'most'>} options.imports -
  *   What apps are to send
  */
 export function appDoor({ connections, ask, exports, imports }) {
@@ -270,19 +280,24 @@ export function appDoor({ connections, ask, exports, imports }) {
       send(response, status, { error }, { Connection: 'close' })
     }
     // Nothing sent is kept until a link is found waiting for it: without one,
-    // a request is nobody's to hold in memory.
-    if (!imports.claim(id)) return refuse(404, NOTHING_WAITING)
+    // a request is nobody's to hold in memory. And what comes is let go the
+    // moment its link is: its minutes up, or a newer one taking its place.
+    const reading = new AbortController()
+    if (!imports.claim(id, () => reading.abort())) return refuse(404, NOTHING_WAITING)
     /** @type {Buffer|null} */
     let body = null
+    let gone = false
     try {
       body =
         Number(request.headers['content-length']) > imports.most
           ? null
-          : await bodyOf(request, imports.most)
+          : await bodyOf(request, imports.most, reading.signal)
     } finally {
+      gone = !imports.holds(id)
       if (body === null) imports.release(id)
     }
-    if (body === null) return refuse(413, tooLarge(imports.most))
+    if (body === null)
+      return gone ? refuse(404, NOTHING_WAITING) : refuse(413, tooLarge(imports.most))
     const arrived = imports.arrive(id, body)
     if (!arrived) return refuse(404, NOTHING_WAITING)
     try {

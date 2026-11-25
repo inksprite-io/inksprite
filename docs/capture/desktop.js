@@ -130,13 +130,20 @@ async function walk(page, url, themes) {
   await ui.type('Thief')
   await ui.click(button('Create'))
 
-  await ui.click(row('Thief'), { button: 'right' })
-  await ui.click(menu('New document'))
-  await ui.type('Chapter 3')
-  await ui.press('Enter')
-  await row('Chapter 3').waitFor()
-  await ui.click(editor)
-  await ui.type('She counted the guards twice and left before the bell.')
+  // The chapters the terminal lists, the last open in the editor.
+  for (const [name, line] of [
+    ['Chapter 1', 'The vault door opened on the third try.'],
+    ['Chapter 2', 'Nobody in the guild believed the map.'],
+    ['Chapter 3', 'She counted the guards twice and left before the bell.'],
+  ]) {
+    await ui.click(row('Thief'), { button: 'right' })
+    await ui.click(menu('New document'))
+    await ui.type(name)
+    await ui.press('Enter')
+    await row(name).waitFor()
+    await ui.click(editor)
+    await ui.type(line)
+  }
 
   await page.evaluate(async () => {
     const { useApplicationState } = await import('/src/composables/useApplicationState.js')

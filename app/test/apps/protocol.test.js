@@ -73,7 +73,7 @@ describe('answerRequest', () => {
     expect(writes).toContain('to read and write their documents')
     expect(writes).toContain('is in the document at once')
     expect(writes).toContain('export_document')
-    expect(writes).toContain('import_document brings a file from your side into a project')
+    expect(writes).toContain('import_document copies a file from your side into a project')
     expect(writes).toContain('add_comment')
     expect(writes).toContain("carries this connection's name")
     // Whether to suggest is the app's own assistant's to be told, call by call.
