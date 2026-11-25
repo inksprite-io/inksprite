@@ -107,6 +107,12 @@ export default [
     },
   },
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/.vite/**', '**/coverage/**'],
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/.vite/**',
+      '**/coverage/**',
+      '**/.wrangler/**',
+    ],
   },
 ]

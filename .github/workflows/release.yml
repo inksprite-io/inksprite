@@ -265,9 +265,9 @@ jobs:
 
           - **macOS**: the `.dmg` ending in `arm64` for Apple silicon, or in `x64` for an Intel Mac. Signed and notarized.
           - **Windows**: the `.exe` ending in `arm64` for an ARM PC, or in `x64` for any other. It isn't signed, so Windows warns that it doesn't recognize the app: choose More info, then Run anyway.
-          - **Linux**: the `.AppImage`, or the `.deb` for Debian and Ubuntu, each ending in `arm64` for an ARM computer, or in `x86_64` or `amd64` for any other. If the AppImage won't start on Ubuntu 24.04 or later, install the `.deb`.
+          - **Linux**: the `.AppImage`, or the `.deb` for Debian and Ubuntu, each ending in `arm64` for an ARM computer, or in `x86_64` or `amd64` for any other.
 
-          Once installed, the app updates itself: it downloads each new release and offers to restart into it. The Windows and Linux builds aren't code-signed, so there the app checks each update against a signature made as the release was built. For now, an update that fails the check is noted in the app's log and offered all the same. The `.zip`, `.blockmap`, `.sig` and `.yml` files are for the updater, and each installer is here a second time without its version in the name, for links that always fetch the latest.
+          Once installed, the app updates itself: it downloads each new release and offers to restart into it. The Windows and Linux builds aren't code-signed, so there the app checks each update against a signature made as the release was built. For now, an update that fails the check is noted in the app's log and offered all the same. The `.zip`, `.blockmap`, `.sig` and `.yml` files are for the updater. Each installer is also here without its version in its name, so a link to it always gets the latest.
 
           An app installed from a release before v0.1.0-dev.8, the first built with Electron, doesn't update to this one; install it over that one.
           EOF

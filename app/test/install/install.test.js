@@ -4,7 +4,7 @@ import { execFile } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { Buffer } from 'node:buffer'
 import { createServer } from 'node:http'
-import { mkdir, mkdtemp, readFile, rm, stat } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, stat, symlink } from 'node:fs/promises'
 import { arch, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -91,6 +91,14 @@ const install = (args = [], env = {}) =>
     )
   )
 
+/** Where a program is on this system's PATH, or null. */
+const which = tool =>
+  new Promise(resolve =>
+    execFile('sh', ['-c', `command -v ${tool}`], (error, stdout) =>
+      resolve(error ? null : stdout.trim())
+    )
+  )
+
 const exists = file =>
   stat(file).then(
     () => true,
@@ -136,6 +144,30 @@ describe.runIf(process.platform === 'linux')('the install script, on Linux', () 
     const { code, stderr } = await install(['--appimage'])
     expect(code).toBe(1)
     expect(stderr).toContain('The latest release has no AppImage for this computer.')
+  })
+
+  it('installs nothing when the release lists no SHA-512 for the build', async () => {
+    files.set(UPDATE, `version: 0.2.0\nfiles:\n  - url: ${BUILD}\n    size: 1\n`)
+    const { code, stderr } = await install(['--appimage'])
+    expect(code).toBe(1)
+    expect(stderr).toContain('The release lists no SHA-512 for')
+    expect(await exists(join(home, 'Applications'))).toBe(false)
+  })
+
+  it('installs nothing on a system with no tool to check the download', async () => {
+    // Everything the script runs, but sha512sum and shasum.
+    const bin = join(root, 'bin')
+    await mkdir(bin)
+    const tools = ['sh', 'curl', 'awk', 'sed', 'mktemp', 'rm', 'mkdir', 'chmod', 'mv', 'cp', 'cat']
+    tools.push('od', 'tr', 'base64', 'uname', 'basename', 'dirname', 'id', 'env')
+    for (const tool of tools) {
+      const found = await which(tool)
+      if (found) await symlink(found, join(bin, tool))
+    }
+    const { code, stderr } = await install(['--appimage'], { PATH: bin })
+    expect(code).toBe(1)
+    expect(stderr).toContain('needs sha512sum or shasum')
+    expect(await exists(join(home, 'Applications'))).toBe(false)
   })
 
   it("says so when the release can't be reached", async () => {

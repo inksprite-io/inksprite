@@ -56,7 +56,7 @@ download() { # name, where to, then curl's options
   shift 2
   proto='=https'
   [ -z "${INKSPRITE_RELEASES:-}" ] || proto='=http,https'
-  curl -fL --proto "$proto" "$@" -o "$to" "$from"
+  curl -fL --proto "$proto" --proto-redir "$proto" "$@" -o "$to" "$from"
 }
 
 # The release's update file for this system, which names each build and its
@@ -73,30 +73,33 @@ build_named() { # ending
   }' "$work/latest.yml"
 }
 
-# The SHA-512 the release lists for a build, in hex.
+# The SHA-512 the release lists for a build, in hex, or nothing.
 listed_sha512() { # name
   sha=$(NAME=$1 awk '$1 == "-" && $2 == "url:" { url = $3; next }
     $1 == "sha512:" && url == ENVIRON["NAME"] { print $2; exit }' "$work/latest.yml")
-  [ -n "$sha" ] || fail "The release lists no SHA-512 for $1."
-  printf '%s' "$sha" | base64 --decode | od -An -v -tx1 | tr -d ' \n'
+  [ -z "$sha" ] || printf '%s' "$sha" | base64 --decode | od -An -v -tx1 | tr -d ' \n'
 }
 
-# A file's SHA-512, in hex.
+# A file's SHA-512, in hex, or nothing where there's no tool to make one.
 file_sha512() { # file
   if command -v sha512sum >/dev/null 2>&1; then
     sha512sum "$1" | awk '{ print $1 }'
-  else
+  elif command -v shasum >/dev/null 2>&1; then
     shasum -a 512 "$1" | awk '{ print $1 }'
   fi
 }
 
 # Download a build into the work folder, and check it's the one the release
-# lists.
+# lists. Each side is read into a variable of its own and checked for
+# something there, so that two empty answers can never pass as a match.
 fetch() { # name
   say "Downloading $1..."
   download "$1" "$work/$1" --progress-bar || fail "$1 couldn't be downloaded."
-  [ "$(file_sha512 "$work/$1")" = "$(listed_sha512 "$1")" ] ||
-    fail "$1 isn't the file the release lists, so nothing was installed."
+  listed=$(listed_sha512 "$1")
+  [ -n "$listed" ] || fail "The release lists no SHA-512 for $1 that can be read, so nothing was installed."
+  got=$(file_sha512 "$work/$1")
+  [ -n "$got" ] || fail "Checking the download needs sha512sum or shasum, and this system has neither."
+  [ "$got" = "$listed" ] || fail "$1 isn't the file the release lists, so nothing was installed."
 }
 
 mac() {
@@ -140,7 +143,7 @@ mac() {
   ditto -x -k "$work/$name" "$work/app"
   rm -rf "$dest/inksprite.app"
   mv "$work/app/inksprite.app" "$dest/"
-  say "inksprite $version is in $dest. Open it from Launchpad or Spotlight."
+  say "inksprite $version is in $dest. Open it from there, or from Spotlight."
 }
 
 # Whether this Linux is Debian's or Ubuntu's family, by what it says of itself.
@@ -234,6 +237,11 @@ linux() {
     chmod 644 "$work/$name"
     say "Installing $name with apt, which asks for your password..."
     as_root apt-get install -y "$work/$name"
+    # An AppImage's launcher entry, of the same name, would hide the package's.
+    # One of the person's own, for the package, is left.
+    if grep -q '^Exec=.*\.AppImage' "$data/applications/inksprite.desktop" 2>/dev/null; then
+      rm -f "$data/applications/inksprite.desktop" "$data"/icons/hicolor/*/apps/inksprite.png
+    fi
     say "inksprite $version is installed. Open it from your launcher."
     return
   fi
@@ -266,7 +274,7 @@ main() {
   case "$(uname -s)" in
     Darwin) mac ;;
     Linux) linux ;;
-    *) fail "This script installs inksprite on a Mac or on Linux. For Windows, download the installer from https://inksprite.io." ;;
+    *) fail "This script installs inksprite on a Mac or on Linux. For Windows, download the installer from https://github.com/inksprite-io/inksprite/releases/latest." ;;
   esac
 }
 

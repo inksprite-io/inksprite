@@ -8,7 +8,7 @@ title: About
 
 Privacy is one of inksprite's core features. You don't need an account to use inksprite, since it runs locally in your browser. Your stories and other data are stored locally, which means that we can't access them. If you sync them, they're encrypted before they leave your device, so we still can't.
 
-The only information we collect is page views via Vercel's [web analytics](https://vercel.com/docs/analytics), simply because we want to know how many people are using the app, and, if you sync, what's described under [Sync](#sync) below. The feature seems to be blocked by most ad-blockers, so feel free to use one if it concerns you.
+The only information we collect is page views, simply because we want to know how many people are using the app, and, if you sync, what's described under [Sync](#sync) below.
 
 ### Caveats
 

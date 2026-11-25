@@ -30,14 +30,26 @@ const openRouter = vi.fn(async () =>
 )
 
 describe("the app's Worker", () => {
-  it('leaves every path but the API to the files', async () => {
+  it("answers an address in the app with the app's page, which no site may frame", async () => {
     const assets = files()
-    const response = await app(new Request('https://app.inksprite.io/some/path'), {
+    const response = await app(new Request('https://app.inksprite.io/project/abc?x=1'), {
       assets,
       cache: cache(),
       waitUntil: () => {},
     })
-    expect(await response.text()).toBe('file /some/path')
+    expect(await response.text()).toBe('file /')
+    expect(response.headers.get('content-security-policy')).toBe("frame-ancestors 'none'")
+  })
+
+  it('finds no missing file under /assets/, rather than answering with the page', async () => {
+    const assets = files()
+    const response = await app(new Request('https://app.inksprite.io/assets/gone-1234.js'), {
+      assets,
+      cache: cache(),
+      waitUntil: () => {},
+    })
+    expect(response.status).toBe(404)
+    expect(assets.fetch).not.toHaveBeenCalled()
   })
 
   it('answers the price list, and keeps it for the next asker', async () => {

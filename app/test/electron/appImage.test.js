@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { chmod, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, readFile, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -99,6 +99,16 @@ describe('settleAppImage', () => {
     await rm(root, { recursive: true, force: true })
   })
 
+  /** Settle as the AppImage's own program, on a system with no package installed. */
+  const settle = (env, more = {}) =>
+    settleAppImage({
+      env,
+      home,
+      running: join(inside, 'inksprite'),
+      system: [join(root, 'usr/share/applications')],
+      ...more,
+    })
+
   /** An AppImage of `name` in the Applications folder, and its environment. */
   const appImage = async name => {
     const file = join(apps, name)
@@ -107,13 +117,13 @@ describe('settleAppImage', () => {
   }
 
   it('does nothing unless the app runs as an AppImage', async () => {
-    expect(await settleAppImage({ env: {}, home })).toEqual([])
+    expect(await settle({})).toEqual([])
     await expect(stat(join(home, '.local'))).rejects.toThrow()
   })
 
   it('drops the version from its name, and tells the updater where it is now', async () => {
     const env = await appImage('inksprite-0.1.0-dev.31-linux-x86_64.AppImage')
-    await settleAppImage({ env, home })
+    await settle(env)
     expect(env.APPIMAGE).toBe(join(apps, 'inksprite-linux-x86_64.AppImage'))
     expect(await readFile(env.APPIMAGE, 'utf8')).toBe('appimage')
     await expect(stat(join(apps, 'inksprite-0.1.0-dev.31-linux-x86_64.AppImage'))).rejects.toThrow()
@@ -122,14 +132,14 @@ describe('settleAppImage', () => {
   it('keeps its name where a file has the plain one already', async () => {
     await writeFile(join(apps, 'inksprite-linux-x86_64.AppImage'), 'another')
     const env = await appImage('inksprite-0.1.0-dev.31-linux-x86_64.AppImage')
-    await settleAppImage({ env, home })
+    await settle(env)
     expect(env.APPIMAGE).toBe(join(apps, 'inksprite-0.1.0-dev.31-linux-x86_64.AppImage'))
     expect(await readFile(join(apps, 'inksprite-linux-x86_64.AppImage'), 'utf8')).toBe('another')
   })
 
   it('writes its launcher entry and icon into the home folder', async () => {
     const env = await appImage('inksprite-0.1.0-dev.31-linux-x86_64.AppImage')
-    const done = await settleAppImage({ env, home })
+    const done = await settle(env)
     const entry = await readFile(join(home, '.local/share/applications/inksprite.desktop'), 'utf8')
     expect(entry).toContain(`Exec="${join(apps, 'inksprite-linux-x86_64.AppImage')}" %U`)
     expect(
@@ -144,16 +154,16 @@ describe('settleAppImage', () => {
 
   it('writes nothing the next time, when nothing has moved', async () => {
     const env = await appImage('inksprite-linux-x86_64.AppImage')
-    await settleAppImage({ env, home })
-    expect(await settleAppImage({ env, home })).toEqual([])
+    await settle(env)
+    expect(await settle(env)).toEqual([])
   })
 
   it('points the entry at where the file has moved to', async () => {
     const env = await appImage('inksprite-linux-x86_64.AppImage')
-    await settleAppImage({ env, home })
+    await settle(env)
     const moved = join(root, 'elsewhere.AppImage')
     await writeFile(moved, 'appimage')
-    expect(await settleAppImage({ env: { APPIMAGE: moved, APPDIR: inside }, home })).toEqual([
+    expect(await settle({ APPIMAGE: moved, APPDIR: inside })).toEqual([
       `launcher entry for ${moved}`,
     ])
     const entry = await readFile(join(home, '.local/share/applications/inksprite.desktop'), 'utf8')
@@ -165,19 +175,75 @@ describe('settleAppImage', () => {
       ...(await appImage('inksprite-linux-x86_64.AppImage')),
       XDG_DATA_HOME: join(root, 'data'),
     }
-    await settleAppImage({ env, home })
+    await settle(env)
     expect(await stat(join(root, 'data/applications/inksprite.desktop'))).toBeTruthy()
   })
 
   it("still makes its entry where it can't rename itself", async () => {
     const env = await appImage('inksprite-0.1.0-dev.31-linux-x86_64.AppImage')
     await chmod(apps, 0o555)
-    const done = await settleAppImage({ env, home })
+    const done = await settle(env)
     // Root can rename in a folder it can't write to; anyone else can't.
     if (process.getuid?.() !== 0) {
       expect(done[0]).toMatch(/^not renamed: /)
       expect(env.APPIMAGE).toBe(join(apps, 'inksprite-0.1.0-dev.31-linux-x86_64.AppImage'))
     }
     expect(done.at(-1)).toMatch(/^launcher entry for /)
+  })
+
+  it("does nothing for a program that only inherited another AppImage's variables", async () => {
+    const env = await appImage('inksprite-0.1.0-dev.31-linux-x86_64.AppImage')
+    expect(await settle(env, { running: '/opt/inksprite/inksprite' })).toEqual([])
+    expect(env.APPIMAGE).toBe(join(apps, 'inksprite-0.1.0-dev.31-linux-x86_64.AppImage'))
+    await expect(stat(join(home, '.local'))).rejects.toThrow()
+  })
+
+  it('writes no entry of its own where the package has one, which it would hide', async () => {
+    await mkdir(join(root, 'usr/share/applications'), { recursive: true })
+    await writeFile(join(root, 'usr/share/applications/inksprite.desktop'), '[Desktop Entry]\n')
+    const env = await appImage('inksprite-linux-x86_64.AppImage')
+    expect(await settle(env)).toEqual([])
+    await expect(stat(join(home, '.local/share/applications/inksprite.desktop'))).rejects.toThrow()
+  })
+
+  it('takes away the entry it wrote once the package is installed', async () => {
+    const env = await appImage('inksprite-linux-x86_64.AppImage')
+    await settle(env)
+    await mkdir(join(root, 'usr/share/applications'), { recursive: true })
+    await writeFile(join(root, 'usr/share/applications/inksprite.desktop'), '[Desktop Entry]\n')
+    expect(await settle(env)).toEqual(['launcher entry left to the package'])
+    await expect(stat(join(home, '.local/share/applications/inksprite.desktop'))).rejects.toThrow()
+  })
+
+  it("leaves the person's own entry for the package alone", async () => {
+    await mkdir(join(root, 'usr/share/applications'), { recursive: true })
+    await writeFile(join(root, 'usr/share/applications/inksprite.desktop'), '[Desktop Entry]\n')
+    const theirs = '[Desktop Entry]\nName=inksprite\nExec=/opt/inksprite/inksprite --x %U\n'
+    await mkdir(join(home, '.local/share/applications'), { recursive: true })
+    await writeFile(join(home, '.local/share/applications/inksprite.desktop'), theirs)
+    await settle(await appImage('inksprite-linux-x86_64.AppImage'))
+    expect(await readFile(join(home, '.local/share/applications/inksprite.desktop'), 'utf8')).toBe(
+      theirs
+    )
+  })
+
+  it('counts a folder reached through a link as the AppImage it is', async () => {
+    const linked = join(root, 'linked-mount')
+    await symlink(inside, linked)
+    const env = { ...(await appImage('inksprite-linux-x86_64.AppImage')), APPDIR: linked }
+    expect(await settle(env)).toEqual([
+      'icon 512x512',
+      `launcher entry for ${join(apps, 'inksprite-linux-x86_64.AppImage')}`,
+    ])
+  })
+
+  it('keeps an entry the person changed, while it still starts this file', async () => {
+    const env = await appImage('inksprite-linux-x86_64.AppImage')
+    await settle(env)
+    const at = join(home, '.local/share/applications/inksprite.desktop')
+    const changed = (await readFile(at, 'utf8')).replace(' %U', ' --ozone-platform=wayland %U')
+    await writeFile(at, changed)
+    expect(await settle(env)).toEqual([])
+    expect(await readFile(at, 'utf8')).toBe(changed)
   })
 })

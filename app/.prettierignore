@@ -5,6 +5,9 @@ node_modules/
 dist/
 .vite/
 
+# Wrangler's local state, from running the site's Worker here
+.wrangler/
+
 # Logs
 *.log
 

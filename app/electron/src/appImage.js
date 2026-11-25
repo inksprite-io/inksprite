@@ -11,22 +11,40 @@
  *   own (`~/.local/share/applications` and `icons`), from the entry
  *   electron-builder packed inside it, pointing at where the file is now.
  *
- * Nothing is written that already says the same. The entry is named after the
- * app's `desktopName` (`inksprite.desktop`), which is how a desktop matches
- * the app's windows to it, and its `TryExec` hides it from launchers once the
- * file is gone (left out for a path with a space or a backslash in it, which
- * `TryExec` can't hold plainly). The install script (`install.sh`) removes both on
- * `--uninstall`.
+ * Nothing is written that already says the same, and an entry that already
+ * starts this file is left as it is, so the person's own changes to it stay.
+ * The entry is named after the app's `desktopName` (`inksprite.desktop`),
+ * which is how a desktop matches the app's windows to it, and its `TryExec`
+ * hides it from launchers once the file is gone (left out for a path with a
+ * space or a backslash in it, which `TryExec` can't hold plainly). The install
+ * script (`docs/public/install`) removes both on `--uninstall`.
  *
- * The .deb installs its own entry and icon, and never runs this.
+ * The .deb installs its own entry and icon, and never runs this. Where it's
+ * installed too, the AppImage writes no entry of its own, which would hide
+ * the package's under the same name. `APPIMAGE` and `APPDIR` are believed
+ * only when the app is running from inside `APPDIR`, since a program started
+ * from another AppImage inherits that one's.
  */
 
-import { copyFile, mkdir, readFile, readdir, rename, stat, writeFile } from 'node:fs/promises'
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  readdir,
+  realpath,
+  rename,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises'
 import { homedir } from 'node:os'
 import path from 'node:path'
 
 /** The app's name in its entry's file, its icon's and its windows' class. */
 const NAME = 'inksprite'
+
+/** Where a package installs its launcher entry. */
+const SYSTEM_ENTRIES = ['/usr/share/applications', '/usr/local/share/applications']
 
 /**
  * A file's name without its version: `inksprite-0.1.0-dev.31-linux-x86_64.AppImage`
@@ -120,16 +138,28 @@ const exists = file =>
  * nothing unless the app is running as an AppImage. What can't be done (a
  * folder it can't write to) is left undone, and said in what it returns.
  *
- * @param {{env?: NodeJS.ProcessEnv, home?: string}} [where] - The environment,
- *   which names the AppImage and where it's unpacked (`APPIMAGE`, `APPDIR`),
- *   and the home folder
+ * @param {{env?: NodeJS.ProcessEnv, home?: string, running?: string, system?: string[]}} [where] -
+ *   The environment, which names the AppImage and where it's unpacked
+ *   (`APPIMAGE`, `APPDIR`), the home folder, the program running, and where a
+ *   package's launcher entry would be
  * @returns {Promise<string[]>} What it did, and what it couldn't, for the log
  */
-export async function settleAppImage({ env = process.env, home = homedir() } = {}) {
+export async function settleAppImage({
+  env = process.env,
+  home = homedir(),
+  running = process.execPath,
+  system = SYSTEM_ENTRIES,
+} = {}) {
   const done = /** @type {string[]} */ ([])
   let file = env.APPIMAGE
   const inside = env.APPDIR
   if (!file || !inside || !path.isAbsolute(file) || /[\n\0]/.test(file)) return done
+  // Compared as their real paths, so a temporary folder reached through a link still counts.
+  const [here, unpacked] = await Promise.all([
+    realpath(running).catch(() => running),
+    realpath(inside).catch(() => inside),
+  ])
+  if (!here.startsWith(path.join(unpacked, path.sep))) return done
 
   const plain = plainName(path.basename(file))
   if (plain) {
@@ -147,6 +177,18 @@ export async function settleAppImage({ env = process.env, home = homedir() } = {
   }
 
   const data = env.XDG_DATA_HOME || path.join(home, '.local', 'share')
+  const own = path.join(data, 'applications', `${NAME}.desktop`)
+  for (const dir of system) {
+    if (!(await exists(path.join(dir, `${NAME}.desktop`)))) continue
+    // The package's entry is the one to keep: an entry of this AppImage's own
+    // would hide it, so one it wrote before goes.
+    const kept = await readFile(own, 'utf8').catch(() => '')
+    if (kept.includes(`Exec=${execArgument(file)} `)) {
+      await rm(own, { force: true })
+      done.push('launcher entry left to the package')
+    }
+    return done
+  }
   try {
     const icons = path.join(inside, 'usr', 'share', 'icons', 'hicolor')
     for (const size of await readdir(icons).catch(() => [])) {
@@ -160,10 +202,10 @@ export async function settleAppImage({ env = process.env, home = homedir() } = {
     }
     const packed = await readFile(path.join(inside, `${NAME}.desktop`), 'utf8').catch(() => '')
     const entry = launcherEntry(packed, file)
-    const to = path.join(data, 'applications', `${NAME}.desktop`)
-    if (!(await says(to, entry))) {
-      await mkdir(path.dirname(to), { recursive: true })
-      await writeFile(to, entry)
+    const kept = await readFile(own, 'utf8').catch(() => '')
+    if (!kept.includes(`Exec=${execArgument(file)} `)) {
+      await mkdir(path.dirname(own), { recursive: true })
+      await writeFile(own, entry)
       done.push(`launcher entry for ${file}`)
     }
   } catch (error) {
