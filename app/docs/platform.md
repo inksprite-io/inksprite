@@ -36,192 +36,203 @@
   - [Parameters][32]
 - [offerAppExport][33]
   - [Parameters][34]
-- [answerApps][35]
+- [awaitAppImport][35]
   - [Parameters][36]
-- [platform/closing][37]
-- [beforeClosing][38]
-  - [Parameters][39]
-- [platform/desktop][40]
-- [DesktopRequest][41]
-  - [Properties][42]
-- [DesktopResponse][43]
-  - [Properties][44]
-- [DesktopBodyPart][45]
-- [DesktopBridge][46]
-  - [Properties][47]
-- [BRIDGE][48]
-- [BRIDGE][49]
-- [BRIDGE][50]
-- [BRIDGE][51]
-- [DesktopTerminals][52]
-- [AppConnection][53]
-  - [Properties][54]
-- [AppsState][55]
-  - [Properties][56]
-- [DesktopApps][57]
-- [DesktopPdf][58]
-- [DesktopExportEntry][59]
-- [DesktopExportFolder][60]
-- [PythonRun][61]
-  - [Properties][62]
-- [PythonProjectEntry][63]
-- [PythonRunOptions][64]
-  - [Properties][65]
-- [DesktopPython][66]
-- [LibrarySettings][67]
-- [isDesktop][68]
-- [desktop][69]
-- [platform/exportFolder][70]
-- [canExportToFolder][71]
-- [canExportToFolder][72]
-- [chooseExportFolder][73]
-  - [Parameters][74]
-- [writeExportFolder][75]
-  - [Parameters][76]
-- [platform/fetch][77]
-- [NO_BODY][78]
-- [READERS][79]
-- [last][80]
-- [last][81]
-- [fetch][82]
-  - [Parameters][83]
-- [fetchFromWeb][84]
-  - [Parameters][85]
-- [fetchNatively][86]
+- [takeAppImport][37]
+  - [Parameters][38]
+- [answerApps][39]
+  - [Parameters][40]
+- [platform/closing][41]
+- [beforeClosing][42]
+  - [Parameters][43]
+- [platform/desktop][44]
+- [DesktopRequest][45]
+  - [Properties][46]
+- [DesktopResponse][47]
+  - [Properties][48]
+- [DesktopBodyPart][49]
+- [DesktopBridge][50]
+  - [Properties][51]
+- [BRIDGE][52]
+- [BRIDGE][53]
+- [BRIDGE][54]
+- [BRIDGE][55]
+- [DesktopTerminals][56]
+- [AppConnection][57]
+  - [Properties][58]
+- [AppsState][59]
+  - [Properties][60]
+- [DesktopApps][61]
+- [DesktopPdf][62]
+- [DesktopExportEntry][63]
+- [DesktopExportFolder][64]
+- [PythonRun][65]
+  - [Properties][66]
+- [PythonProjectEntry][67]
+- [PythonRunOptions][68]
+  - [Properties][69]
+- [DesktopPython][70]
+- [LibrarySettings][71]
+- [isDesktop][72]
+- [desktop][73]
+- [platform/exportFolder][74]
+- [canExportToFolder][75]
+- [canExportToFolder][76]
+- [chooseExportFolder][77]
+  - [Parameters][78]
+- [writeExportFolder][79]
+  - [Parameters][80]
+- [platform/fetch][81]
+- [NO_BODY][82]
+- [READERS][83]
+- [last][84]
+- [last][85]
+- [fetch][86]
   - [Parameters][87]
-- [controller][88]
-- [onBody][89]
-  - [Parameters][90]
-- [platform][91]
-  - [Examples][92]
-- [platform/library][93]
-- [librarySettings][94]
-- [librarySettings][95]
-- [markProjectsMoved][96]
-- [revealInLibrary][97]
-  - [Parameters][98]
-- [libraryDisk][99]
-- [platform/menu][100]
-- [MenuCommand][101]
-- [hasMenuCommands][102]
-- [onMenuCommand][103]
-  - [Parameters][104]
-- [][105]
-- [platform/open][106]
-- [SCHEMES][107]
-- [openable][108]
-  - [Parameters][109]
-- [openUrl][110]
+- [fetchFromWeb][88]
+  - [Parameters][89]
+- [fetchNatively][90]
+  - [Parameters][91]
+- [controller][92]
+- [onBody][93]
+  - [Parameters][94]
+- [platform][95]
+  - [Examples][96]
+- [platform/library][97]
+- [librarySettings][98]
+- [librarySettings][99]
+- [markProjectsMoved][100]
+- [revealInLibrary][101]
+  - [Parameters][102]
+- [libraryDisk][103]
+- [platform/menu][104]
+- [MenuCommand][105]
+- [hasMenuCommands][106]
+- [onMenuCommand][107]
+  - [Parameters][108]
+- [][109]
+- [showInMenu][110]
   - [Parameters][111]
-- [openLinkClicked][112]
-  - [Parameters][113]
-- [platform/persistence][114]
-- [asked][115]
-- [askToKeepData][116]
-- [BrowserTraits][117]
-  - [Properties][118]
-- [StorageAdvice][119]
-  - [Properties][120]
-- [currentBrowser][121]
-- [storageAdvice][122]
-  - [Parameters][123]
-- [platform/printing][124]
-- [canSavePdf][125]
-- [savePdf][126]
-  - [Parameters][127]
-- [platform/python][128]
-- [hasPython][129]
-- [hasPython][130]
-- [hasPython][131]
-- [runPython][132]
+- [platform/open][112]
+- [SCHEMES][113]
+- [openable][114]
+  - [Parameters][115]
+- [openUrl][116]
+  - [Parameters][117]
+- [openLinkClicked][118]
+  - [Parameters][119]
+- [platform/persistence][120]
+- [asked][121]
+- [askToKeepData][122]
+- [BrowserTraits][123]
+  - [Properties][124]
+- [StorageAdvice][125]
+  - [Properties][126]
+- [currentBrowser][127]
+- [storageAdvice][128]
+  - [Parameters][129]
+- [platform/printing][130]
+- [canSavePdf][131]
+- [savePdf][132]
   - [Parameters][133]
-- [platform/serviceWorker][134]
-- [registration][135]
-- [hasServiceWorker][136]
-- [registerServiceWorker][137]
-  - [Parameters][138]
-- [lookForBuild][139]
-- [reloadIntoBuild][140]
-- [platform/settingsFile][141]
-- [settingsFileText][142]
-- [platform/signIn][143]
-- [SIGN_IN_PORT][144]
-- [callbackOrigin][145]
-- [signInInBrowser][146]
-  - [Parameters][147]
-- [platform/terminal][148]
-- [TERMINAL_ORIGIN][149]
-- [TERMINAL_ORIGIN][150]
-- [TERMINAL_ID][151]
-- [isTerminalId][152]
+- [platform/python][134]
+- [hasPython][135]
+- [hasPython][136]
+- [hasPython][137]
+- [runPython][138]
+  - [Parameters][139]
+- [platform/serviceWorker][140]
+- [registration][141]
+- [hasServiceWorker][142]
+- [registerServiceWorker][143]
+  - [Parameters][144]
+- [lookForBuild][145]
+- [reloadIntoBuild][146]
+- [platform/settingsFile][147]
+- [settingsFileText][148]
+- [platform/signIn][149]
+- [SIGN_IN_PORT][150]
+- [callbackOrigin][151]
+- [signInInBrowser][152]
   - [Parameters][153]
-- [hasTerminal][154]
-- [terminals][155]
-- [createTerminal][156]
-  - [Parameters][157]
-- [listTerminals][158]
-- [terminalSeen][159]
-  - [Parameters][160]
-- [closeTerminal][161]
-  - [Parameters][162]
-- [onTerminalEvent][163]
-  - [Parameters][164]
-- [TerminalAppearance][165]
-  - [Properties][166]
-- [terminalFrameUrl][167]
+- [platform/terminal][154]
+- [TERMINAL_ORIGIN][155]
+- [TERMINAL_ORIGIN][156]
+- [TERMINAL_ID][157]
+- [isTerminalId][158]
+  - [Parameters][159]
+- [hasTerminal][160]
+- [terminals][161]
+- [createTerminal][162]
+  - [Parameters][163]
+- [listTerminals][164]
+- [terminalSeen][165]
+  - [Parameters][166]
+- [closeTerminal][167]
   - [Parameters][168]
-- [appShortcutFrom][169]
+- [onTerminalEvent][169]
   - [Parameters][170]
-- [platform/updates][171]
-- [downloadUpdate][172]
-- [installUpdate][173]
-- [platform/windows][174]
-- [CHANNEL][175]
-- [CHANNEL][176]
-- [CHANNEL][177]
-- [Taken][178]
-- [lockName][179]
-  - [Parameters][180]
-- [held][181]
-- [taking][182]
-- [touched][183]
-- [behind][184]
-- [listeners][185]
-- [channel][186]
-- [locks][187]
-- [theChannel][188]
-- [heard][189]
-  - [Parameters][190]
-- [tellOtherWindows][191]
-  - [Parameters][192]
-- [tellThisWindow][193]
-  - [Parameters][194]
-- [onNotice][195]
-  - [Parameters][196]
-- [onTablesWritten][197]
-  - [Parameters][198]
-- [takeProject][199]
-  - [Parameters][200]
-- [settled][201]
-- [take][202]
+- [TerminalAppearance][171]
+  - [Properties][172]
+- [terminalFrameUrl][173]
+  - [Parameters][174]
+- [PressedKey][175]
+  - [Properties][176]
+- [IS_MAC][177]
+- [terminalKey][178]
+  - [Parameters][179]
+- [appShortcutFrom][180]
+  - [Parameters][181]
+- [platform/updates][182]
+- [downloadUpdate][183]
+- [installUpdate][184]
+- [platform/windows][185]
+- [CHANNEL][186]
+- [CHANNEL][187]
+- [CHANNEL][188]
+- [Taken][189]
+- [lockName][190]
+  - [Parameters][191]
+- [held][192]
+- [taking][193]
+- [touched][194]
+- [behind][195]
+- [listeners][196]
+- [channel][197]
+- [locks][198]
+- [theChannel][199]
+- [heard][200]
+  - [Parameters][201]
+- [tellOtherWindows][202]
   - [Parameters][203]
-- [Promise][204]
-- [keep][205]
-  - [Parameters][206]
-- [letGoOfProject][207]
-  - [Parameters][208]
-- [holdsProject][209]
-  - [Parameters][210]
-- [heldProjects][211]
-- [projectsElsewhere][212]
-- [askForProject][213]
+- [tellThisWindow][204]
+  - [Parameters][205]
+- [onNotice][206]
+  - [Parameters][207]
+- [onTablesWritten][208]
+  - [Parameters][209]
+- [takeProject][210]
+  - [Parameters][211]
+- [settled][212]
+- [take][213]
   - [Parameters][214]
-- [onProjectAsked][215]
-  - [Parameters][216]
-- [bringWindowForward][217]
-- [openWindow][218]
+- [Promise][215]
+- [keep][216]
+  - [Parameters][217]
+- [letGoOfProject][218]
   - [Parameters][219]
-- [resetWindowsForTesting][220]
+- [holdsProject][220]
+  - [Parameters][221]
+- [heldProjects][222]
+- [projectsElsewhere][223]
+- [askForProject][224]
+  - [Parameters][225]
+- [onProjectAsked][226]
+  - [Parameters][227]
+- [bringWindowForward][228]
+- [openWindow][229]
+  - [Parameters][230]
+- [resetWindowsForTesting][231]
 
 ## platform/apps
 
@@ -247,17 +258,17 @@ without its token, and with where the app reaches this computer
 Whether other apps can be let in here: in the desktop app, one new enough
 to.
 
-Returns **[boolean][221]**&#x20;
+Returns **[boolean][232]**&#x20;
 
 ## bridge
 
-- Throws **[Error][222]** Outside the desktop app, or in one too old to
+- Throws **[Error][233]** Outside the desktop app, or in one too old to
 
 ## listApps
 
 The connections, and whether their apps can get in.
 
-Returns **[Promise][204]<[AppsState][55]>**&#x20;
+Returns **[Promise][215]<[AppsState][59]>**&#x20;
 
 ## addApp
 
@@ -265,9 +276,9 @@ Make a connection, with a token of its own and no project ticked.
 
 ### Parameters
 
-- `name` **[string][223]**&#x20;
+- `name` **[string][234]**&#x20;
 
-Returns **[Promise][204]<[AppConnection][53]>**&#x20;
+Returns **[Promise][215]<[AppConnection][57]>**&#x20;
 
 ## updateApp
 
@@ -275,10 +286,10 @@ Change a connection's name, its projects, or whether it only reads.
 
 ### Parameters
 
-- `id` **[string][223]**&#x20;
-- `patch` **Partial\<Pick<[AppConnection][53], (`"name"` | `"projects"` | `"readOnly"`)>>**&#x20;
+- `id` **[string][234]**&#x20;
+- `patch` **Partial\<Pick<[AppConnection][57], (`"name"` | `"projects"` | `"readOnly"`)>>**&#x20;
 
-Returns **[Promise][204]<[AppConnection][53]>**&#x20;
+Returns **[Promise][215]<[AppConnection][57]>**&#x20;
 
 ## removeApp
 
@@ -286,9 +297,9 @@ Remove a connection: its token opens nothing from then on.
 
 ### Parameters
 
-- `id` **[string][223]**&#x20;
+- `id` **[string][234]**&#x20;
 
-Returns **[Promise][204]\<void>**&#x20;
+Returns **[Promise][215]\<void>**&#x20;
 
 ## setAppsPort
 
@@ -297,9 +308,9 @@ old address is no longer answered.
 
 ### Parameters
 
-- `port` **[number][224]**&#x20;
+- `port` **[number][235]**&#x20;
 
-Returns **[Promise][204]<[AppsState][55]>**&#x20;
+Returns **[Promise][215]<[AppsState][59]>**&#x20;
 
 ## setAppsEnabled
 
@@ -308,9 +319,9 @@ are kept.
 
 ### Parameters
 
-- `enabled` **[boolean][221]**&#x20;
+- `enabled` **[boolean][232]**&#x20;
 
-Returns **[Promise][204]<[AppsState][55]>**&#x20;
+Returns **[Promise][215]<[AppsState][59]>**&#x20;
 
 ## keptRead
 
@@ -319,10 +330,10 @@ handed it, or null for none.
 
 ### Parameters
 
-- `connection` **[string][223]**&#x20;
-- `document` **[string][223]**&#x20;
+- `connection` **[string][234]**&#x20;
+- `document` **[string][234]**&#x20;
 
-Returns **[Promise][204]<([object][225] | null)>**&#x20;
+Returns **[Promise][215]<([object][236] | null)>**&#x20;
 
 ## keptReads
 
@@ -331,10 +342,10 @@ only the fields named, which spares a caller the text of each.
 
 ### Parameters
 
-- `connection` **[string][223]**&#x20;
-- `fields` **[Array][226]<[string][223]>?**&#x20;
+- `connection` **[string][234]**&#x20;
+- `fields` **[Array][237]<[string][234]>?**&#x20;
 
-Returns **[Promise][204]<[Array][226]<[object][225]>>**&#x20;
+Returns **[Promise][215]<[Array][237]<[object][236]>>**&#x20;
 
 ## keepRead
 
@@ -342,11 +353,11 @@ Keep what a connection now has of a document, in place of what it had.
 
 ### Parameters
 
-- `connection` **[string][223]**&#x20;
-- `document` **[string][223]**&#x20;
-- `record` **[object][225]**&#x20;
+- `connection` **[string][234]**&#x20;
+- `document` **[string][234]**&#x20;
+- `record` **[object][236]**&#x20;
 
-Returns **[Promise][204]\<void>**&#x20;
+Returns **[Promise][215]\<void>**&#x20;
 
 ## forgetReads
 
@@ -357,13 +368,13 @@ connection's, or every connection's where none is named.
 
 - `what` &#x20;
 
-Returns **[Promise][204]\<void>**&#x20;
+Returns **[Promise][215]\<void>**&#x20;
 
 ## deleted
 
 Documents deleted for good that the native side has yet to be told of.
 
-Type: [Set][227]<[string][223]>
+Type: [Set][238]<[string][234]>
 
 ## telling
 
@@ -387,7 +398,7 @@ folder's or a project's are, are told of together.
 
 ### Parameters
 
-- `$0` **[Object][225]**&#x20;
+- `$0` **[Object][236]**&#x20;
   - `$0.document` &#x20;
   - `$0.project` &#x20;
 
@@ -399,10 +410,35 @@ computer by.
 
 ### Parameters
 
-- `connection` **[string][223]**&#x20;
-- `file` **{name: [string][223], bytes: [Uint8Array][228]}**&#x20;
+- `connection` **[string][234]**&#x20;
+- `file` **{name: [string][234], bytes: [Uint8Array][239]}**&#x20;
 
-Returns **[Promise][204]<{id: [string][223]}>**&#x20;
+Returns **[Promise][215]<{id: [string][234]}>**&#x20;
+
+## awaitAppImport
+
+Wait for a file from a connection's app, which its own shell sends once,
+within a few minutes, to `/import/<id>` of the address it reaches this
+computer by. What it is for is handed back with it.
+
+### Parameters
+
+- `connection` **[string][234]**&#x20;
+- `about` **Record<[string][234], unknown>**&#x20;
+
+Returns **[Promise][215]<{id: [string][234]}>**&#x20;
+
+## takeAppImport
+
+The file a connection's app sent by a link, the once.
+
+### Parameters
+
+- `connection` **[string][234]**&#x20;
+- `id` **[string][234]**&#x20;
+
+Returns **[Promise][215]<({about: Record<[string][234], unknown>, bytes: [Uint8Array][239]} | null)>** Null
+before one has come, or after it was taken
 
 ## answerApps
 
@@ -438,57 +474,57 @@ bridge to the native side there.
 What the native side is asked for a request: the page's `Request`, read
 out.
 
-Type: [Object][225]
+Type: [Object][236]
 
 ### Properties
 
-- `url` **[string][223]**&#x20;
-- `method` **[string][223]**&#x20;
-- `headers` **[Array][226]<\[[string][223], [string][223]]>**&#x20;
-- `body` **([Uint8Array][228] | null)**&#x20;
+- `url` **[string][234]**&#x20;
+- `method` **[string][234]**&#x20;
+- `headers` **[Array][237]<\[[string][234], [string][234]]>**&#x20;
+- `body` **([Uint8Array][239] | null)**&#x20;
 - `redirect` **RequestRedirect**&#x20;
 
 ## DesktopResponse
 
 A response's status and headers, without its body.
 
-Type: [Object][225]
+Type: [Object][236]
 
 ### Properties
 
-- `status` **[number][224]**&#x20;
-- `statusText` **[string][223]**&#x20;
-- `headers` **[Array][226]<\[[string][223], [string][223]]>**&#x20;
+- `status` **[number][235]**&#x20;
+- `statusText` **[string][234]**&#x20;
+- `headers` **[Array][237]<\[[string][234], [string][234]]>**&#x20;
 
 ## DesktopBodyPart
 
 A piece of a response's body: a chunk of it, or word that it has all come,
 or that it failed.
 
-Type: ({chunk: [Uint8Array][228]} | {done: `true`} | {error: [string][223]})
+Type: ({chunk: [Uint8Array][239]} | {done: `true`} | {error: [string][234]})
 
 ## DesktopBridge
 
 What the desktop app's native side offers the page (`app/electron/src/
 preload.cjs`). Calls that go wrong reject with an Error saying what did.
 
-Type: [Object][225]
+Type: [Object][236]
 
 ### Properties
 
 - `library` **DesktopLibrary** The folder the projects are kept in
-- `python` **[DesktopPython][66]?** Python for the model to run code in,
+- `python` **[DesktopPython][70]?** Python for the model to run code in,
   a session for each chat. Missing from a desktop app older than the page
   it loads.
-- `exportFolder` **[DesktopExportFolder][60]?** Exports written to a
+- `exportFolder` **[DesktopExportFolder][64]?** Exports written to a
   folder the writer chooses. Missing from a desktop app older than the
   page it loads.
-- `pdf` **[DesktopPdf][58]?** The page as it prints, saved as a PDF.
+- `pdf` **[DesktopPdf][62]?** The page as it prints, saved as a PDF.
   Missing from a desktop app older than the page it loads.
-- `apps` **[DesktopApps][57]?** Other apps on this computer let into the
+- `apps` **[DesktopApps][61]?** Other apps on this computer let into the
   writer's projects. Missing from a desktop app older than the page it
   loads.
-- `terminals` **[DesktopTerminals][52]?** Terminals, each a shell of the
+- `terminals` **[DesktopTerminals][56]?** Terminals, each a shell of the
   writer's. Missing from a desktop app older than the page it loads.
 
 ## BRIDGE
@@ -497,66 +533,66 @@ What every window's page is told of a terminal: it was made in a project,
 the program in it named it, it rang, it was looked at since, or it is gone,
 `failed` when its shell never started.
 
-Type: [string][223]
+Type: [string][234]
 
 ## BRIDGE
 
 What a page says to an app's request: its answer, or that another window
 is to be asked, and why (`app/electron/src/appCalls.js`).
 
-Type: [string][223]
+Type: [string][234]
 
 ## BRIDGE
 
 The library: where it is, and the files in it, by paths below it. What is
 done there is `LibraryDisk` in `storage/library.js`.
 
-Type: [string][223]
+Type: [string][234]
 
 ## BRIDGE
 
 Where the bridge is, in the page.
 
-Type: [string][223]
+Type: [string][234]
 
 ## DesktopTerminals
 
 The app's terminals, each a project's (`app/electron/src/terminals.js`). A
 page makes and ends them; it is not what types in them.
 
-Type: [Object][225]
+Type: [Object][236]
 
 ## AppConnection
 
 One app's way into the writer's projects (`app/electron/src/apps.js`).
 
-Type: [Object][225]
+Type: [Object][236]
 
 ### Properties
 
-- `id` **[string][223]**&#x20;
-- `name` **[string][223]** What the writer calls it
-- `token` **[string][223]** What its requests carry
-- `projects` **[Array][226]<[string][223]>** The projects ticked for it, by their ids
-- `readOnly` **[boolean][221]** Whether it only reads: it is offered no tool
+- `id` **[string][234]**&#x20;
+- `name` **[string][234]** What the writer calls it
+- `token` **[string][234]** What its requests carry
+- `projects` **[Array][237]<[string][234]>** The projects ticked for it, by their ids
+- `readOnly` **[boolean][232]** Whether it only reads: it is offered no tool
   that changes anything
-- `created` **[number][224]**&#x20;
+- `created` **[number][235]**&#x20;
 
 ## AppsState
 
 The connections, and whether their apps can get in.
 
-Type: [Object][225]
+Type: [Object][236]
 
 ### Properties
 
-- `port` **[number][224]** The port apps reach inksprite on
-- `enabled` **[boolean][221]** Whether apps are let in at all
-- `connections` **[Array][226]<[AppConnection][53]>**&#x20;
-- `listening` **[boolean][221]** Whether the port is listened on, which it
+- `port` **[number][235]** The port apps reach inksprite on
+- `enabled` **[boolean][232]** Whether apps are let in at all
+- `connections` **[Array][237]<[AppConnection][57]>**&#x20;
+- `listening` **[boolean][232]** Whether the port is listened on, which it
   is only while apps are let in and there is a connection
-- `problem` **([string][223] | null)** Why it isn't, though it should be
-- `called` **Record<[string][223], [number][224]>** When each connection last asked
+- `problem` **([string][234] | null)** Why it isn't, though it should be
+- `called` **Record<[string][234], [number][235]>** When each connection last asked
   something, by its id, since the app started
 
 ## DesktopApps
@@ -564,13 +600,13 @@ Type: [Object][225]
 The connections other apps come in by (`app/electron/src/apps.js`), and
 the way this window answers what they ask.
 
-Type: [Object][225]
+Type: [Object][236]
 
 ## DesktopPdf
 
 The page as it prints, saved as a PDF (`app/electron/src/printing.js`).
 
-Type: [Object][225]
+Type: [Object][236]
 
 ## DesktopExportEntry
 
@@ -578,29 +614,29 @@ One thing in an export written to a folder, by its path in the export, the
 export's own folder first: a directory, a text, a file's bytes, or a file
 in the library to copy.
 
-Type: ({path: [string][223], folder: `true`} | {path: [string][223], text: [string][223]} | {path: [string][223], bytes: [Uint8Array][228]} | {path: [string][223], file: [string][223]})
+Type: ({path: [string][234], folder: `true`} | {path: [string][234], text: [string][234]} | {path: [string][234], bytes: [Uint8Array][239]} | {path: [string][234], file: [string][234]})
 
 ## DesktopExportFolder
 
 Exports written to a folder of the writer's (`app/electron/src/exporting.js`).
 
-Type: [Object][225]
+Type: [Object][236]
 
 ## PythonRun
 
 What a run of Python came back with (`app/electron/src/sandbox.js`).
 
-Type: [Object][225]
+Type: [Object][236]
 
 ### Properties
 
-- `stdout` **[string][223]** What the code printed
-- `stderr` **[string][223]** What it wrote to stderr
-- `value` **([string][223] | null)** The `repr` of its last expression, if that
+- `stdout` **[string][234]** What the code printed
+- `stderr` **[string][234]** What it wrote to stderr
+- `value` **([string][234] | null)** The `repr` of its last expression, if that
   had a value
-- `error` **([string][223] | null)** The traceback, if the code raised, or why
+- `error` **([string][234] | null)** The traceback, if the code raised, or why
   the run was stopped
-- `restarted` **[boolean][221]** Whether Python was started again, losing
+- `restarted` **[boolean][232]** Whether Python was started again, losing
   what the session's earlier runs had defined
 
 ## PythonProjectEntry
@@ -611,34 +647,34 @@ the main process reads it from, or one still only on the sync server, by
 its size, which the run's `fetchFile` brings into the library when the code
 reads it.
 
-Type: ({path: [string][223], folder: `true`} | {path: [string][223], id: [string][223], text: [string][223]} | {path: [string][223], id: [string][223], file: [string][223]} | {path: [string][223], id: [string][223], size: [number][224], onServer: `true`})
+Type: ({path: [string][234], folder: `true`} | {path: [string][234], id: [string][234], text: [string][234]} | {path: [string][234], id: [string][234], file: [string][234]} | {path: [string][234], id: [string][234], size: [number][235], onServer: `true`})
 
 ## PythonRunOptions
 
 How a run of Python is run.
 
-Type: [Object][225]
+Type: [Object][236]
 
 ### Properties
 
-- `timeoutMs` **([number][224] | null)?** Stopped after this long; never for none
-- `project` **([Array][226]<[PythonProjectEntry][63]> | null)?** What it finds at
+- `timeoutMs` **([number][235] | null)?** Stopped after this long; never for none
+- `project` **([Array][237]<[PythonProjectEntry][67]> | null)?** What it finds at
   `/project`, which it can't change; an empty folder for none
-- `filename` **([string][223] | null)?** What its traceback calls the code, when
+- `filename` **([string][234] | null)?** What its traceback calls the code, when
   it was read from a file
 
 ## DesktopPython
 
 Python, a session for each name the page gives.
 
-Type: [Object][225]
+Type: [Object][236]
 
 ## LibrarySettings
 
 Where the library is, and whether the window's own projects have been
 moved into it.
 
-Type: {path: [string][223], moved: [boolean][221]}
+Type: {path: [string][234], moved: [boolean][232]}
 
 ## isDesktop
 
@@ -647,13 +683,13 @@ Whether the app is running in its desktop window.
 Decided at runtime, not when the app is built: in development the browser
 tab and the window load the same bundle from the same server.
 
-Returns **[boolean][221]**&#x20;
+Returns **[boolean][232]**&#x20;
 
 ## desktop
 
 The bridge to the native side, in the desktop window.
 
-Returns **[DesktopBridge][46]**&#x20;
+Returns **[DesktopBridge][50]**&#x20;
 
 ## platform/exportFolder
 
@@ -669,7 +705,7 @@ docs, written straight into the checkout. See
 Whether an export can be written to a folder here: in the desktop app, one
 new enough to.
 
-Returns **[boolean][221]**&#x20;
+Returns **[boolean][232]**&#x20;
 
 ## chooseExportFolder
 
@@ -677,13 +713,13 @@ Ask the writer where to put an export.
 
 ### Parameters
 
-- `name` **[string][223]** The folder's name to start with
+- `name` **[string][234]** The folder's name to start with
 
 <!---->
 
-- Throws **[Error][222]** Outside the desktop app, or in one too old to
+- Throws **[Error][233]** Outside the desktop app, or in one too old to
 
-Returns **[Promise][204]<([string][223] | null)>** Where, or null when they cancelled
+Returns **[Promise][215]<([string][234] | null)>** Where, or null when they cancelled
 
 ## writeExportFolder
 
@@ -692,15 +728,15 @@ goes to the system's trash.
 
 ### Parameters
 
-- `target` **[string][223]** As `chooseExportFolder` gave it
-- `entries` **[Array][226]\<ExportEntry>**&#x20;
+- `target` **[string][234]** As `chooseExportFolder` gave it
+- `entries` **[Array][237]\<ExportEntry>**&#x20;
 
 <!---->
 
-- Throws **[Error][222]** Outside the desktop app, in one too old to, or when it
+- Throws **[Error][233]** Outside the desktop app, in one too old to, or when it
   couldn't be written
 
-Returns **[Promise][204]\<void>**&#x20;
+Returns **[Promise][215]\<void>**&#x20;
 
 ## platform/fetch
 
@@ -737,10 +773,10 @@ page's own does, streamed body and abort signal included.
 
 ### Parameters
 
-- `input` **(RequestInfo | [URL][229])**&#x20;
+- `input` **(RequestInfo | [URL][240])**&#x20;
 - `init` **RequestInit?**&#x20;
 
-Returns **[Promise][204]<[Response][230]>**&#x20;
+Returns **[Promise][215]<[Response][241]>**&#x20;
 
 ## fetchFromWeb
 
@@ -752,12 +788,12 @@ of those itself.
 
 ### Parameters
 
-- `input` **(RequestInfo | [URL][229])**&#x20;
+- `input` **(RequestInfo | [URL][240])**&#x20;
 - `init` **RequestInit?**&#x20;
-- `homeSites` **[Array][226]<[string][223]>?** The sites the writer always allows, which
+- `homeSites` **[Array][237]<[string][234]>?** The sites the writer always allows, which
   may be on their computer or network (optional, default `[]`)
 
-Returns **[Promise][204]<[Response][230]>**&#x20;
+Returns **[Promise][215]<[Response][241]>**&#x20;
 
 ## fetchNatively
 
@@ -766,16 +802,16 @@ comes.
 
 ### Parameters
 
-- `request` **[Request][231]**&#x20;
-- `$1` **[Object][225]** (optional, default `{}`)
+- `request` **[Request][242]**&#x20;
+- `$1` **[Object][236]** (optional, default `{}`)
   - `$1.webOnly` (optional, default `false`)
   - `$1.homeSites` (optional, default `[]`)
 
-Returns **[Promise][204]<[Response][230]>**&#x20;
+Returns **[Promise][215]<[Response][241]>**&#x20;
 
 ## controller
 
-Type: ReadableStreamDefaultController<[Uint8Array][228]>
+Type: ReadableStreamDefaultController<[Uint8Array][239]>
 
 ## onBody
 
@@ -829,10 +865,13 @@ sign-in rather than for a platform.
 - **printing** - In the desktop app, a document saved as a PDF where the
   writer says, rather than through the print dialog
 - **menu** - In the desktop app, what its menu asks of the page: the keys a
-  browser keeps for its own tabs, for the app's documents and chats
+  browser keeps for its own tabs, for the app's documents and chats; and
+  what the page tells it to hold, a new chat and the terminals, as the
+  settings decide
 - **terminal** - In the desktop app, terminals: one made in a project,
-  listed and ended, and what passes between the page and the frame of
-  another origin that alone types into its shell
+  listed and ended, what passes between the page and the frame of another
+  origin that alone types into its shell, and the app's keys for them,
+  which the frame hands the page
 
 Design: `.llm/desktop_design.md`.
 
@@ -867,7 +906,7 @@ Show the library, or a file in it, in the system's file manager.
 
 ### Parameters
 
-- `path` **[string][223]?** Below the library
+- `path` **[string][234]?** Below the library
 
 ## libraryDisk
 
@@ -878,24 +917,26 @@ Returns **LibraryDisk**&#x20;
 ## platform/menu
 
 In the desktop app, what its menu asks of the page: a new
-document, a new chat, the tab the writer is in closed or the one closed
-last opened again, the tabs stepped through, the projects, the settings
-(`app/electron/src/menu.js`). The menu has the keys a browser keeps for
-its own tabs, so in a browser none of it is asked.
+document, a new chat or terminal, the tab the writer is in closed or the
+one closed last opened again, the tabs stepped through, a terminal shown,
+the projects, the settings (`app/electron/src/menu.js`). The menu has the
+keys a browser keeps for its own tabs, so in a browser none of it is
+asked. What it holds of what the page's settings decide, a new chat and
+the terminals, the page tells it.
 
 ## MenuCommand
 
 What the menu asks for, and for `showTab` the tab's place in its strip,
 from 1.
 
-Type: (`"newDocument"` | `"newChat"` | `"projects"` | `"settings"` | `"closeTab"` | `"reopenTab"` | `"nextTab"` | `"previousTab"` | `"showTab"`)
+Type: (`"newDocument"` | `"newChat"` | `"newTerminal"` | `"showTerminal"` | `"projects"` | `"settings"` | `"closeTab"` | `"reopenTab"` | `"nextTab"` | `"previousTab"` | `"showTab"`)
 
 ## hasMenuCommands
 
 Whether the menu has keys for the tabs, and the rest: in the desktop app,
 unless it is older than the page it loads.
 
-Returns **[boolean][221]**&#x20;
+Returns **[boolean][232]**&#x20;
 
 ## onMenuCommand
 
@@ -907,6 +948,16 @@ frame's. Nothing in a browser.
 - `listener` &#x20;
 
 ##
+
+## showInMenu
+
+Have the menu hold a new chat, while the AI is on, and the terminals,
+while their extension is. Nothing in a browser, or in a desktop app older
+than the page.
+
+### Parameters
+
+- `items` **{chat: [boolean][232], terminal: [boolean][232]}**&#x20;
 
 ## platform/open
 
@@ -929,9 +980,9 @@ The address a link goes to, if it is one that may open.
 
 ### Parameters
 
-- `href` **[string][223]**&#x20;
+- `href` **[string][234]**&#x20;
 
-Returns **([URL][229] | null)**&#x20;
+Returns **([URL][240] | null)**&#x20;
 
 ## openUrl
 
@@ -939,9 +990,9 @@ Open a link outside the app.
 
 ### Parameters
 
-- `href` **[string][223]**&#x20;
+- `href` **[string][234]**&#x20;
 
-Returns **[Promise][204]<[boolean][221]>** Whether it was one that may open
+Returns **[Promise][215]<[boolean][232]>** Whether it was one that may open
 
 ## openLinkClicked
 
@@ -952,7 +1003,7 @@ link, or a click with a modifier somewhere other than this tab.
 
 ### Parameters
 
-- `event` **[MouseEvent][232]**&#x20;
+- `event` **[MouseEvent][243]**&#x20;
 
 ## platform/persistence
 
@@ -981,20 +1032,20 @@ Whether this page load has asked: once is enough, whatever the answer.
 
 Ask the browser to keep the page's data, once a page load. Never throws.
 
-Returns **[Promise][204]<[boolean][221]>** Whether the data is kept
+Returns **[Promise][215]<[boolean][232]>** Whether the data is kept
 
 ## BrowserTraits
 
 What the page is in, as far as the advice depends on it.
 
-Type: [Object][225]
+Type: [Object][236]
 
 ### Properties
 
-- `userAgent` **[string][223]**&#x20;
-- `maxTouchPoints` **[number][224]** An iPad sends a Mac's user agent; only
+- `userAgent` **[string][234]**&#x20;
+- `maxTouchPoints` **[number][235]** An iPad sends a Mac's user agent; only
   its touch screen tells the two apart
-- `standalone` **[boolean][221]** Opened from the Home Screen or the Dock,
+- `standalone` **[boolean][232]** Opened from the Home Screen or the Dock,
   rather than in a browser tab
 
 ## StorageAdvice
@@ -1002,19 +1053,19 @@ Type: [Object][225]
 What the writer is told about keeping their work, beyond that it is in the
 browser.
 
-Type: [Object][225]
+Type: [Object][236]
 
 ### Properties
 
-- `clearsAfterAWeek` **[boolean][221]** Safari, which deletes site data after a week of inactivity
-- `homeScreen` **[boolean][221]** Safari in a tab on an iPhone or iPad, where the Home Screen is exempt
-- `desktopApp` **[boolean][221]** A computer, which the desktop app runs on
+- `clearsAfterAWeek` **[boolean][232]** Safari, which deletes site data after a week of inactivity
+- `homeScreen` **[boolean][232]** Safari in a tab on an iPhone or iPad, where the Home Screen is exempt
+- `desktopApp` **[boolean][232]** A computer, which the desktop app runs on
 
 ## currentBrowser
 
 The page's browser, as `storageAdvice` reads it.
 
-Returns **[BrowserTraits][117]**&#x20;
+Returns **[BrowserTraits][123]**&#x20;
 
 ## storageAdvice
 
@@ -1028,9 +1079,9 @@ warned, since its exemption is not documented either.
 
 ### Parameters
 
-- `browser` **[BrowserTraits][117]?** (optional, default `currentBrowser()`)
+- `browser` **[BrowserTraits][123]?** (optional, default `currentBrowser()`)
 
-Returns **[StorageAdvice][119]**&#x20;
+Returns **[StorageAdvice][125]**&#x20;
 
 ## platform/printing
 
@@ -1043,7 +1094,7 @@ a PDF where the writer says, rather than through the print dialog. See
 Whether a PDF can be saved here without the print dialog: in the desktop
 app, one new enough to.
 
-Returns **[boolean][221]**&#x20;
+Returns **[boolean][232]**&#x20;
 
 ## savePdf
 
@@ -1051,14 +1102,14 @@ Ask where, and save the page there as it prints.
 
 ### Parameters
 
-- `name` **[string][223]** The file's name to start with, without `.pdf`
+- `name` **[string][234]** The file's name to start with, without `.pdf`
 
 <!---->
 
-- Throws **[Error][222]** Outside the desktop app, in one too old to, or when it
+- Throws **[Error][233]** Outside the desktop app, in one too old to, or when it
   couldn't be saved
 
-Returns **[Promise][204]<[boolean][221]>** Whether it was saved; false when the writer
+Returns **[Promise][215]<[boolean][232]>** Whether it was saved; false when the writer
 cancelled
 
 ## platform/python
@@ -1077,7 +1128,7 @@ nothing of the writer's and nothing on the network. See
 Whether Python can be run here: in the desktop app, one new enough to have
 it.
 
-Returns **[boolean][221]**&#x20;
+Returns **[boolean][232]**&#x20;
 
 ## runPython
 
@@ -1087,22 +1138,22 @@ running out.
 
 ### Parameters
 
-- `session` **[string][223]** The chat's id
-- `code` **[string][223]**&#x20;
-- `options` **[Object][225]?** (optional, default `{}`)
+- `session` **[string][234]** The chat's id
+- `code` **[string][234]**&#x20;
+- `options` **[Object][236]?** (optional, default `{}`)
   - `options.signal` **AbortSignal?**&#x20;
-  - `options.timeoutMs` **([number][224] | null)?** None unless given (optional, default `null`)
-  - `options.project` **([Array][226]<[PythonProjectEntry][63]> | null)?** What the code finds
+  - `options.timeoutMs` **([number][235] | null)?** None unless given (optional, default `null`)
+  - `options.project` **([Array][237]<[PythonProjectEntry][67]> | null)?** What the code finds
     at `/project`, and can't change (optional, default `null`)
-  - `options.filename` **([string][223] | null)?** What its traceback calls the
+  - `options.filename` **([string][234] | null)?** What its traceback calls the
     code, when it was read from a file (optional, default `null`)
   - `options.fetchFile` &#x20;
 
 <!---->
 
-- Throws **[Error][222]** Outside the desktop app, or in one without Python
+- Throws **[Error][233]** Outside the desktop app, or in one without Python
 
-Returns **[Promise][204]<[PythonRun][61]>**&#x20;
+Returns **[Promise][215]<[PythonRun][65]>**&#x20;
 
 ## platform/serviceWorker
 
@@ -1132,7 +1183,7 @@ Type: (ServiceWorkerRegistration | null)
 
 Whether the app keeps its files with a service worker here.
 
-Returns **[boolean][221]**&#x20;
+Returns **[boolean][232]**&#x20;
 
 ## registerServiceWorker
 
@@ -1147,7 +1198,7 @@ there is no service worker.
 - `onBuild` &#x20;
 - `onRemoved` &#x20;
 
-Returns **[Promise][204]<(ServiceWorkerRegistration | null)>** Null where there is none
+Returns **[Promise][215]<(ServiceWorkerRegistration | null)>** Null where there is none
 
 ## lookForBuild
 
@@ -1155,7 +1206,7 @@ Ask whether there is a new build, which `onBuild` hears of once it has
 been fetched. Browsers ask on their own as the app opens, and only now and
 then after, which leaves a page that stays open behind.
 
-Returns **[Promise][204]\<void>**&#x20;
+Returns **[Promise][215]\<void>**&#x20;
 
 ## reloadIntoBuild
 
@@ -1174,7 +1225,7 @@ the app's data folder for it to import as it opens. See
 The settings file's text, or null when there is none, or no folder to
 leave one in: in a browser.
 
-Returns **[Promise][204]<([string][223] | null)>**&#x20;
+Returns **[Promise][215]<([string][234] | null)>**&#x20;
 
 ## platform/signIn
 
@@ -1195,14 +1246,14 @@ some hold it to exactly that address.
 
 Where the desktop app listens for a sign-in to come back.
 
-Type: [number][224]
+Type: [number][235]
 
 ## callbackOrigin
 
 Where a sign-in comes back to: this page's own origin in a browser, the
 desktop app's listener in its window.
 
-Returns **[string][223]**&#x20;
+Returns **[string][234]**&#x20;
 
 ## signInInBrowser
 
@@ -1214,13 +1265,13 @@ while another is waiting takes its place.
 
 ### Parameters
 
-- `address` **([string][223] | [URL][229])** Where to sign in
-- `path` **[string][223]** Where the service sends the browser back, under
+- `address` **([string][234] | [URL][240])** Where to sign in
+- `path` **[string][234]** Where the service sends the browser back, under
   `callbackOrigin()`: `/connect/mcp`
-- `$2` **[Object][225]** (optional, default `{}`)
+- `$2` **[Object][236]** (optional, default `{}`)
   - `$2.signal` &#x20;
 
-Returns **[Promise][204]\<URLSearchParams>** The query it came back with
+Returns **[Promise][215]\<URLSearchParams>** The query it came back with
 
 ## platform/terminal
 
@@ -1235,20 +1286,20 @@ shortcut pressed in it, read as the frame said it. See
 
 ## TERMINAL_ORIGIN
 
-Type: [string][223]
+Type: [string][234]
 
 ## TERMINAL_ORIGIN
 
 Where a terminal's frame is, and so its origin: the native side's, written
 out again here, as `TERMINAL_ID` is. A test holds each to the other.
 
-Type: [string][223]
+Type: [string][234]
 
 ## TERMINAL_ID
 
 What a terminal's id begins with: how its tab is told from a chat's.
 
-Type: [string][223]
+Type: [string][234]
 
 ## isTerminalId
 
@@ -1258,14 +1309,14 @@ Whether an id is a terminal's.
 
 - `id` **unknown**&#x20;
 
-Returns **[boolean][221]**&#x20;
+Returns **[boolean][232]**&#x20;
 
 ## hasTerminal
 
 Whether there are terminals here: in the desktop app, one new enough to
 have them.
 
-Returns **[boolean][221]**&#x20;
+Returns **[boolean][232]**&#x20;
 
 ## terminals
 
@@ -1275,16 +1326,16 @@ Make a terminal in a project. Its shell starts when its frame shows it.
 
 ### Parameters
 
-- `project` **[string][223]** The project's id
+- `project` **[string][234]** The project's id
 
-Returns **[Promise][204]<[string][223]>** Its id
+Returns **[Promise][215]<[string][234]>** Its id
 
 ## listTerminals
 
 Every terminal there is, in whichever project: they outlive the window
 that made them, and a reload of the page.
 
-Returns **[Promise][204]<[Array][226]<{id: [string][223], project: [string][223], title: [string][223], rang: [boolean][221]}>>**&#x20;
+Returns **[Promise][215]<[Array][237]<{id: [string][234], project: [string][234], title: [string][234], rang: [boolean][232]}>>**&#x20;
 
 ## terminalSeen
 
@@ -1292,9 +1343,9 @@ Say a terminal that rang has been looked at, which every window then knows.
 
 ### Parameters
 
-- `id` **[string][223]**&#x20;
+- `id` **[string][234]**&#x20;
 
-Returns **[Promise][204]\<void>**&#x20;
+Returns **[Promise][215]\<void>**&#x20;
 
 ## closeTerminal
 
@@ -1302,9 +1353,9 @@ End a terminal, and what runs in it.
 
 ### Parameters
 
-- `id` **[string][223]**&#x20;
+- `id` **[string][234]**&#x20;
 
-Returns **[Promise][204]\<void>**&#x20;
+Returns **[Promise][215]\<void>**&#x20;
 
 ## onTerminalEvent
 
@@ -1320,14 +1371,14 @@ that is gone. There is one listener.
 
 How a terminal looks, which the page hands its frame.
 
-Type: [Object][225]
+Type: [Object][236]
 
 ### Properties
 
-- `dark` **[boolean][221]**&#x20;
-- `background` **[string][223]** As `#rrggbb`
-- `foreground` **[string][223]** As `#rrggbb`
-- `fontSize` **[number][224]** In pixels
+- `dark` **[boolean][232]**&#x20;
+- `background` **[string][234]** As `#rrggbb`
+- `foreground` **[string][234]** As `#rrggbb`
+- `fontSize` **[number][235]** In pixels
 
 ## terminalFrameUrl
 
@@ -1335,26 +1386,71 @@ The address of a terminal's frame, looking as given from its first paint.
 
 ### Parameters
 
-- `id` **[string][223]**&#x20;
-- `appearance` **[TerminalAppearance][165]**&#x20;
+- `id` **[string][234]**&#x20;
+- `appearance` **[TerminalAppearance][171]**&#x20;
   - `appearance.dark` &#x20;
   - `appearance.background` &#x20;
   - `appearance.foreground` &#x20;
   - `appearance.fontSize` &#x20;
 
-Returns **[string][223]**&#x20;
+Returns **[string][234]**&#x20;
+
+## PressedKey
+
+A key pressed, as far as a shortcut goes.
+
+Type: [Object][236]
+
+### Properties
+
+- `key` **[string][234]**&#x20;
+- `code` **[string][234]**&#x20;
+- `metaKey` **[boolean][232]**&#x20;
+- `ctrlKey` **[boolean][232]**&#x20;
+- `shiftKey` **[boolean][232]**&#x20;
+- `altKey` **[boolean][232]**&#x20;
+
+## IS_MAC
+
+Whether the page is on a Mac, where the app's keys are on Command.
+
+## terminalKey
+
+Which of the terminal's keys a key is. Command-L makes one, as in command
+line, and Control-Shift-L off a Mac, where Control-L clears a shell's
+screen and terminals keep their own keys on Control-Shift. Control-` goes
+to a terminal, as editors of code have it, on a Mac too, where Command-`
+goes from window to window, and with Shift makes one, as they have that
+too. The key left of 1 by where it is, or by what it types where the
+keyboard has it elsewhere. A terminal's frame hands them to the page,
+reading them the same (`electron/terminal/keys.js`).
+
+### Parameters
+
+- `event` **[PressedKey][175]**&#x20;
+  - `event.key` &#x20;
+  - `event.code` &#x20;
+  - `event.metaKey` &#x20;
+  - `event.ctrlKey` &#x20;
+  - `event.shiftKey` &#x20;
+  - `event.altKey` &#x20;
+
+- `mac` **[boolean][232]?** Whether to read it as a Mac's; this one's, if not given (optional, default `IS_MAC`)
+
+Returns **(`"showTerminal"` | `"newTerminal"` | null)**&#x20;
 
 ## appShortcutFrom
 
 A shortcut as a frame said it was pressed, as what a key event is made
-from. Only one with Command held is the app's to act on: everything else
-typed in a terminal is its shell's. Null for anything else.
+from. Only one with Command held, or one of the terminal's own keys, is
+the app's to act on: everything else typed in a terminal is its shell's.
+Null for anything else.
 
 ### Parameters
 
 - `said` **any**&#x20;
 
-Returns **({key: [string][223], code: [string][223], metaKey: `true`, ctrlKey: [boolean][221], shiftKey: [boolean][221], altKey: [boolean][221]} | null)**&#x20;
+Returns **([PressedKey][175] | null)**&#x20;
 
 ## platform/updates
 
@@ -1369,7 +1465,7 @@ the page, which the service worker fetches (`serviceWorker.js`).
 
 Look for an update and download it, in the desktop app.
 
-Returns **[Promise][204]<([string][223] | null)>** The version downloaded, ready to install;
+Returns **[Promise][215]<([string][234] | null)>** The version downloaded, ready to install;
 null when the app is up to date, or not the desktop app
 
 ## installUpdate
@@ -1377,7 +1473,7 @@ null when the app is up to date, or not the desktop app
 Install the update `downloadUpdate` downloaded, and restart into it. Does
 not return, unless the install fails.
 
-Returns **[Promise][204]\<void>**&#x20;
+Returns **[Promise][215]\<void>**&#x20;
 
 ## platform/windows
 
@@ -1409,7 +1505,7 @@ What a window holds a project for: being open there, being read there for a
 menu's action on it, a job running there, by the job's id, or a connected
 app's call running there (`apps/projects.js`).
 
-Type: [string][223]
+Type: [string][234]
 
 ## CHANNEL
 
@@ -1424,20 +1520,20 @@ What one window tells the others.
 - `cloud` - The sync server has something new, and a window that syncs
   projects of its own is to sync them
 
-Type: [string][223]
+Type: [string][234]
 
 ## CHANNEL
 
 The channel the windows speak on.
 
-Type: [string][223]
+Type: [string][234]
 
 ## Taken
 
 What came of taking a project: whether this window holds it, and whether
 what it kept of it from before is behind (see `takeProject`).
 
-Type: {held: [boolean][221], stale: [boolean][221], first: [boolean][221]}
+Type: {held: [boolean][232], stale: [boolean][232], first: [boolean][232]}
 
 ## lockName
 
@@ -1454,7 +1550,7 @@ of its lock.
 
 ## taking
 
-Type: [Map][233]<[string][223], [Promise][204]\<void>>
+Type: [Map][244]<[string][234], [Promise][215]\<void>>
 
 ## touched
 
@@ -1522,7 +1618,7 @@ rows again. What goes wrong doing so is logged.
 
 ### Parameters
 
-- `tables` **[Array][226]<[string][223]>**&#x20;
+- `tables` **[Array][237]<[string][234]>**&#x20;
 - `reload` &#x20;
 
 ## takeProject
@@ -1539,23 +1635,23 @@ projects, may have been read while another window had it.
 
 ### Parameters
 
-- `storyId` **[string][223]**&#x20;
+- `storyId` **[string][234]**&#x20;
 - `reason` **Reason**&#x20;
 
-Returns **[Promise][204]<[Taken][178]>**&#x20;
+Returns **[Promise][215]<[Taken][189]>**&#x20;
 
 ## settled
 
-Type: [Promise][204]\<void>
+Type: [Promise][215]\<void>
 
 ## take
 
 ### Parameters
 
-- `storyId` **[string][223]**&#x20;
+- `storyId` **[string][234]**&#x20;
 - `reason` **Reason**&#x20;
 
-Returns **[Promise][204]<[Taken][178]>**&#x20;
+Returns **[Promise][215]<[Taken][189]>**&#x20;
 
 ## Promise
 
@@ -1563,7 +1659,7 @@ Returns **[Promise][204]<[Taken][178]>**&#x20;
 
 ### Parameters
 
-- `storyId` **[string][223]**&#x20;
+- `storyId` **[string][234]**&#x20;
 - `reason` **Reason**&#x20;
 - `release` &#x20;
 
@@ -1574,7 +1670,7 @@ let go of, for another window to take.
 
 ### Parameters
 
-- `storyId` **[string][223]**&#x20;
+- `storyId` **[string][234]**&#x20;
 - `reason` **Reason**&#x20;
 
 ## holdsProject
@@ -1583,22 +1679,22 @@ Whether this window holds a project, for any reason, or for this one.
 
 ### Parameters
 
-- `storyId` **[string][223]**&#x20;
+- `storyId` **[string][234]**&#x20;
 - `reason` **Reason?**&#x20;
 
-Returns **[boolean][221]**&#x20;
+Returns **[boolean][232]**&#x20;
 
 ## heldProjects
 
 The projects this window holds.
 
-Returns **[Array][226]<[string][223]>**&#x20;
+Returns **[Array][237]<[string][234]>**&#x20;
 
 ## projectsElsewhere
 
 The projects other windows hold.
 
-Returns **[Promise][204]<[Set][227]<[string][223]>>**&#x20;
+Returns **[Promise][215]<[Set][238]<[string][234]>>**&#x20;
 
 ## askForProject
 
@@ -1607,7 +1703,7 @@ writer asked for a project open in another window.
 
 ### Parameters
 
-- `storyId` **[string][223]**&#x20;
+- `storyId` **[string][234]**&#x20;
 
 ## onProjectAsked
 
@@ -1621,7 +1717,7 @@ When another window asks for a project this one holds, to show it.
 
 Bring this window to the front.
 
-Returns **[Promise][204]\<void>**&#x20;
+Returns **[Promise][215]\<void>**&#x20;
 
 ## openWindow
 
@@ -1630,9 +1726,9 @@ of the desktop app, a new tab in a browser.
 
 ### Parameters
 
-- `path` **[string][223]?** (optional, default `'/'`)
+- `path` **[string][234]?** (optional, default `'/'`)
 
-Returns **[Promise][204]\<void>**&#x20;
+Returns **[Promise][215]\<void>**&#x20;
 
 ## resetWindowsForTesting
 
@@ -1672,202 +1768,213 @@ Forget every hold and listener: for tests.
 [32]: #parameters-10
 [33]: #offerappexport
 [34]: #parameters-11
-[35]: #answerapps
+[35]: #awaitappimport
 [36]: #parameters-12
-[37]: #platformclosing
-[38]: #beforeclosing
-[39]: #parameters-13
-[40]: #platformdesktop
-[41]: #desktoprequest
-[42]: #properties
-[43]: #desktopresponse
-[44]: #properties-1
-[45]: #desktopbodypart
-[46]: #desktopbridge
-[47]: #properties-2
-[48]: #bridge-1
-[49]: #bridge-2
-[50]: #bridge-3
-[51]: #bridge-4
-[52]: #desktopterminals
-[53]: #appconnection
-[54]: #properties-3
-[55]: #appsstate
-[56]: #properties-4
-[57]: #desktopapps
-[58]: #desktoppdf
-[59]: #desktopexportentry
-[60]: #desktopexportfolder
-[61]: #pythonrun
-[62]: #properties-5
-[63]: #pythonprojectentry
-[64]: #pythonrunoptions
-[65]: #properties-6
-[66]: #desktoppython
-[67]: #librarysettings
-[68]: #isdesktop
-[69]: #desktop
-[70]: #platformexportfolder
-[71]: #canexporttofolder
-[72]: #canexporttofolder-1
-[73]: #chooseexportfolder
-[74]: #parameters-14
-[75]: #writeexportfolder
-[76]: #parameters-15
-[77]: #platformfetch
-[78]: #no_body
-[79]: #readers
-[80]: #last
-[81]: #last-1
-[82]: #fetch
-[83]: #parameters-16
-[84]: #fetchfromweb
-[85]: #parameters-17
-[86]: #fetchnatively
+[37]: #takeappimport
+[38]: #parameters-13
+[39]: #answerapps
+[40]: #parameters-14
+[41]: #platformclosing
+[42]: #beforeclosing
+[43]: #parameters-15
+[44]: #platformdesktop
+[45]: #desktoprequest
+[46]: #properties
+[47]: #desktopresponse
+[48]: #properties-1
+[49]: #desktopbodypart
+[50]: #desktopbridge
+[51]: #properties-2
+[52]: #bridge-1
+[53]: #bridge-2
+[54]: #bridge-3
+[55]: #bridge-4
+[56]: #desktopterminals
+[57]: #appconnection
+[58]: #properties-3
+[59]: #appsstate
+[60]: #properties-4
+[61]: #desktopapps
+[62]: #desktoppdf
+[63]: #desktopexportentry
+[64]: #desktopexportfolder
+[65]: #pythonrun
+[66]: #properties-5
+[67]: #pythonprojectentry
+[68]: #pythonrunoptions
+[69]: #properties-6
+[70]: #desktoppython
+[71]: #librarysettings
+[72]: #isdesktop
+[73]: #desktop
+[74]: #platformexportfolder
+[75]: #canexporttofolder
+[76]: #canexporttofolder-1
+[77]: #chooseexportfolder
+[78]: #parameters-16
+[79]: #writeexportfolder
+[80]: #parameters-17
+[81]: #platformfetch
+[82]: #no_body
+[83]: #readers
+[84]: #last
+[85]: #last-1
+[86]: #fetch
 [87]: #parameters-18
-[88]: #controller
-[89]: #onbody
-[90]: #parameters-19
-[91]: #platform
-[92]: #examples
-[93]: #platformlibrary
-[94]: #librarysettings-1
-[95]: #librarysettings-2
-[96]: #markprojectsmoved
-[97]: #revealinlibrary
-[98]: #parameters-20
-[99]: #librarydisk
-[100]: #platformmenu
-[101]: #menucommand
-[102]: #hasmenucommands
-[103]: #onmenucommand
-[104]: #parameters-21
-[105]: #
-[106]: #platformopen
-[107]: #schemes
-[108]: #openable
-[109]: #parameters-22
-[110]: #openurl
-[111]: #parameters-23
-[112]: #openlinkclicked
-[113]: #parameters-24
-[114]: #platformpersistence
-[115]: #asked
-[116]: #asktokeepdata
-[117]: #browsertraits
-[118]: #properties-7
-[119]: #storageadvice
-[120]: #properties-8
-[121]: #currentbrowser
-[122]: #storageadvice-1
-[123]: #parameters-25
-[124]: #platformprinting
-[125]: #cansavepdf
-[126]: #savepdf
-[127]: #parameters-26
-[128]: #platformpython
-[129]: #haspython
-[130]: #haspython-1
-[131]: #haspython-2
-[132]: #runpython
-[133]: #parameters-27
-[134]: #platformserviceworker
-[135]: #registration
-[136]: #hasserviceworker
-[137]: #registerserviceworker
-[138]: #parameters-28
-[139]: #lookforbuild
-[140]: #reloadintobuild
-[141]: #platformsettingsfile
-[142]: #settingsfiletext
-[143]: #platformsignin
-[144]: #sign_in_port
-[145]: #callbackorigin
-[146]: #signininbrowser
-[147]: #parameters-29
-[148]: #platformterminal
-[149]: #terminal_origin
-[150]: #terminal_origin-1
-[151]: #terminal_id
-[152]: #isterminalid
-[153]: #parameters-30
-[154]: #hasterminal
-[155]: #terminals
-[156]: #createterminal
-[157]: #parameters-31
-[158]: #listterminals
-[159]: #terminalseen
-[160]: #parameters-32
-[161]: #closeterminal
-[162]: #parameters-33
-[163]: #onterminalevent
-[164]: #parameters-34
-[165]: #terminalappearance
-[166]: #properties-9
-[167]: #terminalframeurl
-[168]: #parameters-35
-[169]: #appshortcutfrom
-[170]: #parameters-36
-[171]: #platformupdates
-[172]: #downloadupdate
-[173]: #installupdate
-[174]: #platformwindows
-[175]: #channel
-[176]: #channel-1
-[177]: #channel-2
-[178]: #taken
-[179]: #lockname
-[180]: #parameters-37
-[181]: #held
-[182]: #taking
-[183]: #touched
-[184]: #behind
-[185]: #listeners
-[186]: #channel-3
-[187]: #locks
-[188]: #thechannel
-[189]: #heard
-[190]: #parameters-38
-[191]: #tellotherwindows
-[192]: #parameters-39
-[193]: #tellthiswindow
-[194]: #parameters-40
-[195]: #onnotice
-[196]: #parameters-41
-[197]: #ontableswritten
-[198]: #parameters-42
-[199]: #takeproject
-[200]: #parameters-43
-[201]: #settled
-[202]: #take
-[203]: #parameters-44
-[204]: #promise
-[205]: #keep
-[206]: #parameters-45
-[207]: #letgoofproject
-[208]: #parameters-46
-[209]: #holdsproject
-[210]: #parameters-47
-[211]: #heldprojects
-[212]: #projectselsewhere
-[213]: #askforproject
+[88]: #fetchfromweb
+[89]: #parameters-19
+[90]: #fetchnatively
+[91]: #parameters-20
+[92]: #controller
+[93]: #onbody
+[94]: #parameters-21
+[95]: #platform
+[96]: #examples
+[97]: #platformlibrary
+[98]: #librarysettings-1
+[99]: #librarysettings-2
+[100]: #markprojectsmoved
+[101]: #revealinlibrary
+[102]: #parameters-22
+[103]: #librarydisk
+[104]: #platformmenu
+[105]: #menucommand
+[106]: #hasmenucommands
+[107]: #onmenucommand
+[108]: #parameters-23
+[109]: #
+[110]: #showinmenu
+[111]: #parameters-24
+[112]: #platformopen
+[113]: #schemes
+[114]: #openable
+[115]: #parameters-25
+[116]: #openurl
+[117]: #parameters-26
+[118]: #openlinkclicked
+[119]: #parameters-27
+[120]: #platformpersistence
+[121]: #asked
+[122]: #asktokeepdata
+[123]: #browsertraits
+[124]: #properties-7
+[125]: #storageadvice
+[126]: #properties-8
+[127]: #currentbrowser
+[128]: #storageadvice-1
+[129]: #parameters-28
+[130]: #platformprinting
+[131]: #cansavepdf
+[132]: #savepdf
+[133]: #parameters-29
+[134]: #platformpython
+[135]: #haspython
+[136]: #haspython-1
+[137]: #haspython-2
+[138]: #runpython
+[139]: #parameters-30
+[140]: #platformserviceworker
+[141]: #registration
+[142]: #hasserviceworker
+[143]: #registerserviceworker
+[144]: #parameters-31
+[145]: #lookforbuild
+[146]: #reloadintobuild
+[147]: #platformsettingsfile
+[148]: #settingsfiletext
+[149]: #platformsignin
+[150]: #sign_in_port
+[151]: #callbackorigin
+[152]: #signininbrowser
+[153]: #parameters-32
+[154]: #platformterminal
+[155]: #terminal_origin
+[156]: #terminal_origin-1
+[157]: #terminal_id
+[158]: #isterminalid
+[159]: #parameters-33
+[160]: #hasterminal
+[161]: #terminals
+[162]: #createterminal
+[163]: #parameters-34
+[164]: #listterminals
+[165]: #terminalseen
+[166]: #parameters-35
+[167]: #closeterminal
+[168]: #parameters-36
+[169]: #onterminalevent
+[170]: #parameters-37
+[171]: #terminalappearance
+[172]: #properties-9
+[173]: #terminalframeurl
+[174]: #parameters-38
+[175]: #pressedkey
+[176]: #properties-10
+[177]: #is_mac
+[178]: #terminalkey
+[179]: #parameters-39
+[180]: #appshortcutfrom
+[181]: #parameters-40
+[182]: #platformupdates
+[183]: #downloadupdate
+[184]: #installupdate
+[185]: #platformwindows
+[186]: #channel
+[187]: #channel-1
+[188]: #channel-2
+[189]: #taken
+[190]: #lockname
+[191]: #parameters-41
+[192]: #held
+[193]: #taking
+[194]: #touched
+[195]: #behind
+[196]: #listeners
+[197]: #channel-3
+[198]: #locks
+[199]: #thechannel
+[200]: #heard
+[201]: #parameters-42
+[202]: #tellotherwindows
+[203]: #parameters-43
+[204]: #tellthiswindow
+[205]: #parameters-44
+[206]: #onnotice
+[207]: #parameters-45
+[208]: #ontableswritten
+[209]: #parameters-46
+[210]: #takeproject
+[211]: #parameters-47
+[212]: #settled
+[213]: #take
 [214]: #parameters-48
-[215]: #onprojectasked
-[216]: #parameters-49
-[217]: #bringwindowforward
-[218]: #openwindow
+[215]: #promise
+[216]: #keep
+[217]: #parameters-49
+[218]: #letgoofproject
 [219]: #parameters-50
-[220]: #resetwindowsfortesting
-[221]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[222]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[223]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[224]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[225]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[226]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[227]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
-[228]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[229]: https://developer.mozilla.org/docs/Web/API/URL/URL
-[230]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[231]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
-[232]: https://developer.mozilla.org/docs/Web/API/MouseEvent
-[233]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[220]: #holdsproject
+[221]: #parameters-51
+[222]: #heldprojects
+[223]: #projectselsewhere
+[224]: #askforproject
+[225]: #parameters-52
+[226]: #onprojectasked
+[227]: #parameters-53
+[228]: #bringwindowforward
+[229]: #openwindow
+[230]: #parameters-54
+[231]: #resetwindowsfortesting
+[232]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[233]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[234]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[235]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[236]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[237]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[238]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[239]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[240]: https://developer.mozilla.org/docs/Web/API/URL/URL
+[241]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[242]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
+[243]: https://developer.mozilla.org/docs/Web/API/MouseEvent
+[244]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map

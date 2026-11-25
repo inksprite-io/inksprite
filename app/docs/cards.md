@@ -1781,7 +1781,8 @@ a file of prose is a document, and the tree is made of documents. Titled
 after the file rather than after a heading inside it — a heading is the
 writer's text and eating it to make a name is a decision the importer has no
 business taking. One too long for the editor to lay out comes in plain, as
-the text it is: see editor/size.
+the text it is: see editor/size. So does plain text (`asWritten`), whose
+characters Markdown would read as markup.
 
 The pictures taken out of it (`files/pictures.js`) become its own, their
 bytes kept before its row is, so it never shows one as missing. A Google
@@ -1795,6 +1796,8 @@ merges against.
 - `content` **[string][254]** With a marker where each of `pictures` was
 - `options` **[Object][253]?** (optional, default `{}`)
   - `options.parentId` **[string][254]?**&#x20;
+  - `options.asWritten` **[boolean][256]?** Plain text, kept as written rather
+    than read as Markdown (optional, default `false`)
   - `options.drive` &#x20;
   - `options.base` &#x20;
   - `options.pictures` &#x20;

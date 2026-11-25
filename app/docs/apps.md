@@ -13,143 +13,171 @@
   - [Parameters][9]
 - [exportFor][10]
   - [Parameters][11]
-- [apps][12]
-- [appsOffered][13]
-- [serveApps][14]
-- [apps/projects][15]
-- [SUMMARY_MOST][16]
-- [SUMMARY_MOST][17]
-- [AppProject][18]
-- [WHERE][19]
-- [projectsOf][20]
-  - [Parameters][21]
-- [findProject][22]
-  - [Parameters][23]
-- [calls][24]
-- [calls][25]
-- [turns][26]
-- [inProject][27]
+- [apps/imports][12]
+- [FILE][13]
+- [FILE][14]
+- [IMPORT_NOTE][15]
+- [NOTHING_SENT][16]
+- [sentence][17]
+  - [Parameters][18]
+- [MARKDOWN][19]
+- [WORD][20]
+- [titleFor][21]
+  - [Parameters][22]
+- [splitPath][23]
+  - [Parameters][24]
+- [placeFor][25]
+  - [Parameters][26]
+- [importFor][27]
   - [Parameters][28]
-- [settled][29]
-- [holding][30]
-  - [Parameters][31]
-- [apps/protocol][32]
-- [PROTOCOL_VERSIONS][33]
-- [PROTOCOL_VERSIONS][34]
-- [PROTOCOL_VERSIONS][35]
-- [METHOD_NOT_FOUND][36]
-- [instructionsFor][37]
-  - [Parameters][38]
-- [result][39]
-  - [Parameters][40]
-- [failure][41]
-  - [Parameters][42]
-- [answerRequest][43]
-  - [Parameters][44]
-- [apps/revisions][45]
-- [TEXT_MOST][46]
-- [TEXT_MOST][47]
-- [TEXT_MOST][48]
-- [Asking][49]
-- [Asking][50]
-- [SeenThread][51]
-  - [Properties][52]
-- [Seen][53]
-  - [Properties][54]
-- [DocumentState][55]
-  - [Properties][56]
-- [PASSED_MOST][57]
-- [EARLIER_NOTE][58]
-- [UNKNOWN_NOTE][59]
-- [CHANGED_SINCE_NOTE][60]
-- [stateAt][61]
-  - [Parameters][62]
-- [comments][63]
-- [][64]
-- [][65]
-- [threads][66]
-- [keep][67]
-  - [Parameters][68]
-- [kept][69]
-  - [Parameters][70]
-- [catch][71]
-- [catch][72]
-- [withRevision][73]
-  - [Parameters][74]
-- [had][75]
-- [unchangedAt][76]
-  - [Parameters][77]
-- [commentsSince][78]
-  - [Parameters][79]
-- [changed][80]
-- [changed][81]
-- [changed][82]
-- [][83]
-- [suggestionsSince][84]
-  - [Parameters][85]
-- [ABOUT][86]
-- [changedUnder][87]
-  - [Parameters][88]
-- [gone][89]
-- [told][90]
+- [aboutOf][29]
+  - [Parameters][30]
+- [about][31]
+- [receivedFor][32]
+  - [Parameters][33]
+- [asking][34]
+- [asking][35]
+- [taken][36]
+- [found][37]
+- [apps][38]
+- [appsOffered][39]
+- [serveApps][40]
+- [apps/projects][41]
+- [SUMMARY_MOST][42]
+- [SUMMARY_MOST][43]
+- [AppProject][44]
+- [WHERE][45]
+- [projectsOf][46]
+  - [Parameters][47]
+- [findProject][48]
+  - [Parameters][49]
+- [calls][50]
+- [calls][51]
+- [turns][52]
+- [inProject][53]
+  - [Parameters][54]
+- [settled][55]
+- [holding][56]
+  - [Parameters][57]
+- [apps/protocol][58]
+- [PROTOCOL_VERSIONS][59]
+- [PROTOCOL_VERSIONS][60]
+- [PROTOCOL_VERSIONS][61]
+- [IMPORT_METHOD][62]
+- [METHOD_NOT_FOUND][63]
+- [instructionsFor][64]
+  - [Parameters][65]
+- [result][66]
+  - [Parameters][67]
+- [failure][68]
+  - [Parameters][69]
+- [answerRequest][70]
+  - [Parameters][71]
+- [apps/revisions][72]
+- [TEXT_MOST][73]
+- [TEXT_MOST][74]
+- [TEXT_MOST][75]
+- [Asking][76]
+- [Asking][77]
+- [SeenThread][78]
+  - [Properties][79]
+- [Seen][80]
+  - [Properties][81]
+- [DocumentState][82]
+  - [Properties][83]
+- [PASSED_MOST][84]
+- [EARLIER_NOTE][85]
+- [UNKNOWN_NOTE][86]
+- [CHANGED_SINCE_NOTE][87]
+- [stateAt][88]
+  - [Parameters][89]
+- [comments][90]
 - [][91]
 - [][92]
-- [changesSince][93]
-  - [Parameters][94]
-- [apps/tools][95]
-- [LIST_PROJECTS][96]
-- [LIST_PROJECTS][97]
-- [LIST_PROJECTS][98]
-- [LIST_PROJECTS][99]
-- [AppTool][100]
-  - [Properties][101]
-- [ToolRow][102]
-  - [Properties][103]
-- [BY_ID][104]
-- [SUGGEST][105]
-- [SUGGEST_IS_A_BOOLEAN][106]
-- [without][107]
-  - [Parameters][108]
-- [EDIT_OUTSIDE][109]
-- [PROJECT][110]
-- [PATH_OR_FOLDER][111]
-- [TOOLS][112]
-- [offered][113]
-  - [Parameters][114]
-- [outside][115]
-  - [Parameters][116]
-- [chat][117]
-- [said][118]
-  - [][119]
-- [said][120]
+- [threads][93]
+- [keep][94]
+  - [Parameters][95]
+- [kept][96]
+  - [Parameters][97]
+- [catch][98]
+- [catch][99]
+- [withRevision][100]
+  - [Parameters][101]
+- [had][102]
+- [unchangedAt][103]
+  - [Parameters][104]
+- [commentsSince][105]
+  - [Parameters][106]
+- [changed][107]
+- [changed][108]
+- [changed][109]
+- [][110]
+- [suggestionsSince][111]
+  - [Parameters][112]
+- [ABOUT][113]
+- [changedUnder][114]
+  - [Parameters][115]
+- [gone][116]
+- [told][117]
+- [][118]
+- [][119]
+- [changesSince][120]
   - [Parameters][121]
-  - [][122]
-- [toolsFor][123]
-  - [Parameters][124]
-- [runnerOf][125]
-  - [Parameters][126]
-- [sendsAll][127]
-  - [Parameters][128]
-- [toResult][129]
-  - [Parameters][130]
-- [][131]
-- [onDocument][132]
-  - [Parameters][133]
-- [callTool][134]
+- [apps/tools][122]
+- [LIST_PROJECTS][123]
+- [LIST_PROJECTS][124]
+- [LIST_PROJECTS][125]
+- [LIST_PROJECTS][126]
+- [AppTool][127]
+  - [Properties][128]
+- [ToolRow][129]
+  - [Properties][130]
+- [BY_ID][131]
+- [SUGGEST][132]
+- [SUGGEST_IS_A_BOOLEAN][133]
+- [without][134]
   - [Parameters][135]
-- [asking][136]
-- [apps/writes][137]
-- [STORED_MOST][138]
-- [STORED_MOST][139]
-- [STORED_NOTE][140]
-- [READ_AGAIN_NOTE][141]
-- [sentBy][142]
+- [EDIT_OUTSIDE][136]
+- [PROJECT][137]
+- [PATH_OR_FOLDER][138]
+- [TOOLS][139]
+- [offered][140]
+  - [Parameters][141]
+- [outside][142]
   - [Parameters][143]
-- [][144]
-- [changedLines][145]
-  - [Parameters][146]
-- [withStored][147]
+- [chat][144]
+- [said][145]
+  - [][146]
+- [said][147]
   - [Parameters][148]
+  - [][149]
+- [toolsFor][150]
+  - [Parameters][151]
+- [runnerOf][152]
+  - [Parameters][153]
+- [sendsAll][154]
+  - [Parameters][155]
+- [toResult][156]
+  - [Parameters][157]
+- [][158]
+- [onDocument][159]
+  - [Parameters][160]
+- [callTool][161]
+  - [Parameters][162]
+- [apps/writes][163]
+- [STORED_MOST][164]
+- [STORED_MOST][165]
+- [STORED_NOTE][166]
+- [REWRITTEN_NOTE][167]
+- [WHOLE][168]
+- [READ_AGAIN_NOTE][169]
+- [sentBy][170]
+  - [Parameters][171]
+- [][172]
+- [changedLines][173]
+  - [Parameters][174]
+- [withStored][175]
+  - [Parameters][176]
 
 ## apps/exports
 
@@ -187,13 +215,13 @@ The most that is handed over at once: what the native side holds.
 
 How many of an archive's files an answer names.
 
-Type: [number][149]
+Type: [number][177]
 
 ## LINK_NOTE
 
 What an answer says of its link.
 
-Type: [string][150]
+Type: [string][178]
 
 ## quoted
 
@@ -205,7 +233,7 @@ expands; one that held anything else is not put in a command.
 
 ### Parameters
 
-- `link` **[string][150]**&#x20;
+- `link` **[string][178]**&#x20;
 
 ## plainName
 
@@ -218,9 +246,9 @@ with it.
 
 ### Parameters
 
-- `name` **[string][150]**&#x20;
+- `name` **[string][178]**&#x20;
 
-Returns **[string][150]**&#x20;
+Returns **[string][178]**&#x20;
 
 ## exportFor
 
@@ -230,11 +258,160 @@ fetch, and say how.
 ### Parameters
 
 - `app` **AskingApp**&#x20;
-- `asking` **{storyId: [string][150], chatId: [string][150]}**&#x20;
+- `asking` **{storyId: [string][178], chatId: [string][178]}**&#x20;
 - `args` &#x20;
 
-Returns **[Promise][151]\<Record<[string][150], any>>** The link and the command that
+Returns **[Promise][179]\<Record<[string][178], any>>** The link and the command that
 fetches it, or what went wrong, in words for the app's model
+
+## apps/imports
+
+A file brought into a project by a connected app, from where
+it works: a design's Markdown, a script, a PDF.
+
+The reverse of an export (`./exports.js`), and made the same way. The app
+is answered with a link, which its own shell sends the file to, by its
+own permissions, from a container as well as from beside the app; the
+file never passes through its model, which would have to write it out
+again in tokens and could change it on the way. The link is good for one
+file, for a few minutes, and is all it takes (`electron/src/appImports.js`).
+
+Where the file goes is settled as the link is made, and again as the file
+comes: a folder the app sees, outside a repository, with nothing there by
+the name the file takes, for a connection that writes in that project
+still. It is then brought in as the writer's own import brings a file in
+(`composables/useCardImport.js`), by what is in it, and never read as a
+character card: Markdown and a Word file become documents, plain text a
+document kept as written, and anything else is kept as the file it is,
+with its text readable.
+
+## FILE
+
+Type: [string][178]
+
+## FILE
+
+What the command an answer gives has in place of the file's path, for the app to fill in.
+
+Type: [string][178]
+
+## IMPORT_NOTE
+
+What an answer says of its link.
+
+## NOTHING_SENT
+
+What a file sent by a link is told when the link has nothing waiting for it.
+
+Type: [string][178]
+
+## sentence
+
+A reason as a sentence, ended as one.
+
+### Parameters
+
+- `said` **[string][178]**&#x20;
+
+## MARKDOWN
+
+Markdown, which comes in as a document under its name without the extension.
+
+## WORD
+
+A Word file, which comes in as a document too.
+
+## titleFor
+
+What a file is likely to be called in the project, before it has come:
+what the writer's own import names it (`useCardImport`), which a
+document's title drops the extension of, and a file's keeps where it is
+part of the name, as a script's is. A name of no type the app knows is
+taken for text, as a file of one usually is; the file itself settles it
+as it comes.
+
+### Parameters
+
+- `name` **[string][178]**&#x20;
+
+Returns **[string][178]**&#x20;
+
+## splitPath
+
+A file's name, and the folder it goes in, from the path a call gives.
+
+### Parameters
+
+- `path` **unknown**&#x20;
+
+Returns **({folder: [string][178], name: [string][178]} | {error: [string][178]})**&#x20;
+
+## placeFor
+
+Where a file taken under a title would go: the folder and the title, as
+create_document has them, or why it can't.
+
+### Parameters
+
+- `asking` **{storyId: [string][178], chatId: [string][178]}**&#x20;
+- `folder` **[string][178]** The folder's path, '' for the project's top
+- `title` **[string][178]**&#x20;
+
+Returns **[Promise][179]<({parentId: [string][178], title: [string][178], path: [string][178]} | {error: [string][178]})>**&#x20;
+
+## importFor
+
+Wait for a file from an app, and say how to send it.
+
+### Parameters
+
+- `app` **AskingApp**&#x20;
+- `asking` **{storyId: [string][178], chatId: [string][178]}**&#x20;
+- `args` &#x20;
+
+Returns **[Promise][179]\<Record<[string][178], any>>** The link and the command that sends
+the file, or what is wrong, in words for the app's model
+
+## aboutOf
+
+What a link was for, as the page that made it said, or null for anything
+else.
+
+### Parameters
+
+- `about` **unknown**&#x20;
+
+Returns **({storyId: [string][178], parentId: [string][178], name: [string][178]} | null)**&#x20;
+
+## about
+
+Type: Record<[string][178], unknown>
+
+## receivedFor
+
+Take a file an app sent by a link, in the window that has its project, and
+bring it in where the link said, saying what it became. Asked by the
+door, never by the app (`electron/src/appServer.js`), as the file comes.
+
+### Parameters
+
+- `app` **AskingApp** The connection as it is now
+- `params` &#x20;
+- `signal` **AbortSignal**&#x20;
+
+## asking
+
+Type: {storyId: [string][178], chatId: [string][178], postsAs: [string][178], signal: AbortSignal}
+
+## asking
+
+Type: [Asking][34]
+
+## taken
+
+Type: BlobPart
+
+## found
 
 ## apps
 
@@ -255,18 +432,23 @@ window. This module is what the asking means:
 - **projects** - The projects ticked for an app, by name, and a call run in
   one in the window that has it, or that takes it for the call
 - **writes** - A write's answer saying how the text was stored, where that
-  isn't how it was sent
+  isn't how it was sent: the passage as it reads, or for a whole body the
+  difference from what was sent
 - **revisions** - A revision on every read and write of a document, what
   the connection last had of it, and what has changed since
 - **exports** - A document or a folder made ready as files, each text
   stamped with its document, for the app's own shell to fetch by a link
+- **imports** - A file the app's own shell sends by a link that takes one,
+  brought into a project as the writer's own import brings one in; the
+  door asks the page to take it by a request of its own, which an app may
+  not send
 
 ## appsOffered
 
 Whether other apps can be let into the writer's projects here: in the
 desktop app, one new enough to.
 
-Returns **[boolean][152]**&#x20;
+Returns **[boolean][180]**&#x20;
 
 ## serveApps
 
@@ -280,25 +462,25 @@ for them by, and a call run in one of them in this window.
 
 ## SUMMARY_MOST
 
-Type: [number][149]
+Type: [number][177]
 
 ## SUMMARY_MOST
 
 How much of a project's summary a listing of projects gives, in characters.
 
-Type: [number][149]
+Type: [number][177]
 
 ## AppProject
 
 A project as an app is told of it.
 
-Type: {id: [string][150], name: [string][150], summary: [string][150]}
+Type: {id: [string][178], name: [string][178], summary: [string][178]}
 
 ## WHERE
 
 Where the writer ticks projects, for an answer that sends an app's user there.
 
-Type: [string][150]
+Type: [string][178]
 
 ## projectsOf
 
@@ -309,7 +491,7 @@ and out of the trash, by their names as they are now.
 
 - `app` **AskingApp**&#x20;
 
-Returns **[Promise][151]<[Array][153]<[AppProject][18]>>**&#x20;
+Returns **[Promise][179]<[Array][181]<[AppProject][44]>>**&#x20;
 
 ## findProject
 
@@ -321,7 +503,7 @@ for its model to act on.
 - `app` **AskingApp**&#x20;
 - `named` **unknown** Its name, or nothing where the app has only one
 
-Returns **[Promise][151]<([AppProject][18] | {error: [string][150]})>**&#x20;
+Returns **[Promise][179]<([AppProject][44] | {error: [string][178]})>**&#x20;
 
 ## calls
 
@@ -333,7 +515,7 @@ Type: const
 
 ## turns
 
-Type: [Map][154]<[string][150], [Promise][151]\<unknown>>
+Type: [Map][182]<[string][178], [Promise][179]\<unknown>>
 
 ## inProject
 
@@ -351,18 +533,18 @@ cross.
 
 ### Parameters
 
-- `storyId` **[string][150]**&#x20;
+- `storyId` **[string][178]**&#x20;
 - `work` &#x20;
 
 ## settled
 
-Type: [Promise][151]\<void>
+Type: [Promise][179]\<void>
 
 ## holding
 
 ### Parameters
 
-- `storyId` **[string][150]**&#x20;
+- `storyId` **[string][178]**&#x20;
 - `work` &#x20;
 
 ## apps/protocol
@@ -375,6 +557,8 @@ request here whole, as the app sent it.
 There are four to answer: `initialize`, `ping`, `tools/list` and
 `tools/call`. No resources, prompts or sampling, no stream and no session:
 a connection is told apart by its token alone, which the door has checked.
+And one the door asks of its own, which it refuses an app: a file an app
+sent, to take (`IMPORT_METHOD`, `./imports.js`).
 
 ## PROTOCOL_VERSIONS
 
@@ -384,6 +568,13 @@ a connection is told apart by its token alone, which the door has checked.
 
 The versions of the protocol spoken, the newest first: those that have
 HTTP as it is served here.
+
+## IMPORT_METHOD
+
+What the door asks as a file an app sent comes: take it, and say what it
+became. The door's own, as `IMPORT_METHOD` in `electron/src/appServer.js`.
+
+Type: [string][178]
 
 ## METHOD_NOT_FOUND
 
@@ -401,22 +592,22 @@ cannot fence.
 
 - `app` **AskingApp**&#x20;
 
-Returns **[string][150]**&#x20;
+Returns **[string][178]**&#x20;
 
 ## result
 
 ### Parameters
 
 - `id` **unknown**&#x20;
-- `result` **[object][155]**&#x20;
+- `result` **[object][183]**&#x20;
 
 ## failure
 
 ### Parameters
 
 - `id` **unknown**&#x20;
-- `code` **[number][149]**&#x20;
-- `message` **[string][150]**&#x20;
+- `code` **[number][177]**&#x20;
+- `message` **[string][178]**&#x20;
 
 ## answerRequest
 
@@ -429,7 +620,7 @@ Answer a request an app made.
   - `asking.app` &#x20;
   - `asking.signal` &#x20;
 
-Returns **[Promise][151]\<AppAnswer>** The answer to send back, or that another
+Returns **[Promise][179]\<AppAnswer>** The answer to send back, or that another
 window is to be asked: the one that has the project the call is in
 
 ## apps/revisions
@@ -469,23 +660,23 @@ and `changes_since` with the revision it held still shows them.
 
 ## TEXT_MOST
 
-Type: [number][149]
+Type: [number][177]
 
 ## TEXT_MOST
 
-Type: [number][149]
+Type: [number][177]
 
 ## TEXT_MOST
 
 The longest text kept to tell changes from, in characters.
 
-Type: [number][149]
+Type: [number][177]
 
 ## Asking
 
 Who is asking, and in which project.
 
-Type: {storyId: [string][150], chatId: [string][150]}
+Type: {storyId: [string][178], chatId: [string][178]}
 
 ## Asking
 
@@ -494,43 +685,43 @@ connection's own id is where a chat's goes, and no chat is found by it, so
 only what is hidden outright is left out. Its name is who its comments and
 suggestions are by.
 
-Type: {storyId: [string][150], chatId: [string][150], postsAs: [string][150], signal: AbortSignal}
+Type: {storyId: [string][178], chatId: [string][178], postsAs: [string][178], signal: AbortSignal}
 
 ## SeenThread
 
 A comment thread as a connection last had it: enough to tell what was
 said or settled since.
 
-Type: [Object][155]
+Type: [Object][183]
 
 ### Properties
 
 - `status` **(`"open"` | `"resolved"`)**&#x20;
-- `posts` **[number][149]** How many
-- `said` **[string][150]** A hash of what they say
+- `posts` **[number][177]** How many
+- `said` **[string][178]** A hash of what they say
 - `suggestion` **`true`?** A suggested change's, not a comment's
 - `mine` **`true`?** A suggestion of the connection's own
-- `settled` **[string][150]?** How a suggestion ended, once it has
+- `settled` **[string][178]?** How a suggestion ended, once it has
 
 ## Seen
 
 What a connection has of a document.
 
-Type: [Object][155]
+Type: [Object][183]
 
 ### Properties
 
-- `storyId` **[string][150]**&#x20;
-- `document` **[string][150]** Its id
-- `path` **[string][150]** As it was then
-- `revision` **[string][150]**&#x20;
-- `text` **([string][150] | null)** As the connection read it; null for a file's
+- `storyId` **[string][178]**&#x20;
+- `document` **[string][178]** Its id
+- `path` **[string][178]** As it was then
+- `revision` **[string][178]**&#x20;
+- `text` **([string][178] | null)** As the connection read it; null for a file's
   text, which is never written to, and for one too long to keep
-- `threads` **Record<[string][150], [SeenThread][51]>**&#x20;
-- `passed` **[Array][153]<[string][150]>?** The revisions the connection held before
+- `threads` **Record<[string][178], [SeenThread][78]>**&#x20;
+- `passed` **[Array][181]<[string][178]>?** The revisions the connection held before
   this one, the latest last, having seen all that changed from each to the
   next: its own writes, a whole read, or what `changes_since` showed it
-- `at` **[number][149]** When
+- `at` **[number][177]** When
 
 ## DocumentState
 
@@ -538,40 +729,40 @@ A document as a connection reads it at one moment. A call that reads or
 writes one takes it once before and once after (`apps/tools.js`), and what
 its answer says of the document is said from the two.
 
-Type: [Object][155]
+Type: [Object][183]
 
 ### Properties
 
-- `seen` **[Seen][53]** What would be kept of it for the connection
-- `threads` **Record<[string][150], CommentThread>** Its threads, as they are
-- `text` **([string][150] | null)** Its text, however long; null for anything
+- `seen` **[Seen][80]** What would be kept of it for the connection
+- `threads` **Record<[string][178], CommentThread>** Its threads, as they are
+- `text` **([string][178] | null)** Its text, however long; null for anything
   but a text document
-- `plain` **[boolean][152]** Whether it is kept exactly as typed, with no
+- `plain` **[boolean][180]** Whether it is kept exactly as typed, with no
   marks in it
 
 ## PASSED_MOST
 
 How many of the revisions a connection held before the last are remembered.
 
-Type: [number][149]
+Type: [number][177]
 
 ## EARLIER_NOTE
 
 What `changes_since` says of a revision from before the connection's last call on the document.
 
-Type: [string][150]
+Type: [string][178]
 
 ## UNKNOWN_NOTE
 
 What `changes_since` says of a revision it has no record of.
 
-Type: [string][150]
+Type: [string][178]
 
 ## CHANGED_SINCE_NOTE
 
 What an answer says where the document had changed since the connection last had it.
 
-Type: [string][150]
+Type: [string][178]
 
 ## stateAt
 
@@ -582,14 +773,14 @@ a folder.
 
 ### Parameters
 
-- `asking` **[Asking][49]**&#x20;
-- `path` **[string][150]**&#x20;
+- `asking` **[Asking][34]**&#x20;
+- `path` **[string][178]**&#x20;
 
-Returns **[Promise][151]<([DocumentState][55] | null)>**&#x20;
+Returns **[Promise][179]<([DocumentState][82] | null)>**&#x20;
 
 ## comments
 
-Type: Record<[string][150], CommentThread>
+Type: Record<[string][178], CommentThread>
 
 ##
 
@@ -601,7 +792,7 @@ Type: const
 
 ## threads
 
-Type: Record<[string][150], [SeenThread][51]>
+Type: Record<[string][178], [SeenThread][78]>
 
 ## keep
 
@@ -613,12 +804,12 @@ says to read the document again.
 ### Parameters
 
 - `app` **AskingApp**&#x20;
-- `seen` **[Seen][53]**&#x20;
-- `had` **([Seen][53] | null)?** What it had (optional, default `null`)
-- `sawAll` **[boolean][152]?** Whether it has seen everything that changed
+- `seen` **[Seen][80]**&#x20;
+- `had` **([Seen][80] | null)?** What it had (optional, default `null`)
+- `sawAll` **[boolean][180]?** Whether it has seen everything that changed
   from what it had to this (optional, default `false`)
 
-Returns **[Promise][151]\<void>**&#x20;
+Returns **[Promise][179]\<void>**&#x20;
 
 ## kept
 
@@ -627,9 +818,9 @@ What a connection last had of a document, or null.
 ### Parameters
 
 - `app` **AskingApp**&#x20;
-- `documentId` **[string][150]**&#x20;
+- `documentId` **[string][178]**&#x20;
 
-Returns **[Promise][151]<([Seen][53] | null)>**&#x20;
+Returns **[Promise][179]<([Seen][80] | null)>**&#x20;
 
 ## catch
 
@@ -637,7 +828,7 @@ Type: any
 
 ## catch
 
-Type: [Array][153]\<any>
+Type: [Array][181]\<any>
 
 ## withRevision
 
@@ -653,19 +844,19 @@ answered as it is, and so is a call that left no document.
 ### Parameters
 
 - `app` **AskingApp**&#x20;
-- `$1` **[Object][155]**&#x20;
+- `$1` **[Object][183]**&#x20;
   - `$1.before` &#x20;
   - `$1.after` &#x20;
 
 - `answer` **any** What the tool answered
-- `sawAll` **[boolean][152]?** Whether the answer sends the document's whole
+- `sawAll` **[boolean][180]?** Whether the answer sends the document's whole
   text (optional, default `false`)
 
-Returns **[Promise][151]\<any>**&#x20;
+Returns **[Promise][179]\<any>**&#x20;
 
 ## had
 
-Type: [Seen][53]
+Type: [Seen][80]
 
 ## unchangedAt
 
@@ -675,10 +866,10 @@ then say so, and send nothing.
 ### Parameters
 
 - `app` **AskingApp**&#x20;
-- `state` **([DocumentState][55] | null)** The document as it is
+- `state` **([DocumentState][82] | null)** The document as it is
 - `revision` **unknown** The one the connection holds
 
-Returns **[Promise][151]<({path: [string][150], revision: [string][150], unchanged: [string][150]} | null)>**&#x20;
+Returns **[Promise][179]<({path: [string][178], revision: [string][178], unchanged: [string][178]} | null)>**&#x20;
 
 ## commentsSince
 
@@ -688,25 +879,25 @@ was said since; one resolved or reopened.
 
 ### Parameters
 
-- `had` **[Seen][53]**&#x20;
-- `threads` **Record<[string][150], CommentThread>** As they are
-- `storyId` **[string][150]**&#x20;
+- `had` **[Seen][80]**&#x20;
+- `threads` **Record<[string][178], CommentThread>** As they are
+- `storyId` **[string][178]**&#x20;
 
 ## changed
 
-Type: [Array][153]\<Record<[string][150], any>>
+Type: [Array][181]\<Record<[string][178], any>>
 
 ## changed
 
-Type: [Array][153]\<Record<[string][150], any>>
+Type: [Array][181]\<Record<[string][178], any>>
 
 ## changed
 
-Type: [Array][153]<{path: [string][150], revision: [string][150]}>
+Type: [Array][181]<{path: [string][178], revision: [string][178]}>
 
 ##
 
-Type: [number][149]
+Type: [number][177]
 
 ## suggestionsSince
 
@@ -721,9 +912,9 @@ waiting with the words around it.
 
 ### Parameters
 
-- `had` **[Seen][53]**&#x20;
-- `threads` **Record<[string][150], CommentThread>** As they are
-- `asking` **[Asking][49]**&#x20;
+- `had` **[Seen][80]**&#x20;
+- `threads` **Record<[string][178], CommentThread>** As they are
+- `asking` **[Asking][34]**&#x20;
 
 ## ABOUT
 
@@ -739,24 +930,24 @@ with the telling, its text with it.
 ### Parameters
 
 - `app` **AskingApp**&#x20;
-- `asking` **[Asking][49]**&#x20;
-- `folder` **[string][150]** Its path; `/` for the project
+- `asking` **[Asking][34]**&#x20;
+- `folder` **[string][178]** Its path; `/` for the project
 
 ## gone
 
-Type: [Array][153]<[string][150]>
+Type: [Array][181]<[string][178]>
 
 ## told
 
-Type: [Array][153]<[string][150]>
+Type: [Array][181]<[string][178]>
 
 ##
 
-Type: [string][150]
+Type: [string][178]
 
 ##
 
-Type: [string][150]
+Type: [string][178]
 
 ## changesSince
 
@@ -768,10 +959,10 @@ connection has read have changed.
 ### Parameters
 
 - `app` **AskingApp**&#x20;
-- `asking` **[Asking][49]**&#x20;
+- `asking` **[Asking][34]**&#x20;
 - `args` &#x20;
 
-Returns **[Promise][151]\<Record<[string][150], any>>**&#x20;
+Returns **[Promise][179]\<Record<[string][178], any>>**&#x20;
 
 ## apps/tools
 
@@ -808,6 +999,10 @@ left as it is, their wording having been tuned for the chat:
   every place a passage appears.
 - **How the text was stored**, where that isn't how it was sent
   (`./writes.js`).
+- **Files brought in**: `import_document` answers with a link the app's
+  own shell sends a file to, which then comes in as the writer's own
+  import brings one in, so its bytes never pass through the app's model
+  (`./imports.js`).
 - **Documents handed over as files**: `export_document` makes a document
   or a folder ready and answers with a link the app's own shell fetches,
   each text stamped with the document it came from (`./exports.js`), and
@@ -841,46 +1036,46 @@ writer's outside the projects ticked: their chats, their skills.
 
 ## LIST_PROJECTS
 
-Type: [string][150]
+Type: [string][178]
 
 ## LIST_PROJECTS
 
-Type: [string][150]
+Type: [string][178]
 
 ## LIST_PROJECTS
 
 What a call answers with, as MCP has it: text, in parts, and whether it is
 an error for the app's model to read.
 
-Type: [string][150]
+Type: [string][178]
 
 ## LIST_PROJECTS
 
 The tool that names an app's projects: the one that takes none.
 
-Type: [string][150]
+Type: [string][178]
 
 ## AppTool
 
 A tool as MCP lists it.
 
-Type: [Object][155]
+Type: [Object][183]
 
 ### Properties
 
-- `name` **[string][150]**&#x20;
-- `description` **[string][150]**&#x20;
-- `inputSchema` **Record<[string][150], any>**&#x20;
+- `name` **[string][178]**&#x20;
+- `description` **[string][178]**&#x20;
+- `inputSchema` **Record<[string][178], any>**&#x20;
 
 ## ToolRow
 
 What is true of a tool an app can call: a row of `TOOLS`.
 
-Type: [Object][155]
+Type: [Object][183]
 
 ### Properties
 
-- `name` **[string][150]**&#x20;
+- `name` **[string][178]**&#x20;
 - `writes` **`true`?** It changes something: only a connection that
   writes is offered it. A client is told the rest change nothing
 - `adds` **`true`?** What it changes it only adds to, and takes
@@ -891,13 +1086,13 @@ Type: [Object][155]
   how the text was stored
 - `suggest` **`true`?** Its change can be suggested and not made: it
   takes `suggest`
-- `own` **{description: [string][150], inputSchema: Record<[string][150], any>}?** For a tool that is an app's alone, and no chat's: what it says of itself
+- `own` **{description: [string][178], inputSchema: Record<[string][178], any>}?** For a tool that is an app's alone, and no chat's: what it says of itself
 
 ## BY_ID
 
 What comes before a document's id where a path goes: an exported file's stamp has the id.
 
-Type: [string][150]
+Type: [string][178]
 
 ## SUGGEST
 
@@ -907,7 +1102,7 @@ The argument that has a change to a document's text suggested, not made.
 
 What a call is told when its `suggest` is neither true nor false.
 
-Type: [string][150]
+Type: [string][178]
 
 ## without
 
@@ -915,14 +1110,14 @@ A text with a sentence taken out of it.
 
 ### Parameters
 
-- `text` **[string][150]**&#x20;
-- `sentence` **[string][150]**&#x20;
+- `text` **[string][178]**&#x20;
+- `sentence` **[string][178]**&#x20;
 
 ## EDIT_OUTSIDE
 
 What `edit_document` says of itself to an app, which may send several edits.
 
-Type: [string][150]
+Type: [string][178]
 
 ## PROJECT
 
@@ -941,7 +1136,7 @@ export after it: it changes nothing here, so every connection has it.
 `explore_documents` is left out: it runs a job on a model the writer pays
 for.
 
-Type: [Array][153]<[ToolRow][102]>
+Type: [Array][181]<[ToolRow][129]>
 
 ## offered
 
@@ -952,7 +1147,7 @@ nothing where it only reads.
 
 - `app` **AskingApp**&#x20;
 
-Returns **[Array][153]<[ToolRow][102]>**&#x20;
+Returns **[Array][181]<[ToolRow][129]>**&#x20;
 
 ## outside
 
@@ -961,17 +1156,17 @@ registry doesn't have.
 
 ### Parameters
 
-- `tool` **[ToolRow][102]**&#x20;
+- `tool` **[ToolRow][129]**&#x20;
 
-Returns **([AppTool][100] | null)**&#x20;
+Returns **([AppTool][127] | null)**&#x20;
 
 ## chat
 
-Type: Record<[string][150], any>
+Type: Record<[string][178], any>
 
 ## said
 
-Type: Record<[string][150], any>
+Type: Record<[string][178], any>
 
 ###
 
@@ -981,7 +1176,7 @@ Type: const
 
 ### Parameters
 
-- `text` **[string][150]**&#x20;
+- `text` **[string][178]**&#x20;
 
 ###
 
@@ -995,7 +1190,7 @@ The tools an app is offered.
 
 - `app` **AskingApp**&#x20;
 
-Returns **[Array][153]<[AppTool][100]>**&#x20;
+Returns **[Array][181]<[AppTool][127]>**&#x20;
 
 ## runnerOf
 
@@ -1004,7 +1199,7 @@ chat's as the chat's registry runs it. Nothing for a row with neither.
 
 ### Parameters
 
-- `tool` **[ToolRow][102]**&#x20;
+- `tool` **[ToolRow][129]**&#x20;
 
 ## sendsAll
 
@@ -1030,7 +1225,7 @@ Returns **AppToolResult**&#x20;
 
 ##
 
-Type: Record<[string][150], any>
+Type: Record<[string][178], any>
 
 ## onDocument
 
@@ -1047,12 +1242,12 @@ for one.
 ### Parameters
 
 - `app` **AskingApp**&#x20;
-- `tool` **[ToolRow][102]**&#x20;
-- `args` **Record<[string][150], any>**&#x20;
+- `tool` **[ToolRow][129]**&#x20;
+- `args` **Record<[string][178], any>**&#x20;
 - `context` &#x20;
 - `run` &#x20;
 
-Returns **[Promise][151]\<any>**&#x20;
+Returns **[Promise][179]\<any>**&#x20;
 
 ## callTool
 
@@ -1061,13 +1256,9 @@ Run an app's call to a tool.
 ### Parameters
 
 - `app` **AskingApp**&#x20;
-- `name` **[string][150]** One of `toolsFor(app)`
-- `args` **Record<[string][150], any>**&#x20;
+- `name` **[string][178]** One of `toolsFor(app)`
+- `args` **Record<[string][178], any>**&#x20;
 - `signal` **AbortSignal** Aborted when the app gives up on the call
-
-## asking
-
-Type: [Asking][49]
 
 ## apps/writes
 
@@ -1077,30 +1268,44 @@ how the text was stored, when that isn't how it was sent.
 A chat's model reads what it wrote back in the conversation's own record.
 An app tends to edit from memory of what it sent, where the document holds
 what the editor's Markdown made of it: a table's spacing, a list's marker.
-So a write's answer carries the passage as it now reads (`stored`) when
-that differs.
+So a write's answer says how it reads now when that differs. For an edit
+or what is added to the end, that is the passage as it now reads
+(`stored`). For a whole body, a new document's or a rewrite's, it is the
+difference from what was sent to what was stored (`rewritten`), as a
+patch has it: the whole body again would be the app's own text back, and
+the few lines the editor wrote another way lost in it.
 
 ## STORED_MOST
 
-Type: [number][149]
+Type: [number][177]
 
 ## STORED_MOST
 
 The longest a stored passage is sent back, in characters; past it, the app is told to read.
 
-Type: [number][149]
+Type: [number][177]
 
 ## STORED_NOTE
 
 What a write's answer says when the text was stored another way than it was sent.
 
-Type: [string][150]
+Type: [string][178]
+
+## REWRITTEN_NOTE
+
+What a whole body's write says when the editor wrote some of it another way.
+
+Type: [string][178]
+
+## WHOLE
+
+The tools that write a document's whole body.
 
 ## READ_AGAIN_NOTE
 
 The same, where what changed is too long to send back.
 
-Type: [string][150]
+Type: [string][178]
 
 ## sentBy
 
@@ -1108,10 +1313,10 @@ What a write sent to be in the document, by the tool that wrote it.
 
 ### Parameters
 
-- `name` **[string][150]**&#x20;
-- `args` **Record<[string][150], any>**&#x20;
+- `name` **[string][178]**&#x20;
+- `args` **Record<[string][178], any>**&#x20;
 
-Returns **[Array][153]<[string][150]>**&#x20;
+Returns **[Array][181]<[string][178]>**&#x20;
 
 ##
 
@@ -1124,25 +1329,26 @@ changed to the last, whole. Empty when nothing did.
 
 ### Parameters
 
-- `before` **[string][150]**&#x20;
-- `after` **[string][150]**&#x20;
+- `before` **[string][178]**&#x20;
+- `after` **[string][178]**&#x20;
 
-Returns **[string][150]**&#x20;
+Returns **[string][178]**&#x20;
 
 ## withStored
 
 A write's answer, saying how the text reads now where that is not how it
-was sent: the lines that changed, or, where they are many, that the
-document is to be read again. A write that was suggested says so too, of
+was sent: the lines that changed, for a whole body the difference from
+what was sent, or, where either is long, that the document is to be read
+again. A write that was suggested says so too, of
 the text as the app reads it, its suggestions made. From the document as
 it was before the write and as it is after, which the call took
 (`apps/tools.js`).
 
 ### Parameters
 
-- `name` **[string][150]** The tool: one that writes a document's text
-- `args` **Record<[string][150], any>**&#x20;
-- `$2` **[Object][155]**&#x20;
+- `name` **[string][178]** The tool: one that writes a document's text
+- `args` **Record<[string][178], any>**&#x20;
+- `$2` **[Object][183]**&#x20;
   - `$2.before` &#x20;
   - `$2.after` &#x20;
 
@@ -1161,147 +1367,175 @@ Returns **any**&#x20;
 [9]: #parameters-1
 [10]: #exportfor
 [11]: #parameters-2
-[12]: #apps
-[13]: #appsoffered
-[14]: #serveapps
-[15]: #appsprojects
-[16]: #summary_most
-[17]: #summary_most-1
-[18]: #appproject
-[19]: #where
-[20]: #projectsof
-[21]: #parameters-3
-[22]: #findproject
-[23]: #parameters-4
-[24]: #calls
-[25]: #calls-1
-[26]: #turns
-[27]: #inproject
-[28]: #parameters-5
-[29]: #settled
-[30]: #holding
-[31]: #parameters-6
-[32]: #appsprotocol
-[33]: #protocol_versions
-[34]: #protocol_versions-1
-[35]: #protocol_versions-2
-[36]: #method_not_found
-[37]: #instructionsfor
-[38]: #parameters-7
-[39]: #result
-[40]: #parameters-8
-[41]: #failure
-[42]: #parameters-9
-[43]: #answerrequest
-[44]: #parameters-10
-[45]: #appsrevisions
-[46]: #text_most
-[47]: #text_most-1
-[48]: #text_most-2
-[49]: #asking
-[50]: #asking-1
-[51]: #seenthread
-[52]: #properties
-[53]: #seen
-[54]: #properties-1
-[55]: #documentstate
-[56]: #properties-2
-[57]: #passed_most
-[58]: #earlier_note
-[59]: #unknown_note
-[60]: #changed_since_note
-[61]: #stateat
-[62]: #parameters-11
-[63]: #comments
-[64]: #
-[65]: #-1
-[66]: #threads
-[67]: #keep
-[68]: #parameters-12
-[69]: #kept
-[70]: #parameters-13
-[71]: #catch
-[72]: #catch-1
-[73]: #withrevision
-[74]: #parameters-14
-[75]: #had
-[76]: #unchangedat
-[77]: #parameters-15
-[78]: #commentssince
-[79]: #parameters-16
-[80]: #changed
-[81]: #changed-1
-[82]: #changed-2
-[83]: #-2
-[84]: #suggestionssince
-[85]: #parameters-17
-[86]: #about
-[87]: #changedunder
-[88]: #parameters-18
-[89]: #gone
-[90]: #told
-[91]: #-3
-[92]: #-4
-[93]: #changessince
-[94]: #parameters-19
-[95]: #appstools
-[96]: #list_projects
-[97]: #list_projects-1
-[98]: #list_projects-2
-[99]: #list_projects-3
-[100]: #apptool
-[101]: #properties-3
-[102]: #toolrow
-[103]: #properties-4
-[104]: #by_id
-[105]: #suggest
-[106]: #suggest_is_a_boolean
-[107]: #without
-[108]: #parameters-20
-[109]: #edit_outside
-[110]: #project
-[111]: #path_or_folder
-[112]: #tools
-[113]: #offered
-[114]: #parameters-21
-[115]: #outside
-[116]: #parameters-22
-[117]: #chat
-[118]: #said
-[119]: #-5
-[120]: #said-1
-[121]: #parameters-23
-[122]: #-6
-[123]: #toolsfor
-[124]: #parameters-24
-[125]: #runnerof
-[126]: #parameters-25
-[127]: #sendsall
-[128]: #parameters-26
-[129]: #toresult
-[130]: #parameters-27
-[131]: #-7
-[132]: #ondocument
-[133]: #parameters-28
-[134]: #calltool
-[135]: #parameters-29
-[136]: #asking-2
-[137]: #appswrites
-[138]: #stored_most
-[139]: #stored_most-1
-[140]: #stored_note
-[141]: #read_again_note
-[142]: #sentby
-[143]: #parameters-30
-[144]: #-8
-[145]: #changedlines
-[146]: #parameters-31
-[147]: #withstored
-[148]: #parameters-32
-[149]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[150]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[151]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[152]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[153]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[154]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[155]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[12]: #appsimports
+[13]: #file
+[14]: #file-1
+[15]: #import_note
+[16]: #nothing_sent
+[17]: #sentence
+[18]: #parameters-3
+[19]: #markdown
+[20]: #word
+[21]: #titlefor
+[22]: #parameters-4
+[23]: #splitpath
+[24]: #parameters-5
+[25]: #placefor
+[26]: #parameters-6
+[27]: #importfor
+[28]: #parameters-7
+[29]: #aboutof
+[30]: #parameters-8
+[31]: #about
+[32]: #receivedfor
+[33]: #parameters-9
+[34]: #asking
+[35]: #asking-1
+[36]: #taken
+[37]: #found
+[38]: #apps
+[39]: #appsoffered
+[40]: #serveapps
+[41]: #appsprojects
+[42]: #summary_most
+[43]: #summary_most-1
+[44]: #appproject
+[45]: #where
+[46]: #projectsof
+[47]: #parameters-10
+[48]: #findproject
+[49]: #parameters-11
+[50]: #calls
+[51]: #calls-1
+[52]: #turns
+[53]: #inproject
+[54]: #parameters-12
+[55]: #settled
+[56]: #holding
+[57]: #parameters-13
+[58]: #appsprotocol
+[59]: #protocol_versions
+[60]: #protocol_versions-1
+[61]: #protocol_versions-2
+[62]: #import_method
+[63]: #method_not_found
+[64]: #instructionsfor
+[65]: #parameters-14
+[66]: #result
+[67]: #parameters-15
+[68]: #failure
+[69]: #parameters-16
+[70]: #answerrequest
+[71]: #parameters-17
+[72]: #appsrevisions
+[73]: #text_most
+[74]: #text_most-1
+[75]: #text_most-2
+[76]: #asking-2
+[77]: #asking-3
+[78]: #seenthread
+[79]: #properties
+[80]: #seen
+[81]: #properties-1
+[82]: #documentstate
+[83]: #properties-2
+[84]: #passed_most
+[85]: #earlier_note
+[86]: #unknown_note
+[87]: #changed_since_note
+[88]: #stateat
+[89]: #parameters-18
+[90]: #comments
+[91]: #
+[92]: #-1
+[93]: #threads
+[94]: #keep
+[95]: #parameters-19
+[96]: #kept
+[97]: #parameters-20
+[98]: #catch
+[99]: #catch-1
+[100]: #withrevision
+[101]: #parameters-21
+[102]: #had
+[103]: #unchangedat
+[104]: #parameters-22
+[105]: #commentssince
+[106]: #parameters-23
+[107]: #changed
+[108]: #changed-1
+[109]: #changed-2
+[110]: #-2
+[111]: #suggestionssince
+[112]: #parameters-24
+[113]: #about-1
+[114]: #changedunder
+[115]: #parameters-25
+[116]: #gone
+[117]: #told
+[118]: #-3
+[119]: #-4
+[120]: #changessince
+[121]: #parameters-26
+[122]: #appstools
+[123]: #list_projects
+[124]: #list_projects-1
+[125]: #list_projects-2
+[126]: #list_projects-3
+[127]: #apptool
+[128]: #properties-3
+[129]: #toolrow
+[130]: #properties-4
+[131]: #by_id
+[132]: #suggest
+[133]: #suggest_is_a_boolean
+[134]: #without
+[135]: #parameters-27
+[136]: #edit_outside
+[137]: #project
+[138]: #path_or_folder
+[139]: #tools
+[140]: #offered
+[141]: #parameters-28
+[142]: #outside
+[143]: #parameters-29
+[144]: #chat
+[145]: #said
+[146]: #-5
+[147]: #said-1
+[148]: #parameters-30
+[149]: #-6
+[150]: #toolsfor
+[151]: #parameters-31
+[152]: #runnerof
+[153]: #parameters-32
+[154]: #sendsall
+[155]: #parameters-33
+[156]: #toresult
+[157]: #parameters-34
+[158]: #-7
+[159]: #ondocument
+[160]: #parameters-35
+[161]: #calltool
+[162]: #parameters-36
+[163]: #appswrites
+[164]: #stored_most
+[165]: #stored_most-1
+[166]: #stored_note
+[167]: #rewritten_note
+[168]: #whole
+[169]: #read_again_note
+[170]: #sentby
+[171]: #parameters-37
+[172]: #-8
+[173]: #changedlines
+[174]: #parameters-38
+[175]: #withstored
+[176]: #parameters-39
+[177]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[178]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[179]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[180]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[181]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[182]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[183]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object

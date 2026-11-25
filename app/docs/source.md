@@ -77,7 +77,7 @@
   - [Parameters][73]
 - [isWholeFileName][74]
   - [Parameters][75]
-- [isCodeName][76]
+- [keepsAsWritten][76]
   - [Parameters][77]
 - [source/rules][78]
 - [NEVER][79]
@@ -611,12 +611,12 @@ bytes and all, rather than as its text: `FILE_EXTENSIONS`.
 
 Returns **[boolean][154]**&#x20;
 
-## isCodeName
+## keepsAsWritten
 
-Whether a name says what it names is code or data, rather than prose: a
-language the table knows, Markdown aside. A document made under such a
-name is kept as written (`plain`), since settling it as Markdown would
-change it.
+Whether a name says what it names is kept as written, rather than as
+Markdown: code or data, a language the table knows, Markdown aside, or
+plain text by its `.txt`. A document made under such a name is kept as
+written (`plain`), since settling it as Markdown would change it.
 
 ### Parameters
 
@@ -1101,7 +1101,7 @@ Type: [Refreshed][145]
 [73]: #parameters-17
 [74]: #iswholefilename
 [75]: #parameters-18
-[76]: #iscodename
+[76]: #keepsaswritten
 [77]: #parameters-19
 [78]: #sourcerules
 [79]: #never

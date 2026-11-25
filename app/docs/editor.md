@@ -5414,12 +5414,16 @@ Type: [Array][1134]<[ShortcutGroup][755]>
 ## menuShortcuts
 
 The desktop app's keys for tabs and windows, which are its menu's: listed
-here because Windows and Linux keep the menu bar out of sight.
+here because Windows and Linux keep the menu bar out of sight. A new
+terminal is Command-L on a Mac and Control-Shift-L elsewhere, where
+Control-L is a shell's.
 
 ### Parameters
 
-- `having` **{ai: [boolean][1138]}** Whether the AI is on, and so the chat there
-  - `having.ai` &#x20;
+- `$0` **[Object][1133]**&#x20;
+  - `$0.ai` &#x20;
+  - `$0.terminal` (optional, default `false`)
+  - `$0.mac` (optional, default `isMac`)
 
 Returns **[ShortcutGroup][755]**&#x20;
 
