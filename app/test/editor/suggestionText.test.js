@@ -238,5 +238,6 @@ describe('a reading, and each suggestion the other way', () => {
       }
     }
     expect(turned).toBeGreaterThan(1500)
-  })
+    // Thousands of random changes: past the 5-second default on a slow CI runner.
+  }, 30_000)
 })
