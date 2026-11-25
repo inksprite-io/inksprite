@@ -62,6 +62,37 @@ describe('TabStrip', () => {
     }
   })
 
+  it('leaves the strip where the writer scrolled it when the tab showing, out of sight, is renamed', async () => {
+    const original = window.HTMLElement.prototype.scrollIntoView
+    const scrolled = vi.fn()
+    window.HTMLElement.prototype.scrollIntoView = scrolled
+    try {
+      const wrapper = mountStrip({ activeId: 'doc_2' })
+      await wrapper.vm.$nextTick()
+      scrolled.mockClear()
+      // The strip scrolled along until the tab showing is past its start.
+      const strip = wrapper.find('[role="tablist"]').element
+      strip.getBoundingClientRect = () => /** @type {DOMRect} */ ({ left: 0, right: 300 })
+      tab(wrapper, 'doc_2').element.getBoundingClientRect = () =>
+        /** @type {DOMRect} */ ({ left: -200, right: -40 })
+
+      // A program in a terminal names it again and again.
+      for (const title of ['⠋ Working', '⠙ Working', '⠹ Working']) {
+        await wrapper.setProps({ items: [items[0], { id: 'doc_2', title }] })
+        await wrapper.vm.$nextTick()
+      }
+      expect(scrolled).not.toHaveBeenCalled()
+
+      // Brought forward again, it is scrolled to as ever.
+      await wrapper.setProps({ activeId: 'doc_1' })
+      await wrapper.setProps({ activeId: 'doc_2' })
+      await wrapper.vm.$nextTick()
+      expect(scrolled).toHaveBeenCalled()
+    } finally {
+      window.HTMLElement.prototype.scrollIntoView = original
+    }
+  })
+
   it('marks a chat the model is working in, and one unread, to the eye and the ear', () => {
     const wrapper = mountStrip({
       items: [

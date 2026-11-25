@@ -393,13 +393,29 @@ onBeforeUnmount(() => {
   if (fade) clearTimeout(fade)
 })
 
+/**
+ * Whether a tab is wholly in the strip's sight.
+ * @param {string} id
+ */
+const inSight = id => {
+  const tab = elements.get(id)?.getBoundingClientRect?.()
+  const seen = list.value?.getBoundingClientRect?.()
+  if (!tab || !seen) return false
+  return tab.left >= seen.left - 1 && tab.right <= seen.right + 1
+}
+
 // A tab brought forward off the end of a full strip is scrolled to, so the
 // writer sees where they are. And again when the tab showing is given
 // another name, which a terminal's is by its shell a moment after it is
 // made: a longer name puts its end, and its close button, past the strip's.
+// That only while it was in sight: a program in a terminal may name it
+// every moment, and the strip the writer has scrolled along stays where
+// they put it. Asked before the new name is drawn.
 watch(
   [() => props.activeId, () => props.items.find(item => item.id === props.activeId)?.title],
-  async ([id]) => {
+  async ([id], before) => {
+    const renamed = before !== undefined && before[0] === id
+    if (renamed && id && !inSight(id)) return
     await nextTick()
     if (id) elements.get(id)?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
   },
