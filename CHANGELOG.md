@@ -35,6 +35,8 @@ Also:
   turns it to the **Comments** tab.
 - In the menu of a chat's model chip, the button beside **Model** (**Model
   settings**) opens that model's settings.
+- A terminal whose program keeps renaming it, as a coding agent does, no
+  longer pulls the tab strip back to it after you scroll the tabs away.
 
 ## v0.1.0-dev.30
 
