@@ -30,3 +30,6 @@ local/*
 
 # Playwright MCP output (snapshots, screenshots, evaluate results).
 .playwright-mcp/
+
+# Wrangler's local state, from running the sites' Workers here
+.wrangler/

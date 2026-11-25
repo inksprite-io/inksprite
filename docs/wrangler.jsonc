@@ -1,0 +1,18 @@
+// The docs site on Cloudflare, which also answers for inksprite.io: Workers
+// Builds runs `npm ci && npm run build` in docs/ and then `npx wrangler deploy`,
+// which serves the built site in dist, with its 404 page for a path that isn't
+// a file. Only / and /install run worker.js, so every other request is a file
+// served free. The domains (docs.inksprite.io, inksprite.io) are set on the
+// Worker in Cloudflare's dashboard, and www.inksprite.io is a redirect rule
+// there.
+{
+  "name": "inksprite-docs",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/", "/install"]
+  }
+}

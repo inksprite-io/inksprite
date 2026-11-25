@@ -1,0 +1,17 @@
+// The app on Cloudflare: Workers Builds runs `npm ci && npm run build` in app/
+// and then `npx wrangler deploy`, which serves the build in dist. A path that
+// isn't a file gets index.html, as a single-page app needs, and only /api/*
+// runs worker.js, so every other request is a file served free. The headers
+// are in public/_headers. The domain (app.inksprite.io) is set on the Worker
+// in Cloudflare's dashboard.
+{
+  "name": "inksprite",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
+  },
+}
