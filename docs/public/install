@@ -1,0 +1,273 @@
+#!/bin/sh
+# inksprite's desktop app, installed or brought up to date, on a Mac or on
+# Linux:
+#
+#   curl -fsSL https://inksprite.io/install | sh
+#
+# This file is the whole script, so it can be read before it's run. It
+# downloads the latest release from GitHub
+# (https://github.com/inksprite-io/inksprite/releases), checks each download
+# against the SHA-512 the release lists for it, and puts the app in place:
+#
+# - On a Mac, the app in /Applications, or in ~/Applications where
+#   /Applications can't be written to.
+# - On Debian, Ubuntu and their family, the .deb, through apt, which asks for
+#   your password.
+# - On any other Linux, or with --appimage, the AppImage in ~/Applications,
+#   with its launcher entry and icon in ~/.local/share.
+#
+# The app updates itself from then on, and running this again updates it too.
+#
+#   --uninstall   removes the app, and leaves your projects and settings
+#   --appimage    on Linux, installs the AppImage even where apt is
+#
+# With curl, an option goes after "sh -s --":
+#
+#   curl -fsSL https://inksprite.io/install | sh -s -- --uninstall
+#
+# Everything is in main, which runs on the last line, so a download cut off
+# partway runs nothing.
+
+set -eu
+
+RELEASES=${INKSPRITE_RELEASES:-https://github.com/inksprite-io/inksprite/releases/latest/download}
+
+say() { printf '%s\n' "$*"; }
+fail() {
+  printf 'inksprite: %s\n' "$*" >&2
+  exit 1
+}
+need() { command -v "$1" >/dev/null 2>&1 || fail "$2"; }
+
+# Run a command as root: straight away as root, through sudo otherwise.
+as_root() {
+  if [ "$(id -u)" = 0 ]; then
+    "$@"
+  else
+    need sudo "Installing the .deb needs sudo. Run this with --appimage to install the AppImage instead."
+    sudo "$@"
+  fi
+}
+
+# A file of the release, from GitHub over HTTPS alone.
+download() { # name, where to, then curl's options
+  from="$RELEASES/$1"
+  to=$2
+  shift 2
+  proto='=https'
+  [ -z "${INKSPRITE_RELEASES:-}" ] || proto='=http,https'
+  curl -fL --proto "$proto" "$@" -o "$to" "$from"
+}
+
+# The release's update file for this system, which names each build and its
+# SHA-512, kept as latest.yml.
+read_release() { # update file
+  download "$1" "$work/latest.yml" -sS || fail "The latest release couldn't be found."
+  version=$(awk '$1 == "version:" { print $2; exit }' "$work/latest.yml")
+}
+
+# The name of the release's build ending in this.
+build_named() { # ending
+  ENDING=$1 awk '$1 == "-" && $2 == "url:" {
+    if (length($3) >= length(ENVIRON["ENDING"]) && substr($3, length($3) - length(ENVIRON["ENDING"]) + 1) == ENVIRON["ENDING"]) { print $3; exit }
+  }' "$work/latest.yml"
+}
+
+# The SHA-512 the release lists for a build, in hex.
+listed_sha512() { # name
+  sha=$(NAME=$1 awk '$1 == "-" && $2 == "url:" { url = $3; next }
+    $1 == "sha512:" && url == ENVIRON["NAME"] { print $2; exit }' "$work/latest.yml")
+  [ -n "$sha" ] || fail "The release lists no SHA-512 for $1."
+  printf '%s' "$sha" | base64 --decode | od -An -v -tx1 | tr -d ' \n'
+}
+
+# A file's SHA-512, in hex.
+file_sha512() { # file
+  if command -v sha512sum >/dev/null 2>&1; then
+    sha512sum "$1" | awk '{ print $1 }'
+  else
+    shasum -a 512 "$1" | awk '{ print $1 }'
+  fi
+}
+
+# Download a build into the work folder, and check it's the one the release
+# lists.
+fetch() { # name
+  say "Downloading $1..."
+  download "$1" "$work/$1" --progress-bar || fail "$1 couldn't be downloaded."
+  [ "$(file_sha512 "$work/$1")" = "$(listed_sha512 "$1")" ] ||
+    fail "$1 isn't the file the release lists, so nothing was installed."
+}
+
+mac() {
+  arch=$(uname -m)
+  # A shell running under Rosetta says x86_64 on Apple silicon.
+  if [ "$arch" = x86_64 ] && [ "$(sysctl -in sysctl.proc_translated 2>/dev/null)" = 1 ]; then
+    arch=arm64
+  fi
+  case "$arch" in
+    arm64) ;;
+    x86_64) arch=x64 ;;
+    *) fail "inksprite is built for Apple silicon and Intel Macs, not $arch." ;;
+  esac
+
+  if [ -n "$uninstall" ]; then
+    removed=
+    for dir in /Applications "$HOME/Applications"; do
+      if [ -e "$dir/inksprite.app" ]; then
+        rm -rf "$dir/inksprite.app"
+        say "Removed $dir/inksprite.app."
+        removed=1
+      fi
+    done
+    [ -n "$removed" ] || say "inksprite isn't in /Applications or ~/Applications."
+    say "Your projects and settings are left where they are."
+    return
+  fi
+
+  if pgrep -x inksprite >/dev/null 2>&1; then
+    fail "Quit inksprite first, then run this again."
+  fi
+  read_release latest-mac.yml
+  name=$(build_named "-mac-$arch.zip")
+  [ -n "$name" ] || fail "The latest release has no build for this Mac."
+  fetch "$name"
+  dest=/Applications
+  if [ ! -w "$dest" ]; then
+    dest="$HOME/Applications"
+    mkdir -p "$dest"
+  fi
+  ditto -x -k "$work/$name" "$work/app"
+  rm -rf "$dest/inksprite.app"
+  mv "$work/app/inksprite.app" "$dest/"
+  say "inksprite $version is in $dest. Open it from Launchpad or Spotlight."
+}
+
+# Whether this Linux is Debian's or Ubuntu's family, by what it says of itself.
+debian_like() {
+  [ -r /etc/os-release ] || return 1
+  ids=$(. /etc/os-release && printf '%s %s' "${ID:-}" "${ID_LIKE:-}")
+  case " $ids " in
+    *" debian "* | *" ubuntu "*) return 0 ;;
+  esac
+  return 1
+}
+
+# A path as one argument of a launcher entry's Exec, as the app writes it.
+exec_argument() { # path
+  printf '"%s"' "$(printf '%s' "$1" | sed -e 's/\\/\\\\\\\\/g' -e 's/["`$]/\\\\&/g' -e 's/%/%%/g')"
+}
+
+# The AppImage's launcher entry and icon, as the app writes them on each start
+# (src/appImage.js), so it's in the launcher before it's first opened.
+settle_appimage() {
+  (cd "$work" &&
+    "$file" --appimage-extract 'usr/share/icons/hicolor/*/apps/inksprite.png' &&
+    "$file" --appimage-extract inksprite.desktop) >/dev/null 2>&1 || true
+  for icon in "$work"/squashfs-root/usr/share/icons/hicolor/*/apps/inksprite.png; do
+    [ -f "$icon" ] || continue
+    size=$(basename "$(dirname "$(dirname "$icon")")")
+    mkdir -p "$data/icons/hicolor/$size/apps"
+    cp "$icon" "$data/icons/hicolor/$size/apps/inksprite.png"
+  done
+
+  EXEC="Exec=$(exec_argument "$file") %U"
+  case "$file" in
+    *[[:space:]]* | *\\*) TRY= ;;
+    *) TRY="TryExec=$file" ;;
+  esac
+  packed="$work/squashfs-root/inksprite.desktop"
+  if [ ! -f "$packed" ]; then
+    packed="$work/made.desktop"
+    printf '[Desktop Entry]\nName=inksprite\nType=Application\nIcon=inksprite\nTerminal=false\nStartupWMClass=inksprite\n' >"$packed"
+  fi
+  mkdir -p "$data/applications"
+  EXEC=$EXEC TRY=$TRY awk '/^(Exec|TryExec)=/ || /^[[:space:]]*$/ { next }
+    { print }
+    /^Name=/ && !done { print ENVIRON["EXEC"]; if (ENVIRON["TRY"] != "") print ENVIRON["TRY"]; done = 1 }' \
+    "$packed" >"$data/applications/inksprite.desktop"
+}
+
+linux() {
+  case "$(uname -m)" in
+    x86_64 | amd64)
+      image=x86_64
+      deb=amd64
+      update=latest-linux.yml
+      ;;
+    aarch64 | arm64)
+      image=arm64
+      deb=arm64
+      update=latest-linux-arm64.yml
+      ;;
+    *) fail "inksprite is built for x86_64 and ARM Linux, not $(uname -m)." ;;
+  esac
+  data=${XDG_DATA_HOME:-$HOME/.local/share}
+  file="${INKSPRITE_DIR:-$HOME/Applications}/inksprite-linux-$image.AppImage"
+
+  if [ -n "$uninstall" ]; then
+    removed=
+    if command -v dpkg >/dev/null 2>&1 && dpkg -s inksprite >/dev/null 2>&1; then
+      say "Removing the inksprite package with apt, which asks for your password..."
+      as_root apt-get remove -y inksprite
+      removed=1
+    fi
+    for found in "${INKSPRITE_DIR:-$HOME/Applications}"/inksprite-linux-*.AppImage; do
+      [ -e "$found" ] || continue
+      rm -f "$found"
+      say "Removed $found."
+      removed=1
+    done
+    rm -f "$data/applications/inksprite.desktop" "$data"/icons/hicolor/*/apps/inksprite.png
+    [ -n "$removed" ] || say "inksprite wasn't found where this script installs it."
+    say "Your projects and settings are left where they are."
+    return
+  fi
+
+  if [ -z "$appimage" ] && debian_like && command -v apt-get >/dev/null 2>&1; then
+    read_release "$update"
+    name=$(build_named "-linux-$deb.deb")
+    [ -n "$name" ] || fail "The latest release has no .deb for this computer."
+    fetch "$name"
+    # apt reads the file as a user of its own.
+    chmod 755 "$work"
+    chmod 644 "$work/$name"
+    say "Installing $name with apt, which asks for your password..."
+    as_root apt-get install -y "$work/$name"
+    say "inksprite $version is installed. Open it from your launcher."
+    return
+  fi
+
+  read_release "$update"
+  name=$(build_named "-linux-$image.AppImage")
+  [ -n "$name" ] || fail "The latest release has no AppImage for this computer."
+  fetch "$name"
+  mkdir -p "$(dirname "$file")"
+  chmod 755 "$work/$name"
+  mv -f "$work/$name" "$file"
+  settle_appimage
+  say "inksprite $version is in $file, and in your launcher."
+}
+
+main() {
+  uninstall=
+  appimage=
+  for arg in "$@"; do
+    case "$arg" in
+      --uninstall) uninstall=1 ;;
+      --appimage) appimage=1 ;;
+      *) fail "$arg isn't one of this script's options, which are --uninstall and, on Linux, --appimage." ;;
+    esac
+  done
+  need curl "This script needs curl."
+  work=$(mktemp -d)
+  trap 'rm -rf "$work"' EXIT
+  trap 'exit 1' INT TERM
+  case "$(uname -s)" in
+    Darwin) mac ;;
+    Linux) linux ;;
+    *) fail "This script installs inksprite on a Mac or on Linux. For Windows, download the installer from https://inksprite.io." ;;
+  esac
+}
+
+main "$@"

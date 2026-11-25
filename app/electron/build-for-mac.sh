@@ -9,10 +9,11 @@
 # For Apple silicon unless x64 is named. The build is in dist/for-mac, with
 # the entitlements electron-builder would sign it with beside it.
 #
-# Its version is the newest release in CHANGELOG.md with the checkout's commit
-# count after it: 0.1.0-dev.18.1759. That is after the release, so the updater
-# never offers a release older than the build, and before the next one, which
-# it takes from GitHub as an installed release would.
+# Its version comes after the newest release in CHANGELOG.md and before the
+# next, with the checkout's commit count in it: 0.1.0-dev.18.1759 after
+# 0.1.0-dev.18, and 0.2.1-dev.1759 after 0.2.0. So the updater never offers a
+# release older than the build, and takes the next one from GitHub as an
+# installed release would.
 
 set -eu
 
@@ -35,7 +36,17 @@ esac
 
 release=$(sed -n 's/^## v\([0-9][^ ]*\).*/\1/p' "$root/CHANGELOG.md" | head -n 1)
 [ -n "$release" ] || fail "CHANGELOG.md has no release"
-version="$release.$(git -C "$root" rev-list --count HEAD)"
+count=$(git -C "$root" rev-list --count HEAD)
+case "$release" in
+  # A release with a suffix: the count goes after it.
+  *-*) version="$release.$count" ;;
+  # A plain release: the next patch's dev build, since 0.2.0.1759 isn't a
+  # version the updater can read.
+  *)
+    patch=${release##*.}
+    version="${release%.*}.$((patch + 1))-dev.$count"
+    ;;
+esac
 
 echo "Building the page for inksprite $version..."
 (cd "$root/app" && VITE_APP_VERSION=$version npm run build)

@@ -93,6 +93,12 @@ nsis:
   perMachine: false
   buildUniversalInstaller: false
 
+# The AppImage's newer runtime, which needs no FUSE 2 (libfuse2): Ubuntu has
+# installed only FUSE 3 since 22.04, so the old one wouldn't start there
+# without it. electron-builder still calls this toolset a beta.
+toolsets:
+  appimage: '1.0.3'
+
 # The window goes with the app's .desktop entry by its desktopName
 # (package.json). For Intel and AMD, and for ARM, each with an update file of
 # its own (latest-linux.yml, latest-linux-arm64.yml): node-pty brings its

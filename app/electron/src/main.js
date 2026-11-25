@@ -7,8 +7,11 @@
 import { BrowserWindow, app, session } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { settleAppImage } from './appImage.js'
+import { offerMoveToApplications } from './applications.js'
 import { handleBridge } from './bridge.js'
 import { ensureLibrary } from './library.js'
+import { logLine } from './log.js'
 import { originOf } from './links.js'
 import { setMenu } from './menu.js'
 import { PAGE_URL, registerScheme, servePage } from './page.js'
@@ -70,6 +73,9 @@ if (app.requestSingleInstanceLock()) {
 let started = false
 
 async function start() {
+  // A Mac app opened from the DMG or Downloads offers to move to
+  // Applications first, and quits if it's moving (applications.js).
+  if (await offerMoveToApplications()) return
   // The projects' folder is there before the window that keeps them.
   await ensureLibrary()
   servePage(pageRoot)
@@ -82,6 +88,10 @@ async function start() {
   setMenu({ newWindow: () => openWindow() })
   openWindow()
   started = true
+  // A Linux AppImage puts itself in the launcher (appImage.js).
+  if (process.platform === 'linux' && app.isPackaged) {
+    settleAppImage().then(done => done.length > 0 && logLine(`AppImage: ${done.join('; ')}`))
+  }
   // On a Mac the app stays open with its windows closed, as Mac apps do, and
   // its Dock icon opens a window again.
   app.on('activate', () => {
