@@ -66,7 +66,7 @@ const THEMES = /** @type {const} */ ({ light: '', dark: '-dark' })
  * capture runs on that is DejaVu Sans, which no reader on a Mac or Windows
  * sees. Inter is close to both.
  */
-async function fontCss() {
+export async function fontCss() {
   const font = await readFile(
     join(DOCS, 'node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2')
   )
@@ -82,7 +82,7 @@ async function fontCss() {
 }
 
 /** The pointer a recording shows: drawn only while one runs. */
-const CURSOR_CSS = `
+export const CURSOR_CSS = `
   #capture-cursor { display: none; position: fixed; left: 0; top: 0; z-index: 2147483647; pointer-events: none; }
   .capture-recording #capture-cursor { display: block; }
 `
@@ -99,7 +99,7 @@ const CURSOR_CSS = `
  * @param {{ app: string, font: string, cursor: string }} setup - The app's
  *   origin, and the CSS for each
  */
-function pageSetup({ app, font, cursor }) {
+export function pageSetup({ app, font, cursor }) {
   const add = () => {
     if (document.getElementById('capture-cursor')) return
     const style = document.createElement('style')
@@ -133,7 +133,7 @@ function pageSetup({ app, font, cursor }) {
  *
  * @param {{ app: string }} setup - The app's origin
  */
-function noSpelling({ app }) {
+export function noSpelling({ app }) {
   if (location.origin !== app) return
   const key = 'inksprite_app_state'
   const state = JSON.parse(localStorage.getItem(key) || '{}')
