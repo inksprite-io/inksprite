@@ -6,6 +6,23 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.32
+
+The desktop app settles in by itself: the AppImage puts itself in your
+launcher, and the Mac app offers to move itself to Applications.
+
+- On Linux, the AppImage adds itself to your launcher, with its icon, the
+  first time it starts, and takes the version out of its file's name so each
+  update replaces it in place.
+- The AppImage no longer needs FUSE 2 (`libfuse2`), which Ubuntu hasn't
+  installed since 22.04.
+- On a Mac, opened from the disk image or from Downloads, inksprite offers to
+  move itself to the Applications folder, where it can update itself.
+- Each release also carries its installers under names without the version,
+  so a link such as
+  `https://github.com/inksprite-io/inksprite/releases/latest/download/inksprite-mac-arm64.dmg`
+  always gets the latest.
+
 ## v0.1.0-dev.31
 
 Keys for opening a terminal and leaving one, files a connected app can bring
