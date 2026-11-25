@@ -6,6 +6,37 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.31
+
+Keys for opening a terminal and leaving one, files a connected app can bring
+into a project, plain text kept as written, and the desktop app for ARM
+computers.
+
+The desktop app:
+
+- Command-L (Control-Shift-L on Windows and Linux) opens a new terminal from
+  anywhere in inksprite, a terminal included. Control-` goes to the terminal
+  you were in last, or opens one, and in a terminal goes back to where you
+  were. Both are in the menu while **Terminal** is on, and **New Chat** is
+  only there while the AI is.
+- A connected app can bring a file from its own folder into a project, such
+  as a set of prompts or a PDF. It comes in as the same file does when you
+  import it.
+- Removing a connected app asks first.
+- The Linux app comes for ARM computers too, as an AppImage and a `.deb`,
+  and Windows has an installer for ARM PCs.
+
+Also:
+
+- A `.txt` file you import becomes a document kept exactly as written, which
+  opens in the plain text editor, as does one the model makes. It used to
+  become an ordinary document, with anything that looked like Markdown taken
+  as formatting. **Edit in plain text editor** on its menu turns it into one.
+- Clicking in a comment or a suggestion in the text turns the sidebar to the
+  Comments tab.
+- In a chat's model menu, the gear beside **Model** opens the settings of the
+  chat's model.
+
 ## v0.1.0-dev.30
 
 A terminal and connected apps in the desktop app, keys for its tabs, tabs you
