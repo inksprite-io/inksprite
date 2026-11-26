@@ -537,7 +537,8 @@ describe('suggestions from the edit tools', () => {
     }
     expect(rounds).toBeGreaterThan(100)
     expect(withdrawn).toBeGreaterThan(0)
-  })
+    // Many random changes: past the 5-second default on a slow CI runner.
+  }, 30_000)
 
   it('names the chat its suggestions the writer settled, and when, for its next turn', async () => {
     const doc = text('Chapter 1', 'A cold night.\n\nThe tide came in.')

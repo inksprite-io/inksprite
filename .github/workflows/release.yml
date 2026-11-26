@@ -202,7 +202,8 @@ jobs:
           npx electron-builder ${{ matrix.system }} --publish never
 
       # What the app checks an update against before it installs it, on
-      # Windows and Linux, where nothing else says an update is ours
+      # Windows and Linux: on Linux nothing else says an update is ours, and
+      # on Windows nothing did before the builds were signed
       # (app/electron/src/updateSignature.js): a .sig beside each update, made
       # with a key only this environment has. Checked here as the app will
       # check it, so a key the app wasn't built with stops the release.
@@ -214,31 +215,42 @@ jobs:
         run: node scripts/sign-updates.js dist
 
       # The check Windows makes of an installer downloaded from the internet,
-      # a signature it trusts, and the one the updater makes of an update: a
-      # signature under the name the installed app was built to expect
-      # (publisherName in its app-update.yml). An installer signed under any
-      # other name would leave every app installed from it taking no update.
+      # a signature it trusts, timestamped so that it outlasts the
+      # certificate's three days, and the one the updater makes of an update:
+      # a signature under a name the app was built to expect (publisherName
+      # in its app-update.yml). PUBLISHERS is the name every app in use
+      # accepts, kept apart from electron-builder.yml so that a change there
+      # can't pass unnoticed: an installer signed under another name would
+      # leave those apps taking no update. Changed only as publisherName in
+      # electron-builder.yml says.
       - name: Check Windows accepts the installers
         if: runner.os == 'Windows'
         working-directory: app/electron
         shell: pwsh
+        env:
+          PUBLISHERS: Colin Howes
         run: |
+          $installed = @($env:PUBLISHERS -split "`n" | Where-Object { $_ })
           $failed = $false
           $apps = @(Get-ChildItem dist -Directory -Filter 'win*-unpacked')
           if (-not $apps) { Write-Host '::error::No Windows app was built.'; exit 1 }
+          $files = @(Get-ChildItem dist -Filter *.exe)
           foreach ($app in $apps) {
             $config = Join-Path $app.FullName 'resources/app-update.yml'
             $names = node -e "const { load } = require('js-yaml'); console.log(JSON.stringify(load(require('fs').readFileSync(process.argv[1], 'utf8')).publisherName ?? null))" $config | ConvertFrom-Json
-            if (-not $names) { Write-Host "::error::$config names no publisher."; $failed = $true; continue }
-            foreach ($file in @(Get-ChildItem $app.FullName -Filter *.exe) + @(Get-ChildItem dist -Filter *.exe)) {
-              $signature = Get-AuthenticodeSignature -LiteralPath $file.FullName
-              $signer = if ($signature.SignerCertificate) { $signature.SignerCertificate.GetNameInfo('SimpleName', $false) }
-              if ($signature.Status -ne 'Valid' -or $names -notcontains $signer) {
-                Write-Host "::error::$($file.Name): $($signature.Status), signed by '$signer', where the app expects '$($names -join "' or '")'."
-                $failed = $true
-              } else {
-                Write-Host "$($file.Name): signed by $signer"
-              }
+            foreach ($name in $installed) {
+              if ($names -notcontains $name) { Write-Host "::error::$config doesn't name $name as a publisher."; $failed = $true }
+            }
+            $files += @(Get-ChildItem $app.FullName -Filter *.exe)
+          }
+          foreach ($file in $files) {
+            $signature = Get-AuthenticodeSignature -LiteralPath $file.FullName
+            $signer = if ($signature.SignerCertificate) { $signature.SignerCertificate.GetNameInfo('SimpleName', $false) }
+            if ($signature.Status -ne 'Valid' -or -not $signature.TimeStamperCertificate -or $installed -notcontains $signer) {
+              Write-Host "::error::$($file.Name): $($signature.Status), signed by '$signer', timestamped: $([bool]$signature.TimeStamperCertificate)."
+              $failed = $true
+            } else {
+              Write-Host "$($file.Name): signed by $signer"
             }
           }
           if ($failed) { exit 1 }
@@ -301,7 +313,7 @@ jobs:
           A development build of the desktop app.
 
           - **macOS**: the `.dmg` ending in `arm64` for Apple silicon, or in `x64` for an Intel Mac. Signed and notarized.
-          - **Windows**: the `.exe` ending in `arm64` for an ARM PC, or in `x64` for any other. Signed. Until enough people have installed it, Windows may still warn that it doesn't recognize the app: choose More info, then Run anyway.
+          - **Windows**: the `.exe` ending in `arm64` for an ARM PC, or in `x64` for any other. Signed, though Windows may still warn that it doesn't recognize the app: choose More info, then Run anyway.
           - **Linux**: the `.AppImage`, or the `.deb` for Debian and Ubuntu, each ending in `arm64` for an ARM computer, or in `x86_64` or `amd64` for any other.
 
           Once installed, the app updates itself: it downloads each new release and offers to restart into it. On Windows and Linux it also checks each update against a signature made as the release was built. For now, an update that fails that check is noted in the app's log and offered all the same. The `.zip`, `.blockmap`, `.sig` and `.yml` files are for the updater. Each installer is also here without its version in its name, so a link to it always gets the latest.

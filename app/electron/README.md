@@ -197,9 +197,9 @@ uses the Apple ones, and only the Windows build the Azure ones:
 | `APPLE_API_ISSUER`                  | The App Store Connect API key's issuer ID                                                                          |
 | `APPLE_API_KEY`                     | The key's ID                                                                                                       |
 | `APPLE_API_KEY_P8`                  | The contents of the key's `.p8` file                                                                               |
-| `AZURE_TENANT_ID`                   | The Microsoft Entra directory's ID, where the app registration that signs is                                       |
+| `AZURE_TENANT_ID`                   | The ID of the Microsoft Entra directory that holds the app registration the build signs as                         |
 | `AZURE_CLIENT_ID`                   | That app registration's ID; it has the Artifact Signing Certificate Profile Signer role on the certificate profile |
-| `AZURE_CLIENT_SECRET`               | Its client secret, which expires on the date it was given                                                          |
+| `AZURE_CLIENT_SECRET`               | Its client secret, which expires on the date chosen when it was made                                               |
 
 ## Updates
 
@@ -211,11 +211,12 @@ checkout never looks.
 
 Each update is checked against the hash its `latest*.yml` gives, which comes
 from the same release. A Mac also checks that the new app is signed by the
-same developer as the one it replaces, and Windows that the new installer is
-signed under the name the app was built with (`publisherName` under
-`azureSignOptions` in `electron-builder.yml`, which the release workflow checks
-against the certificate). The Linux builds carry no signature the system
-checks, nor did Windows's before, so a release signs each update with a key
+same developer as the one it replaces. On Windows, from v0.1.0-dev.33, the
+updater checks that the new installer is signed under the name the app was
+built with (`publisherName` under `azureSignOptions` in
+`electron-builder.yml`, which the release workflow checks against the
+certificate). The Linux builds carry no signature the system checks, nor did
+Windows's before, so a release signs each update with a key
 of our own, and the app checks an update against the keys built into it
 (`src/updateKeys.js`). For now a failed check is only written to the app's
 log (`inksprite.log`), and the update is offered all the same

@@ -51,6 +51,26 @@ describe('downloadUpdate', () => {
     expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(1)
   })
 
+  it('says in the log why a download failed, and looks again next time', async () => {
+    const logLine = vi.fn(async () => {})
+    vi.doMock('../../electron/src/log.js', () => ({ logLine }))
+    const { downloadUpdate } = await load()
+    autoUpdater.checkForUpdates.mockResolvedValue({
+      isUpdateAvailable: true,
+      updateInfo: { version: '0.1.0-dev.7' },
+    })
+    autoUpdater.downloadUpdate.mockRejectedValueOnce(
+      new Error('New version 0.1.0-dev.7 is not signed by the application owner')
+    )
+
+    await expect(downloadUpdate()).rejects.toThrow('not signed by the application owner')
+    expect(logLine).toHaveBeenCalledWith(
+      'update 0.1.0-dev.7: not downloaded: New version 0.1.0-dev.7 is not signed by the application owner'
+    )
+    autoUpdater.downloadUpdate.mockResolvedValue([])
+    expect(await downloadUpdate()).toBe('0.1.0-dev.7')
+  })
+
   it('downloads nothing when the app is up to date, and looks again next time', async () => {
     const { downloadUpdate } = await load()
     autoUpdater.checkForUpdates.mockResolvedValue({ isUpdateAvailable: false })

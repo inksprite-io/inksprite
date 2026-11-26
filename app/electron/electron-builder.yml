@@ -79,14 +79,23 @@ win:
   target:
     - target: nsis
       arch: [x64, arm64]
-  # Signed through Microsoft's Artifact Signing (once Trusted Signing), as the
-  # person its identity check verified: the app, its installer and its
-  # uninstaller. It signs in to Azure with the release environment's
-  # AZURE_TENANT_ID, AZURE_CLIENT_ID and AZURE_CLIENT_SECRET, and without them
-  # the build fails rather than going out unsigned. publisherName goes into
-  # the app's app-update.yml too, and from then on the updater installs only
-  # an update signed under that name (NsisUpdater's verifySignature), so it is
-  # the certificate's CN exactly, which the release workflow checks.
+  # Signed through Microsoft's Artifact Signing (formerly Trusted Signing), as
+  # the person its identity check verified: every .exe, the installer and
+  # the uninstaller among them, but the console host node-pty brings, which
+  # keeps Microsoft's signature. It signs in to Azure with the release
+  # environment's AZURE_TENANT_ID, AZURE_CLIENT_ID and AZURE_CLIENT_SECRET,
+  # and the release workflow refuses an installer that isn't signed.
+  #
+  # publisherName goes into the app's app-update.yml, and from then on the
+  # updater installs only an update signed under a name in it (NsisUpdater's
+  # verifySignature): the certificate's CN exactly. A name is never changed
+  # or taken out, or the apps built with it take no more updates. Should the
+  # certificate's name change, the new one is added here beside it, and the
+  # releases go on being signed under the old one, its identity check and
+  # certificate profile kept working, until no app without the new name is
+  # still in use. Only then does the release workflow's PUBLISHERS, the name
+  # every app in use accepts, move to the new one.
+  signExts: ['!OpenConsole.exe']
   azureSignOptions:
     publisherName: Colin Howes
     endpoint: https://eus.codesigning.azure.net

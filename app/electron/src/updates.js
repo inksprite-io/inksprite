@@ -10,12 +10,12 @@
  * On Windows and Linux the app checks the download against a signature of
  * its own too, made as the release was built (`updateSignature.js`), since
  * Linux has no other and Windows had none before, and says in its log how
- * that went. An update
- * no key the app was built with answers for is refused, once the check has
- * been seen to work; until then it is offered all the same (`UPDATE_CHECK` in
- * `updateKeys.js`). The page asks for the download and says when to install
- * it (`src/composables/useUpdates.js`); nothing is installed unasked, not
- * even on quitting. An app run from the checkout never looks.
+ * that went. An update no key the app was built with answers for is refused,
+ * once the check has been seen to work; until then it is offered all the
+ * same (`UPDATE_CHECK` in `updateKeys.js`). The page asks for the download
+ * and says when to install it (`src/composables/useUpdates.js`); nothing is
+ * installed unasked, not even on quitting. An app run from the checkout
+ * never looks.
  */
 
 import { basename } from 'node:path'
@@ -54,12 +54,24 @@ export async function downloadUpdate() {
   return looking
 }
 
-/** @returns {Promise<string|null>} */
+/**
+ * Look, and download what is found. A download that fails is written to the
+ * app's log: on Windows the updater refuses there an update not signed under
+ * the name the app was built with, and nothing else would say so.
+ *
+ * @returns {Promise<string|null>}
+ */
 async function look() {
   const result = await autoUpdater.checkForUpdates()
   if (!result?.isUpdateAvailable) return null
-  const files = await autoUpdater.downloadUpdate()
   const { version } = result.updateInfo
+  let files
+  try {
+    files = await autoUpdater.downloadUpdate()
+  } catch (error) {
+    await logLine(`update ${version}: not downloaded: ${error.message}`)
+    throw error
+  }
   if (checksSignature()) await checkSigned(version, files)
   downloaded = version
   return downloaded

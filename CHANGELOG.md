@@ -9,9 +9,7 @@ for its tag at the top of the release's notes.
 ## v0.1.0-dev.33
 
 The Windows app and its installers are signed, so Windows shows who they're
-from. Until enough people have installed inksprite, Windows may still warn
-that it doesn't recognize the app: choose More info, then Run anyway. An app
-installed from this release on takes only updates signed under the same name.
+from.
 
 ## v0.1.0-dev.32
 

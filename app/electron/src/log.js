@@ -3,8 +3,8 @@
  * (`~/Library/Logs/inksprite` on a Mac, `%APPDATA%\inksprite\logs` on
  * Windows, `~/.config/inksprite/logs` on Linux). An installed app has no
  * terminal to say things in, so what is worth knowing afterwards goes here:
- * what a page died of (`gone.js`), and whether an update was signed as ours
- * (`updates.js`).
+ * what a page died of (`gone.js`), and whether an update was signed as ours,
+ * or why it couldn't be downloaded (`updates.js`).
  *
  * It was `windows.log` while it held only what the app's windows died of,
  * which read as the log for Windows. One from then is left where it is.
