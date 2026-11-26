@@ -5,9 +5,12 @@
  * `electron-builder.yml`, under `publish`), downloads the update for this
  * platform, and checks it against the hash the file gives. On a Mac, the
  * system checks too that the new app is signed by the same developer as this
- * one. On Windows and Linux, where the builds carry no such signature, the
- * app checks the download against one of its own, made as the release was
- * built (`updateSignature.js`), and says in its log how that went. An update
+ * one; on Windows, the updater checks that the installer is signed under the
+ * name this app was built with (`publisherName` in `electron-builder.yml`).
+ * On Windows and Linux the app checks the download against a signature of
+ * its own too, made as the release was built (`updateSignature.js`), since
+ * Linux has no other and Windows had none before, and says in its log how
+ * that went. An update
  * no key the app was built with answers for is refused, once the check has
  * been seen to work; until then it is offered all the same (`UPDATE_CHECK` in
  * `updateKeys.js`). The page asks for the download and says when to install

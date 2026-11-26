@@ -1,9 +1,11 @@
 /**
  * What says an update is ours, where nothing else does.
  *
- * A Mac refuses an update not signed by the developer the app is from. On
- * Windows and Linux the builds carry no such signature, and the updater only
- * checks a download against the hash its `latest*.yml` gives, which sits in
+ * A Mac refuses an update not signed by the developer the app is from, and
+ * Windows, from the first release signed through Artifact Signing, one not
+ * signed under the name the app was built with. On Linux the builds carry no
+ * such signature, nor did Windows's before, and the updater only checks a
+ * download against the hash its `latest*.yml` gives, which sits in
  * the same release: whoever could put a file there could put its hash there
  * too. So the release workflow signs each update with a key the release
  * environment alone holds (`scripts/sign-updates.js`), and the app checks

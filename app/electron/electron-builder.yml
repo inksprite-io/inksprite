@@ -70,8 +70,8 @@ mac:
     - target: zip
       arch: [arm64, x64]
 
-# Installs for the user, with no admin prompt, where an unsigned installer
-# for the machine would ask as an unknown publisher. An installer for Intel
+# Installs for the user, with no admin prompt, which installing for the
+# whole machine would ask for on every update too. An installer for Intel
 # and AMD and one for ARM, rather than one holding both at twice the size:
 # both are in latest.yml, and the updater takes the one whose name has its
 # own processor in it (findFile in electron-updater's Provider.js).
@@ -79,6 +79,19 @@ win:
   target:
     - target: nsis
       arch: [x64, arm64]
+  # Signed through Microsoft's Artifact Signing (once Trusted Signing), as the
+  # person its identity check verified: the app, its installer and its
+  # uninstaller. It signs in to Azure with the release environment's
+  # AZURE_TENANT_ID, AZURE_CLIENT_ID and AZURE_CLIENT_SECRET, and without them
+  # the build fails rather than going out unsigned. publisherName goes into
+  # the app's app-update.yml too, and from then on the updater installs only
+  # an update signed under that name (NsisUpdater's verifySignature), so it is
+  # the certificate's CN exactly, which the release workflow checks.
+  azureSignOptions:
+    publisherName: Colin Howes
+    endpoint: https://eus.codesigning.azure.net
+    codeSigningAccountName: inkspritesigning
+    certificateProfileName: inksprite
   files:
     - '!node_modules/node-pty/prebuilds/{darwin,linux}-*'
   # All of node-pty beside the archive here, as it was before the others were
